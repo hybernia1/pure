@@ -14,7 +14,9 @@ export function createDragDrop(container, { items = '[data-drag-item]', handle =
     if (previous?.trigger.hasPointerCapture?.(previous.id)) previous.trigger.releasePointerCapture(previous.id);
   };
   const indicate = () => {
+    if (gesture && gesture.markedTo === gesture.to && gesture.markedActive === gesture.active) return;
     markers(); if (!gesture?.active) return;
+    gesture.markedTo = gesture.to; gesture.markedActive = gesture.active;
     gesture.item.dataset.dragging = '';
     if (gesture.to === null || gesture.to === gesture.from) return;
     const others = all().filter(item => item !== gesture.item);
@@ -39,13 +41,12 @@ export function createDragDrop(container, { items = '[data-drag-item]', handle =
     if (!gesture?.active || gesture.keyboard) return;
     const rect = container.getBoundingClientRect();
     gesture.to = gesture.x < rect.left || gesture.x > rect.right || gesture.y < rect.top || gesture.y > rect.bottom ? null
-      : all().filter(item => item !== gesture.item && gesture.y > item.getBoundingClientRect().top + item.getBoundingClientRect().height / 2).length;
+      : all().filter(item => { if (item === gesture.item) return false; const bounds = item.getBoundingClientRect(); return gesture.y > bounds.top + bounds.height / 2; }).length;
     indicate();
   };
   const autoScroll = () => {
     if (!gesture?.active || gesture.keyboard) return;
-    let scroller = container;
-    while (scroller && !/(auto|scroll)/.test(win.getComputedStyle(scroller).overflowY)) scroller = scroller.parentElement;
+    const scroller = gesture.scroller;
     const rect = scroller ? scroller.getBoundingClientRect() : { top: 0, bottom: win.innerHeight };
     const top = Math.max(0, rect.top); const bottom = Math.min(win.innerHeight, rect.bottom);
     const delta = gesture.y < top + 32 ? -10 : gesture.y > bottom - 32 ? 10 : 0;
@@ -67,6 +68,9 @@ export function createDragDrop(container, { items = '[data-drag-item]', handle =
     if (!gesture.item.isConnected) { cancel(); return; }
     gesture.x = event.clientX; gesture.y = event.clientY;
     if (!gesture.active && Math.hypot(gesture.x - gesture.startX, gesture.y - gesture.startY) >= 5) {
+      let scroller = container;
+      while (scroller && !/(auto|scroll)/.test(win.getComputedStyle(scroller).overflowY)) scroller = scroller.parentElement;
+      gesture.scroller = scroller;
       gesture.active = true; status.textContent = translate ? translate('dragMoving') : 'Přesouvání. Uvolni pro vložení, Escape pro zrušení.'; frame = win.requestAnimationFrame(autoScroll);
     }
     if (gesture.active) { event.preventDefault(); locate(); }

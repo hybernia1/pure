@@ -3,10 +3,22 @@
   "version": "0.6.1",
   "private": true,
   "type": "module",
+  "files": ["dist", "docs", "README.md"],
+  "sideEffects": ["**/*.css"],
+  "exports": {
+    ".": "./dist/js/index.js",
+    "./js/*": "./dist/js/*",
+    "./css/*": "./dist/css/*",
+    "./pure.css": "./dist/pure.css",
+    "./icons.svg": "./dist/icons.svg"
+  },
   "description": "Čistý modulární CSS, JS a SVG základ.",
   "scripts": {
     "build": "node scripts/build.mjs",
     "test": "node --test test/core.test.js test/ajax.test.js test/upload.test.js test/editor-model.test.js test/calendar.test.js test/image-upload.test.js",
-    "dev": "node scripts/serve.mjs"
+    "dev": "node scripts/serve.mjs",
+    "audit:size": "node scripts/audit.mjs",
+    "check:dist": "node scripts/check-dist.mjs",
+    "prepack": "npm run build && npm run check:dist"
   }
 }

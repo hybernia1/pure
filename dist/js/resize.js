@@ -17,6 +17,8 @@ export function createResize(target, {
   handle.append(icon(doc, 'resize', iconsUrl));
   const snap = number => Math.max(min, Math.min(max, Number((min + Math.round((number - min) / step) * step).toFixed(2))));
   let current = snap(width); let gesture = null; let destroyed = false;
+  let pointerCleanups = [];
+  const stopPointer = () => { pointerCleanups.forEach(cleanup => cleanup()); pointerCleanups = []; };
   const listeners = [];
   const listen = (element, type, callback) => { element.addEventListener(type, callback); listeners.push(() => element.removeEventListener(type, callback)); };
   const paint = () => {
@@ -29,6 +31,7 @@ export function createResize(target, {
   const finish = cancel => {
     if (!gesture) return;
     const previous = gesture; gesture = null; target.removeAttribute('data-resizing');
+    stopPointer();
     if (handle.hasPointerCapture?.(previous.id)) handle.releasePointerCapture(previous.id);
     if (cancel) { change(previous.width); return; }
     if (current !== previous.width) onCommit(current);
@@ -38,6 +41,20 @@ export function createResize(target, {
     if (!Number.isFinite(number)) throw new TypeError('Šířka musí být číslo.');
     finish(true); if (change(number)) onCommit(current); return current;
   };
+  const startPointer = () => {
+    const callbacks = {
+      pointermove(event) {
+        if (!gesture || gesture.id !== event.pointerId) return;
+        event.preventDefault(); change(gesture.width + (event.clientX - gesture.x) / gesture.size * 100);
+      },
+      pointerup(event) { if (gesture?.id === event.pointerId) finish(false); },
+      pointercancel(event) { if (gesture?.id === event.pointerId) finish(true); },
+      blur() { finish(true); },
+    };
+    for (const [type, callback] of Object.entries(callbacks)) {
+      win.addEventListener(type, callback); pointerCleanups.push(() => win.removeEventListener(type, callback));
+    }
+  };
   listen(handle, 'pointerdown', event => {
     if (gesture || event.button !== 0 || event.isPrimary === false) return;
     const style = win.getComputedStyle(container);
@@ -45,18 +62,12 @@ export function createResize(target, {
     if (size <= 0) return;
     event.preventDefault(); event.stopPropagation(); handle.focus();
     gesture = { id: event.pointerId, x: event.clientX, width: current, size };
+    startPointer();
     target.dataset.resizing = '';
     // Window listeners also support pointers that leave the handle before capture.
     try { handle.setPointerCapture(event.pointerId); } catch { /* Synthetic pointers have no active capture. */ }
   });
-  listen(win, 'pointermove', event => {
-    if (!gesture || gesture.id !== event.pointerId) return;
-    event.preventDefault(); change(gesture.width + (event.clientX - gesture.x) / gesture.size * 100);
-  });
-  listen(win, 'pointerup', event => { if (gesture?.id === event.pointerId) finish(false); });
-  listen(win, 'pointercancel', event => { if (gesture?.id === event.pointerId) finish(true); });
   listen(handle, 'lostpointercapture', () => finish(true));
-  listen(win, 'blur', () => finish(true));
   listen(handle, 'keydown', event => {
     if (event.key === 'Escape' && gesture) { event.preventDefault(); event.stopPropagation(); finish(true); return; }
     const values = { ArrowLeft: current - step, ArrowDown: current - step, ArrowRight: current + step, ArrowUp: current + step, Home: min, End: max };
@@ -70,7 +81,7 @@ export function createResize(target, {
     destroy() {
       if (destroyed) return;
       // Cleanup must not call application callbacks.
-      gesture = null; destroyed = true; listeners.forEach(cleanup => cleanup()); handle.remove(); target.removeAttribute('data-resizing');
+      gesture = null; destroyed = true; stopPointer(); listeners.forEach(cleanup => cleanup()); handle.remove(); target.removeAttribute('data-resizing');
       if (!hadClass) target.classList.remove('resizable');
       if (originalWidth) target.style.setProperty('width', originalWidth, priority); else target.style.removeProperty('width');
       instances.delete(target);

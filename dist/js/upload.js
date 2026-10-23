@@ -32,6 +32,7 @@ export function createUpload(input, {
   let depth = 0;
   let updating = false;
   let destroyed = false;
+  let resetTimer;
   const release = () => { urls.forEach(url => win.URL.revokeObjectURL(url)); urls = []; };
   const sync = (files) => {
     const transfer = new win.DataTransfer(); files.forEach(file => transfer.items.add(file)); input.files = transfer.files;
@@ -90,10 +91,10 @@ export function createUpload(input, {
       const remaining = list.querySelectorAll('button'); (remaining[Math.min(index, remaining.length - 1)] || input).focus();
     }
   };
-  const reset = () => queueMicrotask(() => {
-    if (destroyed) return;
+  const reset = event => { clearTimeout(resetTimer); resetTimer = setTimeout(() => {
+    if (destroyed || event.defaultPrevented) return;
     selected = [...input.files]; render(); announce(translate ? translate('uploadEmpty') : 'Žádné vybrané soubory.', 'info'); onChange([...selected]);
-  });
+  }, 0); };
   input.addEventListener('change', change); dropzone.addEventListener('dragenter', enter); dropzone.addEventListener('dragover', over);
   dropzone.addEventListener('dragleave', leave); dropzone.addEventListener('drop', drop); list.addEventListener('click', remove); input.form?.addEventListener('reset', reset);
   render();
@@ -103,6 +104,7 @@ export function createUpload(input, {
     clear: () => setFiles([]),
     destroy() {
       if (destroyed) return;
+      clearTimeout(resetTimer);
       input.removeEventListener('change', change); dropzone.removeEventListener('dragenter', enter); dropzone.removeEventListener('dragover', over);
       dropzone.removeEventListener('dragleave', leave); dropzone.removeEventListener('drop', drop); list.removeEventListener('click', remove); input.form?.removeEventListener('reset', reset);
       release(); list.replaceChildren(); status.textContent = ''; status.removeAttribute('data-state'); dropzone.removeAttribute('data-drag-active'); destroyed = true;

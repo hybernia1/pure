@@ -52,14 +52,14 @@ export function createForm(form) {
       if (error) { error.textContent = ''; error.hidden = true; }
     }); touched.clear();
   };
-  let destroyed = false;
-  const reset = () => queueMicrotask(() => { if (!destroyed) clear(); });
+  let destroyed = false; let resetTimer;
+  const reset = event => { clearTimeout(resetTimer); resetTimer = setTimeout(() => { if (!destroyed && !event.defaultPrevented) clear(); }, 0); };
   form.noValidate = true;
   form.addEventListener('submit', submit); form.addEventListener('input', input); form.addEventListener('change', input); form.addEventListener('focusout', blur); form.addEventListener('reset', reset);
   return {
     validate,
     destroy() {
-      clear(); destroyed = true; form.noValidate = originalNoValidate;
+      clear(); destroyed = true; clearTimeout(resetTimer); form.noValidate = originalNoValidate;
       form.removeEventListener('submit', submit); form.removeEventListener('input', input); form.removeEventListener('change', input); form.removeEventListener('focusout', blur); form.removeEventListener('reset', reset);
     },
   };

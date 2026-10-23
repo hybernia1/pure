@@ -144,7 +144,7 @@ await test('Upload synchronizuje drop a FormData, odmítá soubory a podporuje o
   const png = new File([Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j3ioAAAAASUVORK5CYII='), c => c.charCodeAt(0))], 'test.png', { type: 'image/png' });
   upload.setFiles([png]); assert(form.querySelector('.upload-preview')?.src.startsWith('blob:'), 'Chybí lokální náhled.');
   form.querySelector('[data-remove-file]').click(); assert(!input.files.length && !upload.getFiles().length, 'Odebrání nesynchronizovalo input.');
-  upload.setFiles([file]); form.reset(); await Promise.resolve();
+  upload.setFiles([file]); form.reset(); await new Promise(resolve => setTimeout(resolve, 0));
   assert(!input.files.length && !form.querySelector('.upload-item'), 'Reset nevyprázdnil upload.');
   input.disabled = true; assert(!upload.setFiles([file]), 'Disabled upload přijímá soubory.');
   assert(changes >= 4, 'Chybí callbacky.'); upload.destroy();
@@ -452,6 +452,30 @@ await test('Samostatná knihovna ignoruje staré načtení i upload po zavření
   const input = library.dialog.querySelector('[type="file"]'); const transfer = new DataTransfer(); transfer.items.add(new File(['x'], 'image.png', { type: 'image/png' })); input.files = transfer.files; input.dispatchEvent(new Event('change', { bubbles: true }));
   library.close(); uploads({ id: 'late', src: '/examples/editor-image.svg' }); await new Promise(resolve => setTimeout(resolve, 0));
   assert(selected === 0 && !library.dialog.open, 'Pozdní upload vybral médium'); library.destroy(); library.destroy();
+});
+
+await test('Zrušený reset zachová soubory a chyby formuláře', async () => {
+  const form = document.createElement('form'); form.innerHTML = '<div data-field><input type="email" required><p data-field-error hidden></p></div><div data-upload><input type="file"><p data-upload-status></p><ul data-upload-list></ul></div>'; fixture.append(form);
+  const validation = createForm(form); const upload = createUpload(form.querySelector('[type="file"]'));
+  validation.validate({ focus: false }); upload.setFiles([new File(['x'], 'a.txt')]);
+  const stop = event => event.preventDefault(); form.addEventListener('reset', stop); form.reset();
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert(form.querySelector('[type="email"]').getAttribute('aria-invalid') === 'true' && !form.querySelector('[data-field-error]').hidden, 'Zrušený reset skryl chyby');
+  assert(upload.getFiles().length === 1 && form.querySelector('[type="file"]').files.length === 1 && form.querySelector('.upload-item'), 'Zrušený reset změnil upload');
+  form.removeEventListener('reset', stop); form.reset(); await new Promise(resolve => setTimeout(resolve, 0));
+  assert(!upload.getFiles().length && form.querySelector('[data-field-error]').hidden, 'Platný reset'); validation.destroy(); upload.destroy();
+});
+await test('Resize připojuje globální pointer listenery pouze po dobu gesta', () => {
+  const add = window.addEventListener; const remove = window.removeEventListener; const tracked = new Set(['pointermove', 'pointerup', 'pointercancel', 'blur']); let active = 0; let resize;
+  window.addEventListener = function (type, ...args) { if (tracked.has(type)) active++; return add.call(this, type, ...args); };
+  window.removeEventListener = function (type, ...args) { if (tracked.has(type)) active--; return remove.call(this, type, ...args); };
+  try {
+    const container = document.createElement('div'); container.style.width = '400px'; const box = document.createElement('div'); container.append(box); fixture.append(container);
+    resize = createResize(box); assert(active === 0, 'Neaktivní resize má globální listenery');
+    const start = () => box.querySelector('[data-resize-handle]').dispatchEvent(new PointerEvent('pointerdown', { pointerId: 92, isPrimary: true, button: 0, bubbles: true }));
+    start(); assert(active === 4, 'Aktivní gesto'); window.dispatchEvent(new PointerEvent('pointercancel', { pointerId: 92 })); assert(active === 0, 'Cancel neodpojil listenery');
+    start(); resize.destroy(); assert(active === 0, 'Destroy během gesta');
+  } finally { resize?.destroy(); window.addEventListener = add; window.removeEventListener = remove; }
 });
 
 document.querySelector('#summary').textContent = `${passed} prošlo, ${failed} selhalo.`;

@@ -1,5 +1,9 @@
 # Pure
 
+[Audit před prvním vydáním](docs/release-audit.md) obsahuje opravy, měření a otevřené kroky. `npm run check:dist` ověří distribuci, `npm run audit:size` změří velikosti a statistiky. `prepack` sestaví a zkontroluje balíček; zůstává private.
+
+Pro lehké stránky importuj konkrétní modul, například `import { initTheme } from './dist/js/theme.js'`. Společný `index.js` načítá v prohlížeči celý graf. V npm jsou dostupné exporty `@pure-ui/core/js/theme.js`, `@pure-ui/core/css/tokens.css`, `@pure-ui/core/pure.css` a `@pure-ui/core/icons.svg`; JS je bez automatických DOM efektů, CSS se zachovává jako side effect.
+
 Editor má [statistiky, i18n a napojitelnou knihovnu médií](docs/editor-media-i18n.md). Přímý upload funguje samostatně přes vlastní API; obrázky zachovávají `mediaId`.
 
 [Drag & drop služba](docs/drag-drop.md) řadí bloky editoru i samostatné seznamy. Textové úchyty a mazání, klávesnice, dotyk a undo/redo v editoru.
