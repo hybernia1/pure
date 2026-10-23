@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pure — formuláře, modal a upload</title>
+  <script>try { const theme = localStorage.getItem('pure-theme'); if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme; } catch {}</script>
+  <link rel="stylesheet" href="../dist/pure.css">
+</head>
+<body>
+  <header class="border-b"><div class="container flex flex-wrap items-center justify-between gap-2 py-3"><a href="index.html" class="font-semibold no-underline">pure. / formuláře</a><div class="flex gap-2"><a href="modules.html" class="button button-outline">Další moduly</a><button class="button button-outline" type="button" data-theme-toggle>Light / dark</button></div></div></header>
+  <main class="container py-6">
+    <h1 class="text-2xl">Formuláře bez zbytečných vrstev.</h1>
+    <p class="text-subtle mt-2 mb-6">Datum a čas můžeš napsat nebo vybrat ikonou. Ikony uvnitř polí a vlastní nabídky ve stejném stylu.</p>
+    <section class="card mb-4" aria-labelledby="search-title">
+      <h2 id="search-title" class="text-xl mb-3">Vyhledávání s napovídáním</h2>
+      <label for="people-search" class="field-label">Najít uživatele</label>
+      <input type="search" class="input" id="people-search" placeholder="Zkus ni nebo pe" aria-describedby="people-search-help">
+      <p id="people-search-help" class="field-help mt-1">Od dvou znaků. Šipkami vyber návrh, Enter potvrdí, Escape zavře. Ukázka načítá JSON přes AJAX.</p>
+      <p id="people-search-result" class="field-help mt-2" role="status"></p>
+    </section>
+    <form id="profile" enctype="multipart/form-data">
+      <div class="grid grid-cols-1 dt:grid-cols-2 gap-4 items-start">
+        <section class="card" aria-labelledby="account-title">
+          <h2 id="account-title" class="text-xl mb-4">Účet</h2>
+          <div class="grid gap-3">
+            <div class="field" data-field><label class="field-label" for="email">E-mail *</label><input class="input" data-input-icon="mail" id="email" name="email" type="email" autocomplete="email" required placeholder="jmeno@example.cz"><p class="field-error" data-field-error hidden></p></div>
+            <div class="field" data-field><label class="field-label" for="username">Uživatelské jméno *</label><input class="input" data-input-icon="user" id="username" name="username" autocomplete="username" required minlength="3" maxlength="24" pattern="[a-zA-Z0-9_]{3,24}" aria-describedby="username-help"><p id="username-help" class="field-help">3–24 znaků: písmena bez diakritiky, číslice a podtržítko.</p><p class="field-error" data-field-error hidden></p></div>
+            <div class="field" data-field><label class="field-label" for="password">Heslo *</label><input class="input" data-input-icon="lock" id="password" name="password" type="password" autocomplete="new-password" required minlength="12" aria-describedby="password-help"><p id="password-help" class="field-help">Alespoň 12 znaků. Vkládání i správce hesel jsou povolené.</p><p class="field-error" data-field-error hidden></p></div>
+            <div class="field" data-field><label class="field-label" for="about">O projektu</label><textarea class="input" id="about" name="about" rows="3" maxlength="500"></textarea><p class="field-error" data-field-error hidden></p></div>
+          </div>
+        </section>
+        <section class="card" aria-labelledby="date-title">
+          <h2 id="date-title" class="text-xl mb-4">Datum, čas a výběr</h2>
+          <div class="grid grid-cols-1 dt:grid-cols-2 gap-3">
+            <div class="field" data-field><label class="field-label" for="date">Datum *</label><input class="input" data-picker id="date" name="date" type="date" required><p class="field-error" data-field-error hidden></p></div>
+            <div class="field" data-field><label class="field-label" for="time">Čas *</label><input class="input" data-picker id="time" name="time" type="time" step="900" required><p class="field-help">Krok 15 minut.</p><p class="field-error" data-field-error hidden></p></div>
+          </div>
+          <div class="grid gap-3 mt-3">
+            <div class="field" data-field><label class="field-label" for="meeting">Datum a čas</label><input class="input" data-picker id="meeting" name="meeting" type="datetime-local" aria-describedby="meeting-help"><p id="meeting-help" class="field-help">Místní datum a čas; časové pásmo není součástí hodnoty.</p><p class="field-error" data-field-error hidden></p></div>
+            <div class="field" data-field><label class="field-label" for="role">Role *</label><select class="input" data-select id="role" name="role" required><option value="">Vyber roli</option><optgroup label="Tým"><option value="author">Autor</option><option value="editor">Editor</option></optgroup><option value="reader">Čtenář</option><option value="admin" disabled>Správce — nedostupné</option></select><p class="field-error" data-field-error hidden></p></div>
+            <div class="field" data-field><label class="field-label" for="topics">Témata</label><select class="input" data-select id="topics" name="topics" multiple size="3" aria-describedby="topics-help"><option value="design">Design</option><option value="frontend">Frontend</option><option value="content">Obsah</option></select><p id="topics-help" class="field-help">Kliknutím nebo mezerníkem přepínej více možností. Escape nabídku zavře.</p><p class="field-error" data-field-error hidden></p></div>
+            <div class="field" data-field><label class="choice"><input type="checkbox" name="terms" required> Souhlasím s pravidly této ukázky *</label><p class="field-error" data-field-error hidden></p></div>
+            <fieldset class="border rounded p-3 m-0"><legend class="field-label">Viditelnost</legend><div class="flex flex-wrap gap-3"><label class="choice"><input type="radio" name="visibility" value="private" checked> Soukromé</label><label class="choice"><input type="radio" name="visibility" value="public"> Veřejné</label></div></fieldset>
+          </div>
+        </section>
+      </div>
+      <section class="mt-6" aria-labelledby="upload-title">
+        <h2 id="upload-title" class="text-xl mb-3">Soubory a obrázky</h2>
+        <div class="grid grid-cols-1 dt:grid-cols-2 gap-4 items-start">
+          <div class="upload" data-upload>
+            <label for="attachments" class="field-label">Přílohy</label><p id="attachments-help" class="field-help mb-2">Vyber nebo přetáhni PDF a TXT. Nejvýše 3 soubory, každý do 5 MiB. Nový výběr nahradí předchozí.</p>
+            <input id="attachments" name="attachments" type="file" class="input" accept=".pdf,.txt" multiple aria-describedby="attachments-help attachments-status">
+            <p id="attachments-status" class="state-text text-xs mt-2" data-upload-status role="status" aria-atomic="true">Žádné vybrané soubory.</p><ul class="upload-list" data-upload-list></ul>
+          </div>
+          <div class="upload" data-upload>
+            <label for="images" class="field-label">Obrázky s náhledem</label><p id="images-help" class="field-help mb-2">Vyber nebo přetáhni PNG, JPEG či WebP. Nejvýše 4 obrázky, každý do 5 MiB.</p>
+            <input id="images" name="images" type="file" class="input" accept="image/png,image/jpeg,image/webp" multiple aria-describedby="images-help images-status">
+            <p id="images-status" class="state-text text-xs mt-2" data-upload-status role="status" aria-atomic="true">Žádné vybrané soubory.</p><ul class="upload-list" data-upload-list></ul>
+          </div>
+        </div>
+      </section>
+      <div class="flex flex-wrap gap-2 mt-4"><button class="button" type="submit">Zkontrolovat formulář</button><button class="button button-outline" type="reset">Vymazat</button><button class="button button-outline" type="button" data-modal-open="example-modal">Otevřít modal</button></div>
+      <p class="field-help mt-2">* Povinné pole. Ukázka neposílá data ani soubory na server.</p>
+      <p id="form-status" class="state-text text-sm mt-2" role="status"></p>
+    </form>
+    <dialog class="modal" id="example-modal" data-modal aria-labelledby="modal-title" aria-describedby="modal-description">
+      <div class="modal-header"><h2 id="modal-title" class="text-xl">Malý modal</h2><button class="icon-button" type="button" data-modal-close aria-label="Zavřít dialog" title="Zavřít dialog" autofocus><svg class="icon" aria-hidden="true"><use href="../dist/icons.svg#close"></use></svg></button></div>
+      <div class="modal-body"><p id="modal-description">Focus zůstává uvnitř dialogu. Escape nebo kliknutí na pozadí ho zavře a vrátí tě k původnímu tlačítku.</p><label class="field-label block mt-3" for="modal-note">Poznámka</label><input id="modal-note" class="input" placeholder="Vyzkoušej pohyb tabulátorem"></div>
+      <div class="modal-actions"><button class="button" type="button" data-modal-close="done">Hotovo</button></div>
+    </dialog>
+  </main>
+  <script type="module" src="./forms.js"></script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pure — stavy a moduly</title>
+  <script>try { const theme = localStorage.getItem('pure-theme'); if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme; } catch {}</script>
+  <link rel="stylesheet" href="../dist/pure.css">
+</head>
+<body>
+  <header class="border-b"><div class="container flex items-center justify-between gap-3 py-3"><a href="index.html" class="font-semibold no-underline">pure. / moduly</a><button class="button button-outline" type="button" data-theme-toggle>Light / dark</button></div></header>
+  <main class="container py-6">
+    <h1 class="text-2xl">Malé moduly, společná pravidla.</h1>
+    <p class="text-subtle mt-2 mb-3">Kompaktní rozestupy, tři sémantické stavy, žádné stíny.</p>
+    <p class="mb-6"><a href="forms.html">Formuláře, datum a čas, modal a upload →</a></p>
+    <section aria-labelledby="states-title" class="mb-6">
+      <h2 id="states-title" class="text-xl mb-3">Stavy napříč rozhraním</h2>
+      <div class="grid grid-cols-1 dt:grid-cols-3 gap-3">
+        <article class="card state" data-state="error"><h3 class="text-lg">Chyba</h3><p class="text-sm mt-2">Změny se nepodařilo uložit.</p></article>
+        <article class="card state" data-state="success"><h3 class="text-lg">Hotovo</h3><p class="text-sm mt-2">Všechny změny jsou uložené.</p></article>
+        <article class="card state" data-state="info"><h3 class="text-lg">Informace</h3><p class="text-sm mt-2">Koncept je viditelný pouze pro tebe.</p></article>
+      </div>
+      <div class="mt-3"><label for="email" class="text-sm">E-mail</label><input id="email" class="input state-border mt-1" data-state="error" type="email" value="chybná-adresa" aria-invalid="true" aria-describedby="email-error"><p id="email-error" class="state-text text-sm mt-1" data-state="error">Chyba: zadej úplnou e-mailovou adresu.</p></div>
+    </section>
+    <div class="grid grid-cols-1 dt:grid-cols-2 gap-4 items-start">
+      <section class="card" aria-labelledby="flash-title">
+        <h2 id="flash-title" class="text-xl mb-3">Flash notifikace</h2>
+        <div class="flex flex-wrap gap-2 mb-3"><button class="button button-outline" type="button" data-flash="error">Chyba</button><button class="button button-outline" type="button" data-flash="success">Úspěch</button><button class="button button-outline" type="button" data-flash="info">Informace</button></div>
+        <div id="flashes" class="flash-region" aria-label="Oznámení"></div>
+      </section>
+      <section class="card" aria-labelledby="ajax-title">
+        <h2 id="ajax-title" class="text-xl mb-3">AJAX načítání</h2>
+        <div class="flex flex-wrap gap-2"><button class="button" type="button" id="load">Načíst obsah</button><button class="button button-outline" type="button" id="load-error">Zkusit chybu</button><button class="button button-outline" type="button" id="cancel">Zrušit</button></div>
+        <p id="load-status" class="text-sm state-text mt-3" role="status" data-state="info">Připraveno.</p>
+        <div id="loaded" class="bg-muted rounded p-3 mt-2">Obsah se načte až na požádání.</div>
+      </section>
+    </div>
+    <section class="mt-6" aria-labelledby="editor-title">
+      <h2 id="editor-title" class="text-xl mb-3">WYSIWYG editor</h2>
+      <form id="editor-form">
+        <label for="article" class="block text-sm mb-1">Text příspěvku</label>
+        <p id="editor-help" class="text-sm text-subtle mb-2">Styly, obrázky i celá obrazovka jsou volitelné moduly. Obrázek vyber ze souboru nebo přetáhni do modalu. Ctrl/Cmd+B, I, K, Z. Ukládá se pouze JSON.</p>
+        <textarea id="article" name="article" class="input editor-source" aria-describedby="editor-help">{"version":1,"blocks":[{"type":"paragraph","children":[{"text":"Čistý editor. "},{"text":"Tvůj obsah","bold":true},{"text":" má hlavní slovo."}]},{"type":"image","src":"/examples/editor-image.svg","alt":"Abstraktní krajina","width":50,"align":"center"},{"type":"paragraph","children":[]}]}</textarea>
+        <div class="flex gap-2 mt-3"><button class="button" type="submit">Zobrazit JSON</button><button class="button button-outline" type="reset">Obnovit</button></div>
+        <p class="text-xs text-subtle mt-2">Obrázky se ukládají lokálně přes vývojový server do .pure/uploads. Příspěvek se neodesílá.</p>
+      </form>
+      <pre class="bg-muted rounded p-3 mt-3" style="white-space: pre-wrap; overflow-wrap: anywhere"><code id="editor-output" aria-live="polite">Zde se zobrazí strukturovaný JSON.</code></pre>
+    </section>
+    <section class="mt-6" aria-labelledby="editor-i18n-title">
+      <h2 id="editor-i18n-title" class="text-xl mb-3">Editor v angličtině</h2>
+      <p class="field-help mb-2">První editor přebírá češtinu dokumentu. Tento má explicitní locale: en a vlastní překlad počtu slov. Upload i knihovna se připojují samostatnými callbacky.</p>
+      <label class="field-label" for="article-en">English editor</label>
+      <textarea id="article-en" class="input">{"version":1,"blocks":[{"type":"paragraph","children":[{"text":"A small editor with its own translations."}]}]}</textarea>
+    </section>
+    <section class="mt-6" aria-labelledby="resize-title">
+      <h2 id="resize-title" class="text-xl mb-3">Resize mimo editor</h2>
+      <p class="text-sm text-subtle mb-2">Táhni za úchyt nebo použij šipky. Escape zruší tažení; Home a End nastaví mezní velikost.</p>
+      <div class="flex flex-wrap gap-2 mb-2"><button type="button" class="button button-outline" id="resize-smaller">Zmenšit</button><button type="button" class="button button-outline" id="resize-larger">Zvětšit</button><button type="button" class="button button-outline" id="resize-reset">Obnovit 50 %</button><output id="resize-value" aria-live="polite">50 %</output></div>
+      <div><figure id="resize-example" class="m-0"><img src="editor-image.svg" alt="Abstraktní krajina"><figcaption class="field-help">Obrázek se zachovaným poměrem stran.</figcaption></figure></div>
+    </section>
+    <section class="mt-6" aria-labelledby="activity-title">
+      <h2 id="activity-title" class="text-xl mb-3">Loader a progress</h2>
+      <p class="text-sm text-subtle mb-2">Indikátor libovolné činnosti, globálně nebo uvnitř bloku. Ukázka simuluje průběh; skutečná aplikace předává naměřené hodnoty.</p>
+      <div class="flex flex-wrap gap-2 mb-3"><button type="button" class="button" id="activity-start">Spustit činnost</button><button type="button" class="button button-outline" id="activity-stop" disabled>Zrušit</button><button type="button" class="button button-outline" id="progress-unknown">Neurčitý průběh</button></div>
+      <div id="activity-inline" class="mb-2"></div>
+      <div id="progress-demo"></div>
+    </section>
+    <section class="mt-6" aria-labelledby="drag-title">
+      <h2 id="drag-title" class="text-xl mb-3">Drag &amp; drop mimo editor</h2>
+      <p class="field-help mb-2">Táhni za název položky. Klávesnice: mezerník nebo Enter, šipky nahoru/dolů, potvrdit; Escape zruší.</p>
+      <ol id="sort-demo" class="grid gap-2 p-0" style="list-style: none">
+        <li class="card" data-drag-item data-id="design"><button type="button" class="sort-handle" data-drag-handle>Návrh rozhraní</button></li>
+        <li class="card" data-drag-item data-id="content"><button type="button" class="sort-handle" data-drag-handle>Příprava obsahu</button></li>
+        <li class="card" data-drag-item data-id="publish"><button type="button" class="sort-handle" data-drag-handle>Publikování</button></li>
+      </ol>
+      <p id="sort-result" class="field-help mt-2" role="status">Pořadí: design, content, publish</p>
+    </section>
+  </main>
+  <script type="module" src="./modules.js"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+@layer components {
+  .editor { border: 1px solid var(--p-border); border-radius: var(--p-radius); background: var(--p-surface); overflow-wrap: anywhere; }
+  .editor-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--p-space-1); padding: var(--p-space-2); border-bottom: 1px solid var(--p-border); }
+  .editor-tool { display: inline-flex; align-items: center; justify-content: center; min-width: var(--p-control-height); min-height: var(--p-control-height); padding: var(--p-space-2); color: var(--p-text); background: transparent; border: 1px solid transparent; border-radius: var(--p-radius-sm); }
+  .editor-tool:hover:not(:disabled) { background: var(--p-muted); }
+  .editor-tool[aria-pressed="true"] { background: var(--p-muted); border-color: var(--p-border); }
+  .editor-tool:disabled { opacity: .35; }
+  .editor-toolbar > .control { width: var(--p-editor-style-width); }
+  .editor-content { padding: var(--p-panel-padding); min-height: var(--p-editor-height); white-space: pre-wrap; }
+  .editor-content > * + * { margin-top: var(--p-space-2); }
+  .editor-content:focus-visible { outline-offset: -2px; }
+  .editor-source { display: block; width: 100%; min-height: var(--p-editor-height); }
+  .editor-footer { display: flex; flex-wrap: wrap; gap: var(--p-space-3); padding: var(--p-space-2) var(--p-panel-padding); border-top: 1px solid var(--p-border); color: var(--p-subtle); font-size: .75rem; font-variant-numeric: tabular-nums; }
+  .editor-block { border: 1px solid var(--p-border); border-radius: var(--p-radius-sm); margin: 0; }
+  .editor-content > .editor-block + .editor-block { margin-top: var(--p-space-2); }
+  .editor-text-block { padding: var(--p-space-2) var(--p-space-3); min-height: var(--p-control-height); }
+  .editor-content:focus .editor-block[data-active], .editor-image:focus-within { border-color: var(--p-focus); }
+  .editor-image { position: relative; max-width: 100%; white-space: normal; background: var(--p-surface); }
+  .editor-block-header { display: flex; align-items: stretch; border-bottom: 1px solid var(--p-border); color: var(--p-subtle); font-size: .75rem; }
+  .editor-block-title { font-weight: 600; }
+  .editor-block-handle, .editor-block-delete { border: 0; border-radius: var(--p-radius-sm); background: transparent; color: inherit; font: inherit; padding: var(--p-space-2) var(--p-space-3); }
+  .editor-block-handle { display: flex; flex: 1; align-items: center; gap: var(--p-space-2); min-width: 0; text-align: start; font-weight: 600; }
+  .editor-block-delete { flex-shrink: 0; }
+  .editor-block-delete:hover { color: var(--p-text); text-decoration: underline; }
+  .editor-image-size { font-variant-numeric: tabular-nums; }
+  .editor-image-canvas { padding: var(--p-space-3); background: var(--p-muted); }
+  .editor-image-media { max-width: 100%; }
+  .editor-image-media[data-align="center"] { margin-inline: auto; }
+  .editor-image-media[data-align="right"] { margin-inline-start: auto; }
+  .editor-image-media > img { display: block; width: 100%; height: auto; border-radius: var(--p-radius-sm); }
+  .editor-image-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--p-space-2); padding: var(--p-space-1) var(--p-space-2); border-top: 1px solid var(--p-border); }
+  .editor-image-action-group { display: flex; gap: var(--p-space-1); }
+  .editor-image-actions [aria-pressed="true"] { background: var(--p-muted); border-color: var(--p-border); }
+  .editor-image > figcaption { padding: var(--p-space-2) var(--p-space-3); }
+  .editor-image-media > .resize-handle { position: absolute; inset-inline-end: var(--p-space-1); inset-block-end: var(--p-space-1); width: var(--p-editor-image-action-size); height: var(--p-editor-image-action-size); }
+  .editor-image-actions .icon-button { width: var(--p-editor-image-action-size); height: var(--p-editor-image-action-size); }
+  .editor-content h2.editor-text-block { font-size: 2rem; }
+  .editor-content h3.editor-text-block { font-size: 1.5rem; }
+  .editor-content h4.editor-text-block { font-size: 1.125rem; }
+  .editor-fullscreen { position: fixed; inset: 0; width: 100%; max-width: none; height: 100dvh; max-height: none; margin: 0; padding: 0; border: 0; background: var(--p-bg); color: var(--p-text); }
+  .editor-fullscreen > .editor { display: flex; flex-direction: column; height: 100%; border-radius: 0; }
+  .editor-fullscreen .editor-toolbar { flex-shrink: 0; }
+  .editor-fullscreen .editor-content { flex: 1; min-height: 0; overflow: auto; }
+  .editor-fullscreen .editor-footer { flex-shrink: 0; }
+}

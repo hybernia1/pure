@@ -1,0 +1,12 @@
+{
+  "name": "@pure-ui/core",
+  "version": "0.6.1",
+  "private": true,
+  "type": "module",
+  "description": "Čistý modulární CSS, JS a SVG základ.",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test test/core.test.js test/ajax.test.js test/upload.test.js test/editor-model.test.js test/calendar.test.js test/image-upload.test.js",
+    "dev": "node scripts/serve.mjs"
+  }
+}

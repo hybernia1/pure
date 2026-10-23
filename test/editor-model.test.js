@@ -1,0 +1,84 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { emptyDocument, normalizeDocument, documentText, plainText, replaceText, formatText, selectionMarks, setHeading } from '../src/js/editor-model.js';
+import { editorStats } from '../src/js/editor-stats.js';
+import { editorI18n, editorLocales } from '../src/js/editor-i18n.js';
+import { normalizeMedia } from '../src/js/media-library.js';
+
+test('mediaId je kompatibilní, validované a přežije textové operace', () => {
+  const value = normalizeDocument({ version: 1, blocks: [{ type: 'paragraph', children: [{ text: 'Text' }] }, { type: 'image', src: '/image.webp', alt: 'Obrázek', mediaId: 0 }] });
+  assert.equal(value.blocks[1].mediaId, 0);
+  assert.equal(replaceText(value, 0, 1, 'X').blocks[1].mediaId, 0);
+  assert.equal(formatText(value, 0, documentText(value).length, 'bold', true).blocks[1].mediaId, 0);
+  assert.equal(normalizeDocument({ version: 1, blocks: [{ type: 'image', src: '/old.png', alt: '' }] }).blocks[0].mediaId, null);
+  for (const mediaId of ['', ' ', {}, [], NaN, Infinity, true]) assert.throws(() => normalizeDocument({ version: 1, blocks: [{ type: 'image', src: '/a.png', alt: '', mediaId }] }), TypeError);
+  assert.equal(normalizeMedia({ id: 0, src: '/a.png' }).id, 0);
+  for (const item of [{ src: '/a.png' }, { id: 'a', src: 'data:image/png,bad' }, { id: {}, src: '/a.png' }]) assert.throws(() => normalizeMedia(item), TypeError);
+});
+
+test('statistiky počítají textové bloky a slova napříč běhy, bez alt a popisku', () => {
+  const value = normalizeDocument({ version: 1, blocks: [{ type: 'heading', level: 2, children: [{ text: 'Hel' }, { text: 'lo', bold: true }, { text: ', světe! 2026.' }] }, { type: 'image', src: '/a.png', alt: 'Mnoho slov navíc', caption: 'Další slova' }, { type: 'paragraph', children: [] }] });
+  assert.deepEqual(editorStats(value, 'cs'), { blocks: 3, words: 3, images: 1 });
+  assert.deepEqual(editorStats(emptyDocument()), { blocks: 1, words: 0, images: 0 });
+  assert.equal(editorStats(value, '!invalid').words, 3);
+});
+
+test('i18n přebírá jazyk dokumentu, region, fallback a vlastní překlady', () => {
+  const doc = { documentElement: { lang: 'cs-CZ' } };
+  assert.equal(editorI18n(doc).t('paragraph'), 'Odstavec');
+  assert.equal(editorI18n(doc, { locale: 'en' }).t('paragraph'), 'Paragraph');
+  assert.equal(editorI18n(doc, { locale: 'fr', messages: { words: 'Mots : {count}' } }).t('words', { count: 4 }), 'Mots : 4');
+  assert.equal(editorI18n(doc, { locale: 'fr' }).t('paragraph'), 'Paragraph');
+  assert.deepEqual(Object.keys(editorLocales.cs).sort(), Object.keys(editorLocales.en).sort());
+});
+test('nadpisy a obrázky přežijí textové úpravy a zachovají čistý JSON', () => {
+  const value = normalizeDocument({ version: 1, blocks: [
+    { type: 'heading', level: 2, children: [{ text: 'Nadpis' }] },
+    { type: 'image', src: '/image.png', alt: 'Ukázka', width: 50, align: 'right' },
+    { type: 'paragraph', children: [{ text: 'Text' }] },
+  ] });
+  const next = replaceText(value, 1, 2, 'X');
+  assert.equal(next.blocks[0].type, 'heading'); assert.equal(next.blocks[0].level, 2);
+  assert.deepEqual(next.blocks[1], value.blocks[1]);
+  assert.deepEqual(formatText(next, 0, documentText(next).length, 'bold', true).blocks[1], value.blocks[1]);
+  assert.equal(plainText(value), 'Nadpis\nUkázka\nText');
+  assert.equal(setHeading(value, 9, 13, 3).blocks[2].type, 'heading');
+  for (const src of ['javascript:alert(1)', 'data:image/svg+xml,bad', 'blob:temporary', 'mailto:test@example.com']) assert.throws(() => normalizeDocument({ version: 1, blocks: [{ type: 'image', src, alt: '' }] }), TypeError);
+});
+
+test('JSON model normalizuje běhy a odděluje data od vstupního objektu', () => {
+  const input = { version: 1, blocks: [{ type: 'paragraph', children: [{ text: 'A', bold: true }, { text: 'B', bold: true }, { text: '', italic: true }] }] };
+  const value = normalizeDocument(input);
+  assert.deepEqual(value.blocks[0].children, [{ text: 'AB', bold: true }]);
+  value.blocks[0].children[0].text = 'Z'; assert.equal(input.blocks[0].children[0].text, 'A');
+});
+test('schéma odmítá HTML, cizí vlastnosti, verze a nebezpečné odkazy', () => {
+  for (const input of ['<p>text</p>', { version: 2, blocks: [] }, { version: 1, blocks: [], html: '<p>x</p>' }, { version: 1, blocks: [{ type: 'paragraph', children: [{ text: 'x', html: '<b>x</b>' }] }] }, { version: 1, blocks: [{ type: 'paragraph', children: [{ text: 'x', link: 'javascript:alert(1)' }] }] }]) assert.throws(() => normalizeDocument(input), TypeError);
+  const literal = replaceText(emptyDocument(), 0, 0, '<script>alert(1)</script>');
+  assert.equal(documentText(literal), '<script>alert(1)</script>');
+});
+test('formátování rozdělí pouze vybraný text a umí ho odstranit', () => {
+  const original = replaceText(emptyDocument(), 0, 0, 'Ahoj světe');
+  const bold = formatText(original, 0, 4, 'bold', true);
+  assert.deepEqual(bold.blocks[0].children, [{ text: 'Ahoj', bold: true }, { text: ' světe' }]);
+  assert.deepEqual(selectionMarks(bold, 0, 4), { bold: true });
+  assert.deepEqual(selectionMarks(bold, 0, 6), {});
+  assert.deepEqual(formatText(bold, 1, 3, 'bold', false).blocks[0].children, [{ text: 'A', bold: true }, { text: 'ho' }, { text: 'j', bold: true }, { text: ' světe' }]);
+  assert.equal(original.blocks[0].children.length, 1);
+});
+test('vkládání a mazání přes odstavce zachová okolní formátování', () => {
+  let value = replaceText(emptyDocument(), 0, 0, 'První\r\nDruhý');
+  value = formatText(value, 0, 5, 'bold', true);
+  value = replaceText(value, 3, 8, 'X\nY', { italic: true });
+  assert.equal(documentText(value), 'PrvX\nYuhý');
+  assert.deepEqual(value.blocks[0].children, [{ text: 'Prv', bold: true }, { text: 'X', italic: true }]);
+  const empty = replaceText(value, 0, documentText(value).length, '');
+  assert.deepEqual(empty, emptyDocument());
+});
+test('odkazy se upravují jako atribut textu a rozsahy se kontrolují', () => {
+  const value = replaceText(emptyDocument(), 0, 0, 'Pure');
+  const linked = formatText(value, 0, 4, 'link', '/docs');
+  assert.deepEqual(selectionMarks(linked, 0, 4), { link: '/docs' });
+  assert.deepEqual(formatText(linked, 0, 4, 'link', null), value);
+  assert.throws(() => replaceText(value, 0, 99, 'x'), RangeError);
+});

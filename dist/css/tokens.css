@@ -1,0 +1,76 @@
+@layer tokens, base, components, utilities;
+
+@layer tokens {
+  :root {
+    color-scheme: light;
+    --p-bg: #f6f6f5;
+    --p-surface: #ffffff;
+    --p-muted: #eeeeec;
+    --p-text: #20201f;
+    --p-subtle: #62625e;
+    --p-border: #d7d7d2;
+    --p-action: #252523;
+    --p-on-action: #ffffff;
+    --p-focus: #64645f;
+    --p-font: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --p-space-0: 0;
+    --p-space-1: .25rem;
+    --p-space-2: .5rem;
+    --p-space-3: .75rem;
+    --p-space-4: 1rem;
+    --p-space-5: 1.25rem;
+    --p-space-6: 1.5rem;
+    --p-space-8: 2rem;
+    --p-space-10: 2.5rem;
+    --p-space-12: 3rem;
+    --p-space-16: 4rem;
+    --p-space-20: 5rem;
+    --p-space-24: 6rem;
+    --p-gutter: var(--p-space-4);
+    --p-panel-padding: var(--p-space-4);
+    --p-control-px: var(--p-space-3);
+    --p-control-py: var(--p-space-2);
+    --p-control-height: 2.75rem;
+    --p-spinner-size: 1.25rem;
+    --p-progress-height: .5rem;
+    --p-activity-z: 1000;
+    --p-editor-height: 10rem;
+    --p-editor-style-width: 11rem;
+    --p-editor-image-action-size: 2.25rem;
+    --p-select-height: 7rem;
+    --p-search-height: 16rem;
+    --p-modal-width: 32rem;
+    --p-upload-preview: 3rem;
+    --p-media-card-width: 8rem;
+    --p-media-preview-height: 6rem;
+    --p-backdrop: rgb(0 0 0 / .5);
+    --p-time-list-height: 10rem;
+    --p-picker-width: 18rem;
+    --p-radius: .5rem;
+    --p-radius-sm: .375rem;
+    --p-container: 72rem;
+    --p-error: #963d37; --p-error-bg: #faf0ee; --p-error-border: #dcb7b1;
+    --p-success: #386246; --p-success-bg: #eff5ef; --p-success-border: #b3cbb8;
+    --p-info: #3b5e7b; --p-info-bg: #eff3f7; --p-info-border: #b6c8d8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --p-bg: #171716; --p-surface: #20201e; --p-muted: #2a2a27;
+      --p-text: #f0f0eb; --p-subtle: #b0b0a8; --p-border: #41413b;
+      --p-action: #eeeee8; --p-on-action: #20201e; --p-focus: #b6b6ad;
+      --p-error: #e6aaa4; --p-error-bg: #302220; --p-error-border: #78504b;
+      --p-success: #a7cbb0; --p-success-bg: #202c23; --p-success-border: #4a6852;
+      --p-info: #acc7df; --p-info-bg: #202a33; --p-info-border: #4d657b;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --p-bg: #171716; --p-surface: #20201e; --p-muted: #2a2a27;
+    --p-text: #f0f0eb; --p-subtle: #b0b0a8; --p-border: #41413b;
+    --p-action: #eeeee8; --p-on-action: #20201e; --p-focus: #b6b6ad;
+    --p-error: #e6aaa4; --p-error-bg: #302220; --p-error-border: #78504b;
+    --p-success: #a7cbb0; --p-success-bg: #202c23; --p-success-border: #4a6852;
+    --p-info: #acc7df; --p-info-bg: #202a33; --p-info-border: #4d657b;
+  }
+}
