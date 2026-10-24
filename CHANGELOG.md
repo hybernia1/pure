@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Sticky positioning/inset utilities with desktop variants and shared tokens.
+- WordPress-style post tag picker with comma/Enter entry, removable tags, optional AJAX suggestions and native multiple-select FormData.
+- Opt-in browser JPEG/PNG preparation with pixel/input/output limits, cancellation and shared upload/editor/library hooks. Existing setFiles remains synchronous.
+
 ## 1.0.0 - 2026-10-24
 
 First versioned GitHub distribution under the MIT license.

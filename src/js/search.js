@@ -6,11 +6,11 @@ import { request } from './ajax.js';
 let nextId = 0;
 const instances = new WeakSet();
 export function createSearch(source, options = {}) {
-  const { url, param = 'q', fetch: fetchItems, delay = 250, minLength = 2, limit = 8, onSelect = () => {} } = componentOptions('search', options);
+  const { url, param = 'q', fetch: fetchItems, delay = 250, minLength = 2, limit = 8, onSelect = () => {}, locale, messages } = componentOptions('search', options);
   if (source.tagName !== 'INPUT' || !['text', 'search'].includes(source.type) || instances.has(source)) throw new TypeError('Search vyžaduje neinicializovaný textový nebo search input.');
   if ((!url && typeof fetchItems !== 'function') || !Number.isFinite(delay) || delay < 0 || !Number.isInteger(minLength) || minLength < 0 || !Number.isInteger(limit) || limit < 1) throw new TypeError('Neplatné nastavení search.');
   const doc = source.ownerDocument; const win = doc.defaultView;
-  const { t } = uiI18n(doc);
+  const { t } = uiI18n(doc, { locale, messages });
   const attrs = ['role', 'autocomplete', 'aria-autocomplete', 'aria-controls', 'aria-expanded', 'aria-activedescendant', 'aria-busy'];
   const original = new Map(attrs.map(name => [name, source.getAttribute(name)]));
   const wrapper = doc.createElement('div'); wrapper.className = 'control control-with-icon control-with-action search'; source.before(wrapper); wrapper.append(source);
@@ -36,6 +36,7 @@ export function createSearch(source, options = {}) {
   const clearActive = () => { active = -1; source.removeAttribute('aria-activedescendant'); };
   const cancel = () => { clearTimeout(timer); controller?.abort(); sequence++; source.removeAttribute('aria-busy'); };
   const close = () => {
+    syncClear();
     cancel(); if (panel.matches(':popover-open')) panel.hidePopover(); source.setAttribute('aria-expanded', 'false'); clearActive(); items = []; panel.replaceChildren(); status.textContent = '';
   };
   const select = index => {

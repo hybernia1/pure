@@ -3,6 +3,11 @@ import { getPureConfig } from './config.js';
 let controlId = 0;
 const proxies = new WeakMap();
 export const formControl = source => proxies.get(source) || source;
+export function registerFormControl(source, control) {
+  if (proxies.has(source)) throw new Error('Field already has a custom control.');
+  proxies.set(source, control);
+  return () => { if (proxies.get(source) === control) proxies.delete(source); };
+}
 export const iconsUrl = new URL('../icons.svg', import.meta.url).href;
 export function icon(doc, name, sprite = getPureConfig().iconsUrl) {
   const svg = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');

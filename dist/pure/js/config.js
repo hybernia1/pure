@@ -3,7 +3,7 @@ const defaults = {
   styles: { auto: true, baseUrl: new URL('../css/', import.meta.url).href },
   theme: { default: 'system', scheme: 'default', persist: true, storageKey: 'pure-theme', schemeStorageKey: 'pure-scheme' },
   search: { delay: 250, minLength: 2, limit: 8 },
-  upload: { accept: '', maxFiles: Infinity, maxSize: Infinity },
+  upload: { accept: '', maxFiles: Infinity, maxSize: Infinity, prepareFile: null },
   editor: { features: { headings: false, images: false, fullscreen: true, lists: true }, uploadImage: null, mediaLibrary: null },
   mediaLibrary: { pageSize: 12 }, flash: { duration: 0 }, modal: { closeOnBackdrop: true },
   data: { pageSize: 20 }, pagination: { siblings: 1 },
@@ -31,7 +31,7 @@ function validate(patch, schema = defaults, path = '') {
       if (!object(value) || Object.values(value).some(text => typeof text !== 'string')) throw new TypeError('messages must contain strings.');
     } else if (object(schema[key])) validate(value, schema[key], `${path}${key}.`);
     else if (schema[key] === null) {
-      if (value !== null && (key === 'uploadImage' ? typeof value !== 'function' : !object(value))) throw new TypeError(`Invalid ${path}${key}`);
+      if (value !== null && (['uploadImage', 'prepareFile'].includes(key) ? typeof value !== 'function' : !object(value))) throw new TypeError(`Invalid ${path}${key}`);
     } else if (typeof value !== typeof schema[key]) throw new TypeError(`Invalid ${path}${key}`);
   }
 }

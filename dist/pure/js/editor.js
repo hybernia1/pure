@@ -14,12 +14,14 @@ export function createEditor(source, options = {}) {
     iconsUrl = getPureConfig().iconsUrl,
     features = {},
     uploadImage,
+    prepareFile = getPureConfig().upload.prepareFile,
     mediaLibrary,
     locale,
     messages,
     styles = getPureConfig().styles.auto,
   } = componentOptions('editor', options);
   const imageMaxSize = getPureConfig().upload.maxSize === Infinity ? 10 * 1024 * 1024 : getPureConfig().upload.maxSize;
+  if (prepareFile !== null && typeof prepareFile !== 'function') throw new TypeError('prepareFile must be a function or null.');
   const { t, locale: language } = editorI18n(source.ownerDocument, { locale, messages });
   label ??= source.labels?.[0]?.textContent || t('editor');
   if (source.tagName !== 'TEXTAREA' || source.required || source.disabled || source.readOnly) throw new TypeError('Editor vyžaduje editovatelnou textarea bez required.');
@@ -399,7 +401,7 @@ export function createEditor(source, options = {}) {
   const createImageDialog = (createEditorDialog, selectFactory, uploadFactory, validateFiles) => {
     imageDialog = createEditorDialog(doc, {
       t,
-      selectFactory, uploadFactory: (input, options) => uploadFactory(input, { ...options, maxSize: imageMaxSize }),
+      selectFactory, uploadFactory: (input, options) => uploadFactory(input, { ...options, maxSize: imageMaxSize, prepareFile }),
       title: t('image'),
       fields: {
         file: { label: t('uploadImage'), type: 'file', accept: 'image/png,image/jpeg,image/webp,image/gif,image/avif' },
@@ -436,6 +438,7 @@ export function createEditor(source, options = {}) {
     if (mediaLibrary) {
       const createLibrary = createMediaLibrary => createMediaLibrary({
         ...mediaLibrary, document: doc, locale: language, messages,
+        prepareFile: mediaLibrary.prepareFile === undefined ? prepareFile : mediaLibrary.prepareFile,
         styles,
         onSelect(media) {
           if (!imageDialog.dialog.open || JSON.stringify(value) !== imageSnapshot) throw new Error(t('changed'));

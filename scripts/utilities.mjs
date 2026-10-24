@@ -3,6 +3,8 @@ export const breakpoint = 960;
 export function utilities() {
   const rules = {
     block: 'display:block', flex: 'display:flex', 'inline-flex': 'display:inline-flex', grid: 'display:grid', hidden: 'display:none',
+    static: 'position:static', relative: 'position:relative', sticky: 'position:sticky',
+    'z-auto': 'z-index:auto', 'z-sticky': 'z-index:var(--p-sticky-z)',
     'flex-col': 'flex-direction:column', 'flex-row': 'flex-direction:row', 'flex-wrap': 'flex-wrap:wrap', 'flex-1': 'flex:1 1 0%',
     'items-center': 'align-items:center', 'items-start': 'align-items:flex-start', 'justify-between': 'justify-content:space-between', 'justify-center': 'justify-content:center',
     'w-full': 'width:100%', 'min-w-0': 'min-width:0', 'mx-auto': 'margin-inline:auto',
@@ -19,6 +21,10 @@ export function utilities() {
   const spacing = { p: 'padding', px: 'padding-inline', py: 'padding-block', pt: 'padding-top', pb: 'padding-bottom', m: 'margin', mx: 'margin-inline', my: 'margin-block', mt: 'margin-top', mb: 'margin-bottom', gap: 'gap' };
   for (const [prefix, property] of Object.entries(spacing)) {
     for (const step of scale) rules[`${prefix}-${step}`] = `${property}:var(--p-space-${step})`;
+  }
+  for (const step of scale) {
+    rules[`top-${step}`] = `inset-block-start:var(--p-space-${step})`;
+    rules[`bottom-${step}`] = `inset-block-end:var(--p-space-${step})`;
   }
   for (let count = 1; count <= 4; count++) rules[`grid-cols-${count}`] = `grid-template-columns:repeat(${count},minmax(0,1fr))`;
   const render = (prefix = '') => Object.entries(rules).map(([name, value]) => `  .${prefix}${name} { ${value}; }`).join('\n');

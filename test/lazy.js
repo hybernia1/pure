@@ -31,7 +31,7 @@ await test('Základ editoru nenačítá obrázkové doplňky, modaly ani knihovn
   ({ createEditor } = await loadComponent('editor'));
   const source = document.createElement('textarea'); fixture.append(source);
   editor = createEditor(source, { features: { images: true }, mediaLibrary: { load: async () => [{ id: 'asset', src: '/examples/editor-image.svg', name: 'Krajina' }] } }); await editor.ready;
-  for (const file of ['editor-dialog.js', 'upload.js', 'select.js', 'resize.js', 'modal.js', 'media-library.js']) assert(!resource(file).length, `Předčasné načtení ${file}`);
+  for (const file of ['editor-dialog.js', 'upload.js', 'select.js', 'resize.js', 'modal.js', 'media-library.js', 'image.js', 'tag-picker.js']) assert(!resource(file).length, `Předčasné načtení ${file}`);
   assert(!document.querySelector('.editor-dialog, .editor-fullscreen, [data-media-library]'), 'Předčasná inicializace');
 });
 await test('Modal odkazu se načte při otevření bez upload modulu', async () => {

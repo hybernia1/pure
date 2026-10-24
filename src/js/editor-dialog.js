@@ -41,6 +41,7 @@ export function createEditorDialog(doc, { title, fields, submit, remove, selectF
   const modal = createModal(dialog); let abort; let destroyed = false;
   const setBusy = busy => { apply.disabled = busy; Object.values(controls).forEach(input => { input.disabled = busy; }); form.setAttribute('aria-busy', String(busy)); };
   const onSubmit = async event => {
+    if (event.defaultPrevented) return;
     event.preventDefault(); if (apply.disabled) return;
     abort = new AbortController(); const task = abort;
     error.textContent = ''; setBusy(true);

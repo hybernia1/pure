@@ -1,5 +1,7 @@
 # Forms, date/time, modals and uploads
 
+For post tags with comma/Enter entry and removable selections, use the [tag picker](tag-picker.md). For optional resizing/re-encoding before sending files, use [image preparation](image-preparation.md); createUpload's existing setFiles remains synchronous.
+
 [Runnable example](../examples/forms.html). Optional forms.css, controls.css, modal.css and upload.css go after base components and before utilities; full pure.css includes them.
 
 ## Fields and selects

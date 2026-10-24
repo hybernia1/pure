@@ -15,6 +15,8 @@ Use `dist/pure/pure.css`, or load individual files in this order:
 
 ## Utilities
 
+Position helpers: `static`, `relative`, `sticky`, `top-{step}`, `bottom-{step}`, `z-auto`, `z-sticky`, all with `dt:` variants. Insets use spacing tokens; z-sticky uses `--p-sticky-z` (10). Example: `<header class="sticky top-0 z-sticky bg-surface">...</header>`. Sticky requires a non-auto inset and is constrained by its containing/scrolling ancestors; parent overflow can change the scroll root. It does not need JavaScript and does not automatically add an is-sticky state. Keep focus/anchor targets visible below sticky headers. See [example](../examples/enhancements.html).
+
 Every utility also has a desktop `dt:` variant, such as `hidden dt:flex` or `p-4 dt:p-8`. Mobile has no prefix. Desktop starts at exactly 960px.
 
 | Area | Classes |

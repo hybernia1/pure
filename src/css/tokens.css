@@ -89,6 +89,7 @@
     --p-list-columns: 3;
     --p-navigation-width: 14rem;
     --p-navigation-z: 20;
+    --p-sticky-z: 10;
     --p-radius: .5rem;
     --p-radius-sm: .375rem;
     --p-container: 72rem;

@@ -2,6 +2,7 @@ import { getPureConfig } from './config.js';
 const documents = new WeakMap();
 const failedLinks = new WeakSet();
 const dependencies = {
+  'tag-picker': ['search', 'states'],
   navigation: ['components'],
   tabs: ['components'],
   data: ['components'],

@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Pure - post tags and browser images</title>
+<link rel="stylesheet" href="../dist/pure/css/tokens.css"><link rel="stylesheet" href="../dist/pure/css/base.css"><link rel="stylesheet" href="../dist/pure/css/components.css"><link rel="stylesheet" href="../dist/pure/css/utilities.css"></head>
+<body><main class="container py-4 grid gap-4">
+<header class="sticky top-0 z-sticky bg-surface border-b py-2"><h1 class="text-xl">Post tags and browser image preparation</h1><a href="index.html">Pure examples</a></header>
+<section class="card"><h2 class="text-lg">Post tags</h2><form id="post-form" class="grid gap-3">
+<div class="field" data-field><label class="field-label" for="post-tags">Tags</label><select id="post-tags" name="tags[]" multiple required><option value="js">JavaScript</option><option value="css" selected>CSS</option></select><p class="field-error" data-field-error hidden></p></div>
+<div class="flex gap-2"><button class="button" type="submit">Read FormData</button><button class="button button-outline" type="reset">Reset</button></div></form><pre id="tag-values" class="text-sm"></pre></section>
+<section class="card"><h2 class="text-lg">Prepare before upload</h2><p>JPEG/PNG preparation, up to 40 MiB and 40 megapixels. Output: WebP, at most 2560 pixels per side and 5 MiB. Existing WebP files pass through unchanged. The upload limit is 6 MiB. Preparation happens locally; nothing is sent until Upload is clicked.</p>
+<form id="image-form" class="grid gap-3"><div class="upload field" data-upload><label class="field-label" for="photo">Photo</label><input class="input" id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp"><p class="state-text text-sm" data-upload-status role="status"></p><ul class="upload-list" data-upload-list></ul></div><button class="button" type="submit">Upload prepared image</button></form><p id="image-result" role="status"></p></section>
+<section class="card"><h2 class="text-lg">Shared editor hook</h2><p>The same preparation callback is applied before the editor upload callback. Animated formats are retained without conversion and must still meet the upload limit.</p><label for="article">Article</label><textarea id="article"></textarea></section>
+</main><script type="module" src="enhancements.js"></script></body></html>

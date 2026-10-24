@@ -41,6 +41,7 @@ Defaults are shared within one ESM instance. On a server, do not change them per
 | `search.delay`, `minLength`, `limit` | `250`, `2`, `8` | Delay in ms, minimum query length and maximum suggestions. |
 | `upload.accept` | `''` | Default accepted files; a nonempty input accept attribute wins. |
 | `upload.maxFiles`, `maxSize` | `Infinity`, `Infinity` | Count and bytes per file. Single inputs always allow at most one file. |
+| `upload.prepareFile` | `null` | Optional async `(file,{signal}) => File` before upload output validation; inherited by upload, editor and library. Use separate input/pixel bounds in the preparation implementation. [Details](image-preparation.md). |
 | `editor.features` | `{headings:false, images:false, fullscreen:true, lists:true}` | Available editor features. |
 | `editor.uploadImage` | `null` | Upload callback with the same contract as local options. |
 | `editor.mediaLibrary` | `null` | Library adapter object; local objects merge. |

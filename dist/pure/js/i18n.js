@@ -1,6 +1,8 @@
 import { getPureConfig, resolveLocale } from './config.js';
 
 const en = {
+  tags: 'Tags', tagAdd: 'Add', tagHelp: 'Separate tags with commas. Press Enter or Add to confirm.', tagSelected: 'Selected tags',
+  tagRemove: 'Remove tag {name}', tagAdded: 'Added: {name}.', tagRemoved: 'Removed: {name}.', tagDuplicate: 'Already selected: {name}.', tagLimit: 'Choose at most {count} tags.', tagUnknown: 'Unknown tag: {name}.',
   openNavigation: 'Open navigation', closeNavigation: 'Close navigation',
   sortRecords: 'Sort records',
   pagination: 'Pagination', pageSummary: 'Page {page} of {pages} · {total} records', goPage: 'Go to page {page}', previousPage: 'Previous', nextPage: 'Next',
@@ -15,6 +17,8 @@ const en = {
   width: 'Width', resizeHelp: 'Drag to resize; arrow keys change the width, Escape cancels dragging.',
 };
 const cs = {
+  tags: 'Štítky', tagAdd: 'Přidat', tagHelp: 'Odděl štítky čárkou. Potvrď Enterem nebo tlačítkem Přidat.', tagSelected: 'Vybrané štítky',
+  tagRemove: 'Odebrat štítek {name}', tagAdded: 'Přidáno: {name}.', tagRemoved: 'Odebráno: {name}.', tagDuplicate: 'Již vybráno: {name}.', tagLimit: 'Vyber nejvýše {count} štítků.', tagUnknown: 'Neznámý štítek: {name}.',
   openNavigation: 'Otevřít navigaci', closeNavigation: 'Zavřít navigaci',
   sortRecords: 'Řazení záznamů',
   pagination: 'Stránkování', pageSummary: 'Strana {page} z {pages} · {total} záznamů', goPage: 'Přejít na stranu {page}', previousPage: 'Předchozí', nextPage: 'Další',

@@ -34,6 +34,8 @@ Production dist has no .map files or sourceMappingURL comments. Build does not g
 
 ## Loading components
 
+Additional lazy names: `tag-picker` (its CSS and search/control dependencies) and `image` (standalone browser preparation, no CSS). Image processing is not imported by ordinary upload/editor modules; request it explicitly inside an optional prepareFile callback. [Tag picker](tag-picker.md) - [Image preparation](image-preparation.md).
+
 The frontend chooses when a component is needed. Pure's lightweight lazy.js loads its JavaScript, dependencies and CSS. Initialization remains explicit, without automatic DOM scanning.
 
 ```js

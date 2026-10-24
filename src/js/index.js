@@ -1,4 +1,6 @@
 export { configurePure, getPureConfig } from './config.js';
+export { prepareImage } from './image.js';
+export { createTagPicker } from './tag-picker.js';
 export { createNavigation, initNavigations } from './navigation.js';
 export { createTabs, initTabs } from './tabs.js';
 export { createDataController, paginationPages } from './data.js';

@@ -1,0 +1,10 @@
+@layer components {
+  .tag-picker { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--p-space-2); min-width: 0; overflow-wrap: anywhere; }
+  .tag-picker-entry { display: flex; align-items: start; gap: var(--p-space-2); min-width: 0; }
+  .tag-picker-entry > .control { flex: 1; min-width: 0; }
+  .tag-picker-list { display: flex; flex-wrap: wrap; gap: var(--p-space-2); list-style: none; padding: 0; margin: 0; }
+  .tag-picker-tag { display: inline-flex; align-items: center; gap: var(--p-space-1); padding-inline-start: var(--p-control-px); border: 1px solid var(--p-border); border-radius: var(--p-radius-sm); background: var(--p-muted); max-width: 100%; }
+  .tag-picker-tag > span { overflow-wrap: anywhere; min-width: 0; }
+  .tag-picker > p { margin: 0; }
+  .tag-picker > p:empty { display: none; }
+}

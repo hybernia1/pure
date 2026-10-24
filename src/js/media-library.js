@@ -11,8 +11,9 @@ export { normalizeMedia } from './media.js';
 
 /** Připojitelný modal; API, autentizaci a ukládání vlastní aplikace. */
 export function createMediaLibrary(options = {}) {
-  const { document: doc = document, load, upload, locale, messages, onSelect = () => {}, pageSize = 12, styles = getPureConfig().styles.auto } = componentOptions('mediaLibrary', options);
+  const { document: doc = document, load, upload, locale, messages, onSelect = () => {}, pageSize = 12, styles = getPureConfig().styles.auto, prepareFile = getPureConfig().upload.prepareFile } = componentOptions('mediaLibrary', options);
   if (typeof load !== 'function' || !Number.isInteger(pageSize) || pageSize < 1) throw new TypeError('Media library requires load and a positive pageSize.');
+  if (prepareFile !== null && typeof prepareFile !== 'function') throw new TypeError('prepareFile must be a function or null.');
   const imageMaxSize = getPureConfig().upload.maxSize === Infinity ? 10 * 1024 * 1024 : getPureConfig().upload.maxSize;
   const { t } = editorI18n(doc, { locale, messages });
   const node = (tag, className, text) => { const element = doc.createElement(tag); if (className) element.className = className; if (text !== undefined) element.textContent = text; return element; };
@@ -96,11 +97,17 @@ export function createMediaLibrary(options = {}) {
   listen(next, 'click', () => { if (!busy && hasMore) { page++; refresh(); } });
   if (file) listen(file, 'change', async () => {
     if (busy || !file.files[0]) return;
-    const chosen = file.files[0]; const errors = validateFiles([chosen], { accept: file.accept, maxFiles: 1, maxSize: imageMaxSize, translate: t });
+    const chosen = file.files[0];
+    const errors = validateFiles([chosen], { accept: file.accept, maxFiles: 1, maxSize: prepareFile ? Infinity : imageMaxSize, translate: t });
     if (errors.length) { status.textContent = errors.join(' '); file.value = ''; return; }
     abort(); controller = new AbortController(); const signal = controller.signal; const id = sequence; setBusy(true); status.textContent = t('loading');
     try {
-      const item = normalizeMedia(await upload(chosen, { signal }));
+      const prepared = prepareFile ? await prepareFile(chosen, { signal }) : chosen;
+      if (!current(id, signal)) return;
+      if (!(prepared instanceof doc.defaultView.File)) throw new TypeError('prepareFile must return a File.');
+      const errors = validateFiles([prepared], { accept: file.accept, maxFiles: 1, maxSize: imageMaxSize, translate: t });
+      if (errors.length) throw new Error(errors.join(' '));
+      const item = normalizeMedia(await upload(prepared, { signal }));
       if (current(id, signal)) { file.value = ''; setBusy(false); await choose(item); }
     } catch (error) { if (current(id, signal)) status.textContent = error.message || t('failure'); }
     finally { if (current(id, signal)) { file.value = ''; setBusy(false); } }

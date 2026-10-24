@@ -40,6 +40,8 @@ Package exports such as `@pure-ui/core/lazy`, `@pure-ui/core/min/lazy` and `@pur
 
 ## Features
 
+Next development additions: [WordPress-style post tags](docs/tag-picker.md), [optional browser image preparation](docs/image-preparation.md) and token-based `sticky top-*` / `dt:sticky` utilities. [Runnable example](examples/enhancements.html).
+
 - Two layout viewports: mobile by default, desktop at 960px with `dt:` utilities.
 - CSS tokens for compact spacing, dimensions, colors and custom light/dark schemes; no box shadows.
 - Shared `error`, `success` and `info` states, flash messages, activity indicators and progress bars.
