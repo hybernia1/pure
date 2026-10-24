@@ -1,5 +1,7 @@
 # Pure
 
+Před vydáním 1.0.0: [výkon, optimalizace a zbývající release body](docs/release-1.0-audit.md). Reprodukovatelné měření modelu: `npm run bench`; prohlížeče: `/test/performance.html` po buildu a spuštění dev serveru.
+
 [Vlastní light/dark barvy a schémata](docs/themes.md): palety zůstávají v CSS, režim a pojmenované schéma se přepínají nezávisle. [Živá ukázka](examples/themes.html).
 
 Editor má [odrážkové a číslované seznamy](docs/editor-lists.md). [Knihovna médií](docs/editor-media-i18n.md) používá číslovanou paginaci přes `{ items, total }`, přehledné karty a opakování při chybě.

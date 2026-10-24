@@ -66,7 +66,8 @@ export function createEditor(source, options = {}) {
     const selectedBlocks = value.blocks.slice(first, last + 1).filter(block => block.type !== 'image');
     for (const style of ['bullet', 'ordered']) buttons.get(`${style}List`)?.setAttribute('aria-pressed', String(Boolean(selectedBlocks.length) && selectedBlocks.every(block => block.type === 'list' && block.style === style)));
     let offset = 0; let anyLink = false;
-    for (const block of textRows(value)) {
+    for (const block of selected.from === selected.to ? [] : textRows(value)) {
+      if (offset >= selected.to || anyLink) break;
       for (const run of block.children || []) {
         if (run.link && offset < selected.to && offset + run.text.length > selected.from) anyLink = true;
         offset += run.text.length;
@@ -94,8 +95,40 @@ export function createEditor(source, options = {}) {
     const remove = node('button', 'editor-block-delete'); remove.type = 'button'; remove.dataset.blockDelete = index; remove.textContent = t('remove'); remove.setAttribute('aria-label', t('removeBlock', { index: index + 1 })); header.append(remove);
     return header;
   };
-  const render = () => {
+  const appendText = (paragraph, children) => {
+    paragraph.dataset.editorText = '';
+    for (const run of children) {
+      let child = doc.createTextNode(run.text);
+      for (const [mark, tag] of [['italic', 'em'], ['bold', 'strong'], ['link', 'a']]) {
+        if (!run[mark]) continue;
+        const wrapper = node(tag); if (mark === 'link') wrapper.setAttribute('href', run.link);
+        wrapper.append(child); child = wrapper;
+      }
+      paragraph.append(child);
+    }
+    if (!paragraph.childNodes.length) paragraph.append(node('br'));
+  };
+  const render = previous => {
     dragDrop?.cancel();
+    // Reuse block UI and image controllers when only inline text changed.
+    if (previous && previous.blocks.length === value.blocks.length && value.blocks.every((block, index) => {
+      const old = previous.blocks[index];
+      return block.type === old.type && block.level === old.level && block.style === old.style &&
+        (block.type === 'image' ? JSON.stringify(block) === JSON.stringify(old) : block.type !== 'list' || block.items.length === old.items.length);
+    })) {
+      value.blocks.forEach((block, index) => {
+        if (block.type === 'image') return;
+        const old = previous.blocks[index];
+        const rows = block.type === 'list' ? block.items : [block];
+        const oldRows = block.type === 'list' ? old.items : [old];
+        const elements = content.children[index].querySelectorAll('[data-editor-text]');
+        rows.forEach((row, item) => {
+          if (JSON.stringify(row.children) === JSON.stringify(oldRows[item].children)) return;
+          elements[item].replaceChildren(); appendText(elements[item], row.children);
+        });
+      });
+      return;
+    }
     clearResizers();
     const fragment = doc.createDocumentFragment();
     value.blocks.forEach((block, index) => {
@@ -134,19 +167,6 @@ export function createEditor(source, options = {}) {
       }
       const wrapper = node('div', 'editor-block'); wrapper.dataset.editorBlock = block.type; wrapper.dataset.dragItem = ''; wrapper.dataset.blockIndex = index;
       wrapper.append(blockHeader(index, block.type === 'heading' ? t('heading', { level: block.level }) : block.type === 'list' ? t(block.style === 'ordered' ? 'orderedList' : 'bulletList') : t('paragraph')));
-      const appendText = (paragraph, children) => {
-      paragraph.dataset.editorText = '';
-      for (const run of children) {
-        let child = doc.createTextNode(run.text);
-        for (const [mark, tag] of [['italic', 'em'], ['bold', 'strong'], ['link', 'a']]) {
-          if (!run[mark]) continue;
-          const wrapper = node(tag); if (mark === 'link') wrapper.setAttribute('href', run.link);
-          wrapper.append(child); child = wrapper;
-        }
-        paragraph.append(child);
-      }
-      if (!paragraph.childNodes.length) paragraph.append(node('br'));
-      };
       if (block.type === 'list') {
         const list = node(block.style === 'ordered' ? 'ol' : 'ul', 'editor-list'); list.dataset.listStyle = block.style;
         for (const item of block.items) { const li = node('li'); appendText(li, item.children); list.append(li); }
@@ -264,7 +284,7 @@ export function createEditor(source, options = {}) {
     updateToolbar();
   };
   const commit = (next, nextSelection = selected) => {
-    value = normalizeDocument(next); selected = nextSelection; render(); restore(); record();
+    const previous = value; value = normalizeDocument(next); selected = nextSelection; render(previous); restore(); record();
   };
   const insert = text => {
     const from = selected.from;
@@ -280,7 +300,8 @@ export function createEditor(source, options = {}) {
     if (restoring || composing) return;
     const next = readSelection(); if (!next) return;
     // selectionchange vyvolaný obnovou výběru nesmí zahodit aktivní režim psaní.
-    if (next.from !== selected.from || next.to !== selected.to) { selected = next; pending = active(); }
+    if (next.from === selected.from && next.to === selected.to) return;
+    selected = next; pending = active();
     updateToolbar();
   };
   const currentLinkRange = () => {

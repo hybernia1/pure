@@ -1,0 +1,93 @@
+{
+  "timestamp": "2026-10-24T07:20:26.869Z",
+  "revision": "784e4e5",
+  "workingTreeChanges": true,
+  "sources": {
+    "src/js/editor-model.js": "b10024c8b34a7165fc9f3f2fea4d7f3b9e8888c2c24b288e8a40e8ef526c3988",
+    "src/js/editor-stats.js": "18dce2b04afe6bb90cd15ec51ec4a8d15ff8e0410f2bc121118f3dbc9c2da7a0"
+  },
+  "node": "v24.15.0",
+  "platform": "win32 x64",
+  "cpu": "12th Gen Intel(R) Core(TM) i5-12500H",
+  "methodology": "10 warmups; 31 batches of 10 operations; median/p95 of per-operation batch times. No pass/fail timing threshold.",
+  "cases": {
+    "paragraphs100": {
+      "blocks": 100,
+      "textRows": 100,
+      "utf16Length": 3099,
+      "jsonBytes": 10024,
+      "normalize": {
+        "medianMs": 0.0647,
+        "p95Ms": 0.1781,
+        "minMs": 0.0416
+      },
+      "insert": {
+        "medianMs": 0.1241,
+        "p95Ms": 0.2806,
+        "minMs": 0.1008
+      },
+      "format": {
+        "medianMs": 0.2177,
+        "p95Ms": 0.3328,
+        "minMs": 0.1992
+      },
+      "stats": {
+        "medianMs": 0.1261,
+        "p95Ms": 0.1638,
+        "minMs": 0.1034
+      }
+    },
+    "paragraphs1000": {
+      "blocks": 1000,
+      "textRows": 1000,
+      "utf16Length": 30999,
+      "jsonBytes": 100024,
+      "normalize": {
+        "medianMs": 0.4021,
+        "p95Ms": 0.7834,
+        "minMs": 0.3298
+      },
+      "insert": {
+        "medianMs": 1.7297,
+        "p95Ms": 2.2192,
+        "minMs": 1.3701
+      },
+      "format": {
+        "medianMs": 2.077,
+        "p95Ms": 2.7408,
+        "minMs": 1.6161
+      },
+      "stats": {
+        "medianMs": 1.1839,
+        "p95Ms": 1.7286,
+        "minMs": 0.9515
+      }
+    },
+    "list1000": {
+      "blocks": 1,
+      "textRows": 1000,
+      "utf16Length": 30999,
+      "jsonBytes": 81067,
+      "normalize": {
+        "medianMs": 0.4603,
+        "p95Ms": 0.6363,
+        "minMs": 0.3276
+      },
+      "insert": {
+        "medianMs": 1.6835,
+        "p95Ms": 2.4683,
+        "minMs": 1.3032
+      },
+      "format": {
+        "medianMs": 1.92,
+        "p95Ms": 2.5323,
+        "minMs": 1.6595
+      },
+      "stats": {
+        "medianMs": 1.1982,
+        "p95Ms": 1.3995,
+        "minMs": 1.0061
+      }
+    }
+  }
+}

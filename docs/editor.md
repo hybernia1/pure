@@ -63,6 +63,10 @@ Ukázka má funkční lokální endpoint POST /api/images ve vývojovém serveru
 
 API pro obrázek: `command('image', { src, mediaId, alt, caption, width, align })` vloží blok, nebo upraví obrázek právě otevřený v modalu. `command('removeImage')` odebere aktuálně vybraný obrázek. Tyto příkazy vyžadují features.images=true.
 
+## Výkon
+
+Běžné řízené psaní a formátování zachovává sousední DOM bloky a obrázky; mění pouze dotčené textové běhy. Změny struktury, historie, setJSON a nativní input mohou obsah překreslit celý. Historie uchovává nejvýše 100 úplných JSON snímků. Naměřená odezva a omezení velkých dokumentů jsou v [auditu před 1.0.0](release-1.0-audit.md).
+
 ## Celá obrazovka
 
 Ikona roztažení nebo `command('fullscreen')` přepne editor přes celý viewport. Používá dialog v top layer, zachovává focus uvnitř a umožňuje otevřít nad ním modal odkazu či obrázku. Escape zavře nejvyšší otevřený dialog; po zavření fullscreen režimu se editor vrátí na původní místo a zachová obsah i výběr. Jde o aplikační režim přes viewport; nepřepíná OS ani prohlížeč do vlastního fullscreen režimu. Destroy zavře dialogy, zruší upload a obnoví textarea.

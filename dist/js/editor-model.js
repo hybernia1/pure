@@ -11,6 +11,19 @@ const append = (runs, run) => {
   else runs.push({ ...run });
 };
 
+const normalizeChildren = runs => {
+  if (!Array.isArray(runs)) throw new TypeError('Invalid text children.');
+  const children = [];
+  for (const run of runs) {
+    keys(run, ['text', 'bold', 'italic', 'link']);
+    if (typeof run.text !== 'string' || /[\r\n]/.test(run.text)) throw new TypeError('Text odstavce musí být řetězec bez nových řádků.');
+    for (const mark of ['bold', 'italic']) if (run[mark] !== undefined && typeof run[mark] !== 'boolean') throw new TypeError(`Neplatné ${mark}.`);
+    if (run.link !== undefined && (typeof run.link !== 'string' || !safeHref(run.link))) throw new TypeError('Neplatný odkaz.');
+    append(children, { text: run.text, ...(run.bold ? { bold: true } : {}), ...(run.italic ? { italic: true } : {}), ...(run.link !== undefined ? { link: safeHref(run.link) } : {}) });
+  }
+  return children;
+};
+
 /** Ověří schéma a vrátí nezávislou kanonickou kopii. Žádná HTML konverze. */
 export function normalizeDocument(value) {
   keys(value, ['version', 'blocks']);
@@ -19,7 +32,7 @@ export function normalizeDocument(value) {
     if (block.type === 'list') {
       keys(block, ['type', 'style', 'items']);
       if (!['bullet', 'ordered'].includes(block.style) || !Array.isArray(block.items) || !block.items.length) throw new TypeError('Invalid list block.');
-      const items = block.items.map(item => { keys(item, ['children']); return { children: normalizeDocument({ version: 1, blocks: [{ type: 'paragraph', children: item.children }] }).blocks[0].children }; });
+      const items = block.items.map(item => { keys(item, ['children']); return { children: normalizeChildren(item.children) }; });
       return { type: 'list', style: block.style, items };
     }
     if (block.type === 'image') {
@@ -34,14 +47,7 @@ export function normalizeDocument(value) {
     }
     keys(block, ['type', 'level', 'style', 'children']);
     if (!['paragraph', 'heading', 'list-item'].includes(block.type) || !Array.isArray(block.children) || (block.type === 'heading' ? ![2, 3, 4].includes(block.level) : block.level !== undefined) || (block.type === 'list-item' ? !['bullet', 'ordered'].includes(block.style) : block.style !== undefined)) throw new TypeError('Neplatný textový blok.');
-    const children = [];
-    for (const run of block.children) {
-      keys(run, ['text', 'bold', 'italic', 'link']);
-      if (typeof run.text !== 'string' || /[\r\n]/.test(run.text)) throw new TypeError('Text odstavce musí být řetězec bez nových řádků.');
-      for (const mark of ['bold', 'italic']) if (run[mark] !== undefined && typeof run[mark] !== 'boolean') throw new TypeError(`Neplatné ${mark}.`);
-      if (run.link !== undefined && (typeof run.link !== 'string' || !safeHref(run.link))) throw new TypeError('Neplatný odkaz.');
-      append(children, { text: run.text, ...(run.bold ? { bold: true } : {}), ...(run.italic ? { italic: true } : {}), ...(run.link !== undefined ? { link: safeHref(run.link) } : {}) });
-    }
+    const children = normalizeChildren(block.children);
     return { type: block.type, ...(block.type === 'heading' ? { level: block.level } : {}), ...(block.type === 'list-item' ? { style: block.style } : {}), children };
   });
   const result = []; let legacy;

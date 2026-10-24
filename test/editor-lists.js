@@ -99,4 +99,26 @@ await test('Galerie i paginace se vejdou do 375px modalu', async () => {
     assert(frame.contentWindow.getComputedStyle(dialog.querySelector('.pagination-number')).display === 'none', 'Mobilní paginace');
   } finally { library.destroy(); frame.remove(); }
 });
+await test('Psaní ponechá sousední bloky, obrázek a UI; změna struktury má úplný render', async () => {
+  const editor = setup();
+  try {
+    await editor.ready;
+    editor.setJSON({ version: 1, blocks: [{ type: 'paragraph', children: [{ text: 'A' }] }, { type: 'image', src: '/examples/editor-image.svg', alt: 'Image' }, { type: 'list', style: 'bullet', items: [{ children: [{ text: 'B' }] }, { children: [{ text: 'C' }] }] }] });
+    const content = fixture.querySelector('[contenteditable="true"]');
+    const image = fixture.querySelector('img'); const header = fixture.querySelector('.editor-block-header');
+    const items = fixture.querySelectorAll('.editor-list li'); const sibling = items[1].firstChild;
+    select(items[0].firstChild, 1);
+    content.dispatchEvent(new InputEvent('beforeinput', { inputType: 'insertText', data: 'x', bubbles: true, cancelable: true }));
+    assert(editor.getJSON().blocks[2].items[0].children[0].text === 'Bx', 'JSON psaní');
+    assert(fixture.querySelector('img') === image && fixture.querySelector('.editor-block-header') === header && items[1].firstChild === sibling, 'Stabilní sousedé a UI');
+    editor.command('bold');
+    content.dispatchEvent(new InputEvent('beforeinput', { inputType: 'insertText', data: 'y', bubbles: true, cancelable: true }));
+    assert(fixture.querySelector('.editor-list strong')?.textContent === 'y', 'Pending formátování');
+    editor.command('undo'); assert(editor.getJSON().blocks[2].items[0].children[0].text === 'Bx', 'Undo');
+    editor.command('redo'); assert(editor.getJSON().blocks[2].items[0].children[1].bold, 'Redo');
+    content.dispatchEvent(new InputEvent('beforeinput', { inputType: 'insertParagraph', bubbles: true, cancelable: true }));
+    assert(fixture.querySelectorAll('.editor-list li').length === 3, 'Strukturální render');
+    assert(fixture.querySelectorAll('[data-block-delete]').length === 3, 'Jeden ovladač na blok');
+  } finally { editor.destroy(); }
+});
 document.querySelector('#summary').textContent = `${passed} prošlo, ${failed} selhalo.`;
