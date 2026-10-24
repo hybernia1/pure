@@ -1,14 +1,10 @@
 import { safeHref } from './url.js';
 import { emptyDocument, normalizeDocument, documentText, plainText, selectionMarks, replaceText, formatText, setHeading, blockAt } from './editor-model.js';
-import { createEditorDialog } from './editor-dialog.js';
-import { createModal } from './modal.js';
-import { createSelect } from './select.js';
-import { validateFiles } from './upload.js';
-import { createResize } from './resize.js';
 import { createDragDrop } from './drag-drop.js';
 import { editorI18n } from './editor-i18n.js';
 import { editorStats } from './editor-stats.js';
-import { createMediaLibrary, normalizeMedia } from './media-library.js';
+import { normalizeMedia } from './media.js';
+import { ensureStyles } from './styles.js';
 let editorId = 0;
 
 export function createEditor(source, {
@@ -19,6 +15,7 @@ export function createEditor(source, {
   mediaLibrary,
   locale,
   messages,
+  styles = true,
 } = {}) {
   const { t, locale: language } = editorI18n(source.ownerDocument, { locale, messages });
   label ??= source.labels?.[0]?.textContent || t('editor');
@@ -43,6 +40,8 @@ export function createEditor(source, {
   let linkDialog; let imageDialog; let fullscreenModal; let fullscreenHost; let headingSource; let headingControl; let imageIndex = null;
   let selected = { from: 0, to: 0 }; let pending = {}; let destroyed = false; let composing = false; let restoring = false;
   let history = []; let position = -1; let resetTimer; let dragDrop; let library; let pickedMedia = null;
+  let openSequence = 0; const dialogTasks = new Map();
+  let selectTask; let resizeTask; let resizeFactory; let fullscreenTask;
   const buttons = new Map(); const listeners = [];
   const imageResizers = new Map();
   const clearResizers = () => { imageResizers.forEach(resizer => resizer.destroy()); imageResizers.clear(); };
@@ -143,9 +142,20 @@ export function createEditor(source, {
       wrapper.append(paragraph); fragment.append(wrapper);
     });
     content.replaceChildren(fragment);
-    if (enabled.images) for (const figure of content.querySelectorAll('[data-editor-image]')) {
+    attachResizers()?.catch(loadFailed);
+  };
+  const attachResizers = () => {
+    if (destroyed || !enabled.images || !content.querySelector('[data-editor-image]')) return;
+    if (!resizeFactory) {
+      resizeTask ??= Promise.all([import('./resize.js'), styles ? ensureStyles('resize', { document: doc }) : undefined])
+        .then(([module]) => { if (!destroyed) { resizeFactory = module.createResize; attachResizers(); } })
+        .catch(error => { resizeTask = null; throw error; });
+      return resizeTask;
+    }
+    for (const figure of content.querySelectorAll('[data-editor-image]')) {
       const index = Number(figure.dataset.editorImage);
-      imageResizers.set(index, createResize(figure.querySelector('.editor-image-media'), {
+      if (imageResizers.has(index)) continue;
+      imageResizers.set(index, resizeFactory(figure.querySelector('.editor-image-media'), {
         container: figure.querySelector('.editor-image-canvas'), width: value.blocks[index].width, min: 25, step: 25, iconsUrl, label: t('imageWidth'), help: t('resizeHelp'),
         onChange: width => { figure.querySelector('.editor-image-size').textContent = `${width} %`; },
         onCommit: width => updateImage(index, { width }, '[data-resize-handle]'),
@@ -293,9 +303,7 @@ export function createEditor(source, {
     }
     if (name === 'fullscreen') {
       if (!enabled.fullscreen) return false;
-      if (fullscreenHost.open) { fullscreenModal.close(); source.after(shell); restore(); updateToolbar(); }
-      else { fullscreenHost.append(shell); fullscreenModal.open(buttons.get('fullscreen')); restore(); updateToolbar(); }
-      return true;
+      return toggleFullscreen();
     }
     if (name === 'image') {
       if (!enabled.images) throw new Error('Obrázky nejsou zapnuté.');
@@ -333,17 +341,20 @@ export function createEditor(source, {
     }
     hint.textContent = t('formatted'); return true;
   };
-  linkDialog = createEditorDialog(doc, {
-    t,
-    title: t('linkTitle'), fields: { url: { label: t('linkAddress'), placeholder: t('linkPlaceholder') } },
-    submit(fields) { if (!command('link', fields.url.value)) throw new Error(t('invalidLink')); },
-  });
-  linkDialog.dialog.dataset.editorDialog = 'link'; linkDialog.dialog.dataset.editorInstance = String(instance);
-  listen(linkDialog.dialog, 'close', () => { if (!destroyed) restore(); });
+  const createLinkDialog = createEditorDialog => {
+    linkDialog = createEditorDialog(doc, {
+      t,
+      title: t('linkTitle'), fields: { url: { label: t('linkAddress'), placeholder: t('linkPlaceholder') } },
+      submit(fields) { if (!command('link', fields.url.value)) throw new Error(t('invalidLink')); },
+    });
+    linkDialog.dialog.dataset.editorDialog = 'link'; linkDialog.dialog.dataset.editorInstance = String(instance);
+    listen(linkDialog.dialog, 'close', () => { if (!destroyed) restore(); });
+  };
   let imageSnapshot;
-  if (enabled.images) {
+  const createImageDialog = (createEditorDialog, selectFactory, uploadFactory, validateFiles) => {
     imageDialog = createEditorDialog(doc, {
       t,
+      selectFactory, uploadFactory,
       title: t('image'),
       fields: {
         file: { label: t('uploadImage'), type: 'file', accept: 'image/png,image/jpeg,image/webp,image/gif,image/avif' },
@@ -365,18 +376,22 @@ export function createEditor(source, {
         if (!src) throw new Error(t('chooseImage'));
         if (signal.aborted || !imageDialog.dialog.open) return false;
         if (JSON.stringify(value) !== imageSnapshot) throw new Error(t('changed'));
-        command('image', { src, mediaId: mediaId ?? null, alt: fields.alt.value, caption: fields.caption.value, width: Number(fields.width.value), align: fields.align.value });
+        library?.close(); command('image', { src, mediaId: mediaId ?? null, alt: fields.alt.value, caption: fields.caption.value, width: Number(fields.width.value), align: fields.align.value });
       },
-      remove() { command('removeImage'); },
+      remove() { library?.close(); command('removeImage'); },
     });
     imageDialog.dialog.dataset.editorDialog = 'image'; imageDialog.dialog.dataset.editorInstance = String(instance);
     const preview = node('img', 'upload-preview'); preview.alt = t('currentImage'); preview.hidden = true; preview.dataset.currentImage = '';
     imageDialog.controls.file.after(preview);
     listen(imageDialog.controls.file, 'change', () => { preview.hidden = Boolean(imageDialog.controls.file.files.length) || !preview.getAttribute('src'); });
-    listen(imageDialog.dialog, 'close', () => { if (!destroyed) restore(); });
+    const cancelLibrary = () => { openSequence++; library?.close(); };
+    listen(imageDialog.dialog, 'cancel', cancelLibrary);
+    listen(imageDialog.dialog, 'click', event => { if (!imageDialog.dialog.open || event.target.closest('[data-modal-close]')) cancelLibrary(); });
+    listen(imageDialog.dialog, 'close', () => { if (!imageDialog.dialog.open) { library?.close(); if (!destroyed) restore(); } });
     if (mediaLibrary) {
-      library = createMediaLibrary({
+      const createLibrary = createMediaLibrary => createMediaLibrary({
         ...mediaLibrary, document: doc, locale: language, messages,
+        styles,
         onSelect(media) {
           if (!imageDialog.dialog.open || JSON.stringify(value) !== imageSnapshot) throw new Error(t('changed'));
           pickedMedia = media; imageDialog.controls.file.value = '';
@@ -386,29 +401,85 @@ export function createEditor(source, {
       });
       const browse = node('button', 'button button-outline'); browse.type = 'button'; browse.textContent = t('library'); browse.dataset.editorMediaLibrary = '';
       imageDialog.controls.file.closest('.field').after(browse);
-      listen(browse, 'click', () => { if (imageDialog.dialog.querySelector('form').getAttribute('aria-busy') !== 'true') library.open(browse); });
+      let libraryTask;
+      listen(browse, 'click', async () => {
+        if (browse.disabled || imageDialog.dialog.querySelector('form').getAttribute('aria-busy') === 'true') return;
+        browse.disabled = true; browse.textContent = t('loading'); const snapshot = imageSnapshot; const request = openSequence;
+        try {
+          libraryTask ??= import('./media-library.js').catch(error => { libraryTask = null; throw error; });
+          const [{ createMediaLibrary }] = await Promise.all([libraryTask, styles ? ensureStyles('media-library', { document: doc }) : undefined]);
+          if (destroyed || !imageDialog.dialog.open || imageSnapshot !== snapshot || request !== openSequence) return;
+          library ??= createLibrary(createMediaLibrary); await library.open(browse);
+        } catch (error) { if (request === openSequence && imageDialog.dialog.open) loadFailed(error); }
+        finally { browse.disabled = false; browse.textContent = t('library'); }
+      });
     }
-  }
-  const openImage = () => {
-    if (!imageDialog) return;
+  };
+  const loadFailed = error => {
+    if (destroyed) return;
+    hint.textContent = t('failure'); source.dispatchEvent(new win.CustomEvent('pure:load-error', { bubbles: true, detail: error }));
+  };
+  const ensureDialog = kind => {
+    if (dialogTasks.has(kind)) return dialogTasks.get(kind);
+    const task = (async () => {
+      const [dialogModule, extras] = await Promise.all([
+        import('./editor-dialog.js'),
+        kind === 'image' ? Promise.all([import('./select.js'), import('./upload.js')]) : undefined,
+        styles ? ensureStyles(kind === 'image' ? ['modal', 'upload', 'utilities'] : ['modal', 'utilities'], { document: doc }) : undefined,
+      ]);
+      if (destroyed) return null;
+      if (kind === 'image') createImageDialog(dialogModule.createEditorDialog, extras[0].createSelect, extras[1].createUpload, extras[1].validateFiles);
+      else createLinkDialog(dialogModule.createEditorDialog);
+      return kind === 'image' ? imageDialog : linkDialog;
+    })().catch(error => { dialogTasks.delete(kind); throw error; });
+    dialogTasks.set(kind, task); return task;
+  };
+  const openImage = async () => {
+    if (!enabled.images || destroyed) return false;
+    const sequence = ++openSequence; const snapshot = JSON.stringify(value); const index = imageIndex; const selection = { ...selected };
+    hint.textContent = t('loading');
+    try { await ensureDialog('image'); } finally { if (!destroyed && sequence === openSequence) hint.textContent = ''; }
+    if (destroyed || sequence !== openSequence || snapshot !== JSON.stringify(value)) return false;
+    imageIndex = index; selected = selection;
     const block = imageIndex === null ? {} : value.blocks[imageIndex];
     pickedMedia = null;
     imageSnapshot = JSON.stringify(value);
     imageDialog.open({ alt: '', caption: '', width: 100, align: 'center', ...block }, doc.activeElement, { removable: imageIndex !== null });
     const preview = imageDialog.dialog.querySelector('[data-current-image]');
     if (block.src) { preview.src = block.src; preview.hidden = false; } else { preview.removeAttribute('src'); preview.hidden = true; }
+    return true;
+  };
+  const openLink = async () => {
+    if (destroyed) return false;
+    const sequence = ++openSequence; const snapshot = JSON.stringify(value); const selection = { ...selected };
+    hint.textContent = t('loading');
+    try { await ensureDialog('link'); } finally { if (!destroyed && sequence === openSequence) hint.textContent = ''; }
+    if (destroyed || sequence !== openSequence || snapshot !== JSON.stringify(value)) return false;
+    selected = selection; linkDialog.open({ url: (selected.from === selected.to ? currentLinkRange()?.link : active().link) || '' }, buttons.get('link')); return true;
   };
   if (enabled.headings) {
     headingSource = node('select', 'input'); headingSource.setAttribute('aria-label', t('textStyle'));
     for (const level of [0, 2, 3, 4]) { const option = node('option'); option.value = String(level); option.textContent = level ? t('heading', { level }) : t('paragraph'); headingSource.append(option); }
-    toolbar.append(headingSource); headingControl = createSelect(headingSource);
+    headingSource.hidden = true; toolbar.append(headingSource);
+    selectTask = Promise.all([import('./select.js'), styles ? ensureStyles('controls', { document: doc }) : undefined])
+      .then(([module]) => { if (!destroyed) { headingControl = module.createSelect(headingSource); updateToolbar(); } });
+    selectTask.catch(loadFailed);
     listen(headingSource, 'change', () => command('heading', headingSource.value));
   }
-  if (enabled.fullscreen) {
-    fullscreenHost = node('dialog', 'editor-fullscreen'); fullscreenHost.setAttribute('aria-label', label); doc.body.append(fullscreenHost);
-    fullscreenModal = createModal(fullscreenHost, { closeOnBackdrop: false });
-    listen(fullscreenHost, 'close', () => { source.after(shell); if (!destroyed) { restore(); updateToolbar(); } });
-  }
+  const toggleFullscreen = async () => {
+    const sequence = ++openSequence;
+    fullscreenTask ??= import('./modal.js').catch(error => { fullscreenTask = null; throw error; });
+    const { createModal } = await fullscreenTask; await styleReady;
+    if (destroyed || sequence !== openSequence) return false;
+    if (!fullscreenHost) {
+      fullscreenHost = node('dialog', 'editor-fullscreen'); fullscreenHost.setAttribute('aria-label', label); doc.body.append(fullscreenHost);
+      fullscreenModal = createModal(fullscreenHost, { closeOnBackdrop: false });
+      listen(fullscreenHost, 'close', () => { source.after(shell); if (!destroyed) { restore(); updateToolbar(); } });
+    }
+    if (fullscreenHost.open) { fullscreenModal.close(); source.after(shell); }
+    else { fullscreenHost.append(shell); fullscreenModal.open(buttons.get('fullscreen')); }
+    restore(); updateToolbar(); return true;
+  };
   for (const [name, title, icon] of [
     ['bold', t('bold'), 'bold'], ['italic', t('italic'), 'italic'],
     ['link', t('link'), 'link'], ['unlink', t('unlink'), 'unlink'],
@@ -421,8 +492,9 @@ export function createEditor(source, {
     const use = doc.createElementNS('http://www.w3.org/2000/svg', 'use'); use.setAttribute('href', `${iconsUrl}#${icon}`); svg.append(use); button.append(svg);
     listen(button, 'pointerdown', event => event.preventDefault());
     listen(button, 'click', () => {
-      if (name === 'link') linkDialog.open({ url: (selected.from === selected.to ? currentLinkRange()?.link : active().link) || '' }, button);
-      else if (name === 'image') { imageIndex = null; openImage(); }
+      if (name === 'link') openLink().catch(loadFailed);
+      else if (name === 'image') { imageIndex = null; openImage().catch(loadFailed); }
+      else if (name === 'fullscreen') toggleFullscreen().catch(loadFailed);
       else { command(name); if (name !== 'undo' && name !== 'redo') restore(); }
     });
     if (name === 'link' || name === 'image') button.setAttribute('aria-haspopup', 'dialog');
@@ -460,6 +532,7 @@ export function createEditor(source, {
     selected = nextSelection ? { from: Math.min(size, nextSelection.from), to: Math.min(size, nextSelection.to) } : { from: size, to: size };
     pending = active(); render(); restore(); record();
   };
+  const styleReady = styles ? ensureStyles('editor', { document: doc }) : Promise.resolve(); styleReady.catch(loadFailed);
   shell.append(toolbar, content, footer, hint); render(); source.after(shell);
   dragDrop = createDragDrop(content, { translate: t, onMove: ({ from, to }) => command('moveBlock', { from, to }) });
   const wasHidden = source.hidden; source.hidden = true; record();
@@ -517,7 +590,7 @@ export function createEditor(source, {
       const width = value.blocks[index].width + (action === 'smaller' ? -25 : 25);
       updateImage(index, { width: Math.max(25, Math.min(100, width)) }, `[data-image-action="${action}"]:not(:disabled)`);
     } else if (['left', 'center', 'right'].includes(action)) updateImage(index, { align: action }, `[data-image-action="${action}"]`);
-    else if (action === 'edit' || event.type === 'keydown') openImage();
+    else if (action === 'edit' || event.type === 'keydown') openImage().catch(loadFailed);
     else { figure.focus(); win.getSelection()?.removeAllRanges(); }
   };
   listen(content, 'click', event => {
@@ -531,21 +604,23 @@ export function createEditor(source, {
     // U uživatelského kliknutí probíhá reset výchozích hodnot až po microtasks.
     resetTimer = setTimeout(() => {
       if (destroyed || event.defaultPrevented) return;
-      library?.close(); linkDialog.close(); imageDialog?.close(); imageIndex = null; value = parse(source.value); selected = { from: 0, to: 0 }; pending = {}; history = []; position = -1; render(); record();
+      openSequence++; library?.close(); linkDialog?.close(); imageDialog?.close(); imageIndex = null; value = parse(source.value); selected = { from: 0, to: 0 }; pending = {}; history = []; position = -1; render(); record();
     }, 0);
   });
   return {
     command,
+    get ready() { return Promise.all([styleReady, selectTask, attachResizers() || resizeTask]).then(() => undefined); },
     getJSON: () => normalizeDocument(value),
     getText: () => plainText(value),
     getStats: () => editorStats(value, language),
+    openDialog(kind) { if (kind === 'link') return openLink(); if (kind === 'image') { imageIndex = null; return openImage(); } throw new TypeError('Unknown editor dialog'); },
     setJSON(json) {
       if (destroyed) throw new Error('Editor byl odpojen.');
-      const next = normalizeDocument(json); library?.close(); linkDialog.close(); imageDialog?.close(); imageIndex = null; selected = { from: 0, to: 0 }; pending = {}; value = next; render(); record();
+      const next = normalizeDocument(json); openSequence++; library?.close(); linkDialog?.close(); imageDialog?.close(); imageIndex = null; selected = { from: 0, to: 0 }; pending = {}; value = next; render(); record();
     },
     destroy() {
       if (destroyed) return;
-      destroyed = true; clearTimeout(resetTimer); library?.destroy(); dragDrop?.destroy(); clearResizers(); sync(); linkDialog.destroy(); imageDialog?.destroy(); headingControl?.destroy(); fullscreenModal?.destroy(); fullscreenHost?.remove(); listeners.forEach(cleanup => cleanup()); shell.remove(); source.hidden = wasHidden;
+      destroyed = true; openSequence++; clearTimeout(resetTimer); library?.destroy(); dragDrop?.destroy(); clearResizers(); sync(); linkDialog?.destroy(); imageDialog?.destroy(); headingControl?.destroy(); fullscreenModal?.destroy(); fullscreenHost?.remove(); listeners.forEach(cleanup => cleanup()); shell.remove(); source.hidden = wasHidden;
     },
   };
 }

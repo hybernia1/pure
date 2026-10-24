@@ -1,12 +1,10 @@
 import { createModal } from './modal.js';
 import { iconButton } from './controls.js';
-import { createSelect } from './select.js';
-import { createUpload } from './upload.js';
 import { editorI18n } from './editor-i18n.js';
 let dialogId = 0;
 
 /** Samostatný formulář v Pure modalu; nikdy není vnořený do hostitelského form. */
-export function createEditorDialog(doc, { title, fields, submit, remove, t = editorI18n(doc).t }) {
+export function createEditorDialog(doc, { title, fields, submit, remove, selectFactory, uploadFactory, t = editorI18n(doc).t }) {
   const dialog = doc.createElement('dialog'); dialog.className = 'modal editor-dialog'; dialog.setAttribute('aria-label', title);
   const form = doc.createElement('form'); const header = doc.createElement('div'); header.className = 'modal-header';
   const heading = doc.createElement('h2'); heading.className = 'text-xl'; heading.textContent = title;
@@ -38,8 +36,8 @@ export function createEditorDialog(doc, { title, fields, submit, remove, t = edi
   const apply = doc.createElement('button'); apply.type = 'submit'; apply.className = 'button'; apply.textContent = t('apply');
   const removeButton = doc.createElement('button'); removeButton.type = 'button'; removeButton.className = 'button button-outline'; removeButton.textContent = t('removeImage'); removeButton.hidden = true;
   footer.append(removeButton, cancel, apply); form.append(header, body, error, footer); dialog.append(form); doc.body.append(dialog);
-  const selects = Object.values(controls).filter(input => input.tagName === 'SELECT').map(input => createSelect(input));
-  const uploads = Object.values(controls).filter(input => input.type === 'file').map(input => createUpload(input, { maxFiles: 1, maxSize: 10 * 1024 * 1024, translate: t }));
+  const selects = Object.values(controls).filter(input => input.tagName === 'SELECT').map(input => selectFactory(input));
+  const uploads = Object.values(controls).filter(input => input.type === 'file').map(input => uploadFactory(input, { maxFiles: 1, maxSize: 10 * 1024 * 1024, translate: t }));
   const modal = createModal(dialog); let abort; let destroyed = false;
   const setBusy = busy => { apply.disabled = busy; Object.values(controls).forEach(input => { input.disabled = busy; }); form.setAttribute('aria-busy', String(busy)); };
   const onSubmit = async event => {

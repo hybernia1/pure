@@ -1,4 +1,7 @@
-import { initTheme, createFlash, createEditor, createLoader, createResize, createActivity, createProgress, createDragDrop, request, HttpError } from '../dist/js/index.js';
+import { loadComponent } from '../dist/js/lazy.js';
+const [{ initTheme }, { createFlash }, { createEditor }, { createLoader, request, HttpError }, { createResize }, { createActivity }, { createProgress }, { createDragDrop }] = await Promise.all([
+  loadComponent('theme'), loadComponent('flash'), loadComponent('editor'), loadComponent('ajax'), loadComponent('resize'), loadComponent('activity'), loadComponent('progress'), loadComponent('drag-drop'),
+]);
 
 initTheme();
 createDragDrop(document.querySelector('#sort-demo'), {

@@ -1,5 +1,7 @@
 # Pure
 
+[Načítání podle potřeby](docs/distribution.md): lehký `@pure-ui/core/lazy` načte komponentu i CSS. Editor své modaly, upload a knihovnu načítá až při použití. [Ukázka po kliknutí](examples/lazy.html), [síťové testy](test/lazy.html). JSON API zůstává synchronní; pro připravenost UI použij `await editor.ready`, pro dialog `await editor.openDialog('image')` a pro fullscreen `await editor.command('fullscreen')`.
+
 [Audit před prvním vydáním](docs/release-audit.md) obsahuje opravy, měření a otevřené kroky. `npm run check:dist` ověří distribuci, `npm run audit:size` změří velikosti a statistiky. `prepack` sestaví a zkontroluje balíček; zůstává private.
 
 Pro lehké stránky importuj konkrétní modul, například `import { initTheme } from './dist/js/theme.js'`. Společný `index.js` načítá v prohlížeči celý graf. V npm jsou dostupné exporty `@pure-ui/core/js/theme.js`, `@pure-ui/core/css/tokens.css`, `@pure-ui/core/pure.css` a `@pure-ui/core/icons.svg`; JS je bez automatických DOM efektů, CSS se zachovává jako side effect.

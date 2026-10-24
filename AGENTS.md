@@ -13,6 +13,7 @@
 - Editor přebírá jazyk z html lang, podporuje locale/messages a slovníky cs/en. Nové UI texty patří do editor-i18n.js. Obrázky zachovávají mediaId (u starých dat null); upload a media library jsou nezávislé callbacky aplikace. Patička počítá jen model, nikdy řídicí texty DOM.
 - AJAX načítá standardně text; jeho explicitní HTML režim prochází allowlistem. Server musí obsah znovu validovat.
 - JS exportuje explicitní inicializaci, bez automatických globálních vedlejších efektů. Inicializace vrací cleanup.
+- Pro načítání podle potřeby používej lazy.js / loadComponent a sdílený styles.js; ne statický index.js v lehkých ukázkách. Volitelné doplňky editoru načítej přes import() při použití, včetně CSS. Zachovej synchronní JSON API, připravenost přes editor.ready a async otevírání UI; pending operace nesmějí po destroy obnovit DOM.
 - Ikony přidávej jako `symbol` do `src/icons.svg`, s `viewBox="0 0 24 24"`, `currentColor` a bez pevných barev.
 - Zachovej ovládání klávesnicí, viditelný focus, reduced motion a přístupné názvy ovládacích prvků.
 - Formulářové ikony a akce patří dovnitř jednotného `.control`. Datum, čas a select mají vlastní UI modulů picker/select nad původními poli; hodnoty, validita a FormData zůstávají v původních prvcích. Chybový focus směruj na jejich viditelné ovládání.

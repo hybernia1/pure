@@ -1,4 +1,7 @@
-import { initTheme, createForm, initInputs, initPickers, initSelects, initModals, createUpload, createSearch, request } from '../dist/js/index.js';
+import { loadComponent } from '../dist/js/lazy.js';
+const [{ initTheme }, { createForm, initInputs }, { initPickers }, { initSelects }, { initModals }, { createUpload }, { createSearch }, { request }] = await Promise.all([
+  loadComponent('theme'), loadComponent('forms'), loadComponent('picker'), loadComponent('select'), loadComponent('modal'), loadComponent('upload'), loadComponent('search'), loadComponent('ajax'),
+]);
 initTheme(); initInputs(); initPickers(); initSelects(); initModals();
 createSearch(document.querySelector('#people-search'), {
   async fetch(query, { signal }) {

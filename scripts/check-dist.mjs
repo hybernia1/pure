@@ -25,6 +25,7 @@ const manifest = JSON.parse(await readFile('package.json', 'utf8'));
 for (const [name, path] of Object.entries(manifest.exports)) if (!name.includes('*')) await readFile(path);
 assert.deepEqual(Object.keys(await import('@pure-ui/core')), Object.keys(await import('../src/js/index.js')));
 assert.equal(typeof (await import('@pure-ui/core/js/theme.js')).initTheme, 'function');
+assert.equal(typeof (await import('@pure-ui/core/lazy')).loadComponent, 'function');
 const hash = createHash('sha256');
 for (const path of expected) { hash.update(path); hash.update(await readFile(`dist/${path}`)); }
 console.log(JSON.stringify({ files: expected.length, sha256: hash.digest('hex'), exports: 'ok' }));

@@ -22,7 +22,7 @@ const closure = async entry => {
   await visit(resolve(root, entry)); return [...seen];
 };
 const entries = {};
-for (const entry of ['pure.css', 'icons.svg', 'js/index.js', 'js/editor.js', 'js/search.js', 'js/theme.js', 'js/activity.js']) {
+for (const entry of ['pure.css', 'icons.svg', 'js/lazy.js', 'js/index.js', 'js/editor.js', 'js/search.js', 'js/theme.js', 'js/activity.js']) {
   entries[entry] = await size(entry.endsWith('.js') ? await closure(entry) : [resolve(root, entry)]);
 }
 const document = { version: 1, blocks: Array.from({ length: 1000 }, () => ({ type: 'paragraph', children: [{ text: 'Alpha beta gamma delta epsilon' }] })) };

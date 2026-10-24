@@ -4,13 +4,14 @@ const fixture = document.querySelector('#fixture');
 const results = document.querySelector('#results');
 let failed = 0; let passed = 0;
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
+async function waitFor(selector) { const deadline = performance.now() + 5000; while (!document.querySelector(selector)) { if (performance.now() > deadline) throw new Error(`Timed out: ${selector}`); await new Promise(resolve => setTimeout(resolve, 5)); } return document.querySelector(selector); }
 async function test(name, fn) {
   const row = document.createElement('li'); results.append(row);
   try { await fn(); row.textContent = `OK — ${name}`; passed++; }
   catch (error) { row.textContent = `CHYBA — ${name}: ${error.message}`; failed++; }
   finally { fixture.replaceChildren(); document.querySelectorAll('.editor-dialog, .editor-fullscreen').forEach(dialog => { if (dialog.open) dialog.close(); dialog.remove(); }); }
 }
-await test('HTML allowlist odstraní aktivní obsah a zachová textové formátování', () => {
+await test('HTML allowlist odstraní aktivní obsah a zachová textové formátování', async () => {
   const html = cleanHTML('<p class="bad" onclick="alert(1)">A<strong>B</strong><a href="java&#10;script:alert(1)">C</a><a href="/safe">D</a><img src=x onerror="alert(1)"><svg><script>alert(1)</script></svg><iframe srcdoc="x">x</iframe></p>');
   assert(html === '<p>A<strong>B</strong><a>C</a><a href="/safe">D</a></p>', html);
 });
@@ -20,6 +21,7 @@ await test('JSON editor přepíná formátování, synchronizuje FormData, undo/
   form.querySelector('textarea').defaultValue = JSON.stringify({ version: 1, blocks: [{ type: 'paragraph', children: [{ text: 'Ahoj světe' }] }] });
   fixture.append(form);
   const source = form.querySelector('textarea'); const editor = createEditor(source);
+  await editor.ready;
   const content = form.querySelector('[contenteditable]');
   content.focus();
   const text = content.querySelector('p').firstChild;
@@ -35,17 +37,21 @@ await test('JSON editor přepíná formátování, synchronizuje FormData, undo/
   editor.command('redo'); assert(!editor.getJSON().blocks[0].children[0].bold, 'Redo');
   const clone = editor.getJSON(); clone.blocks[0].children[0].text = 'mutace'; assert(editor.getText() === 'Ahoj světe', 'GetJSON sdílí stav.');
   editor.setJSON({ version: 1, blocks: [{ type: 'paragraph', children: [{ text: '<img src=x onerror=alert(1)>' }] }] });
+  await editor.ready;
   assert(!content.querySelector('img') && content.textContent.includes('<img'), 'JSON text se interpretoval jako HTML.');
   let rejected = false; try { editor.setJSON('<p>HTML</p>'); } catch { rejected = true; } assert(rejected, 'HTML import byl přijat.');
+  await editor.ready;
   form.reset(); await new Promise(resolve => setTimeout(resolve, 0)); assert(editor.getText() === 'Ahoj světe', 'Reset');
   editor.setJSON({ version: 1, blocks: [{ type: 'paragraph', children: [{ text: 'Zachovat' }] }] });
+  await editor.ready;
   form.addEventListener('reset', event => event.preventDefault(), { once: true });
   form.reset(); await new Promise(resolve => setTimeout(resolve, 0)); assert(editor.getText() === 'Zachovat', 'Zrušený reset přepsal model.');
   editor.destroy(); assert(!source.hidden && !form.querySelector('.editor'), 'Cleanup');
 });
-await test('JSON editor formátuje více odstavců a má SVG ikony s názvy', () => {
+await test('JSON editor formátuje více odstavců a má SVG ikony s názvy', async () => {
   const source = document.createElement('textarea'); source.value = JSON.stringify({ version: 1, blocks: ['První', 'Druhý'].map(text => ({ type: 'paragraph', children: [{ text }] })) }); fixture.append(source);
   const editor = createEditor(source); const content = fixture.querySelector('[contenteditable]');
+  await editor.ready;
   const range = document.createRange(); range.selectNodeContents(content);
   const selection = getSelection(); selection.removeAllRanges(); selection.addRange(range); document.dispatchEvent(new Event('selectionchange'));
   editor.command('italic');
@@ -56,6 +62,7 @@ await test('JSON editor formátuje více odstavců a má SVG ikony s názvy', ()
 });
 await test('Editor vkládá formátovaný text, odstavce a upravuje odkazy přes Pure modal', async () => {
   const source = document.createElement('textarea'); fixture.append(source); const editor = createEditor(source);
+  await editor.ready;
   const content = fixture.querySelector('[contenteditable]'); content.focus();
   const range = document.createRange(); range.selectNodeContents(content.firstChild); range.collapse(true);
   getSelection().removeAllRanges(); getSelection().addRange(range); document.dispatchEvent(new Event('selectionchange'));
@@ -66,9 +73,9 @@ await test('Editor vkládá formátovaný text, odstavce a upravuje odkazy přes
   assert(editor.getJSON().blocks.length === 2, 'Enter nevytvořil odstavec.');
   editor.command('bold');
   content.dispatchEvent(new InputEvent('beforeinput', { inputType: 'insertText', data: 'Web', bubbles: true, cancelable: true }));
-  const text = content.lastChild.firstChild; const selected = document.createRange(); selected.selectNodeContents(text);
+  const text = content.lastChild.querySelector('[data-editor-text]'); const selected = document.createRange(); selected.selectNodeContents(text);
   getSelection().removeAllRanges(); getSelection().addRange(selected); document.dispatchEvent(new Event('selectionchange'));
-  fixture.querySelector('[data-editor-command="link"]').click();
+  fixture.querySelector('[data-editor-command="link"]').click(); await waitFor('[data-editor-dialog="link"][open]');
   const panel = document.querySelector('[data-editor-dialog="link"]'); assert(panel.open && panel.matches(':modal'), 'Modal odkazu');
   panel.querySelector('input').value = '/docs'; panel.querySelector('button[type="submit"]').click(); await new Promise(resolve => setTimeout(resolve, 0));
   assert(editor.getJSON().blocks[1].children[0].link === '/docs', 'Chybí odkaz v JSON.');
@@ -149,7 +156,7 @@ await test('Upload synchronizuje drop a FormData, odmítá soubory a podporuje o
   input.disabled = true; assert(!upload.setFiles([file]), 'Disabled upload přijímá soubory.');
   assert(changes >= 4, 'Chybí callbacky.'); upload.destroy();
 });
-await test('Ikony polí a heslové oko jsou uvnitř obalu a cleanup vrátí původní input', () => {
+await test('Ikony polí a heslové oko jsou uvnitř obalu a cleanup vrátí původní input', async () => {
   fixture.innerHTML = '<label for="icon-email">E-mail</label><input class="input" data-input-icon="mail" id="icon-email" type="email"><label for="icon-password">Heslo</label><input class="input" data-input-icon="lock" id="icon-password" type="password">';
   const stop = initInputs(fixture); const password = fixture.querySelector('#icon-password');
   const toggle = password.parentElement.querySelector('button');
@@ -210,9 +217,11 @@ await test('Volitelný editor zachová nadpisy, obrázky, jejich úpravy a modal
   const source = document.createElement('textarea'); fixture.append(source);
   let imageUploads = 0;
   const editor = createEditor(source, { features: { headings: true, images: true }, uploadImage: async () => { imageUploads++; return '/examples/editor-image.svg'; } });
+  await editor.ready;
   editor.setJSON({ version: 1, blocks: [{ type: 'paragraph', children: [{ text: 'Nadpis' }] }] }); editor.command('heading', 2);
+  await editor.ready;
   assert(fixture.querySelector('.editor-content h2')?.textContent === 'Nadpis', 'Nadpis se nevykreslil.');
-  fixture.querySelector('[data-editor-command="image"]').click();
+  fixture.querySelector('[data-editor-command="image"]').click(); await waitFor('[data-editor-dialog="image"][open]');
   let modal = document.querySelector('[data-editor-dialog="image"]'); assert(modal.matches(':modal'), 'Obrázek není v Pure modalu.');
   assert(!modal.querySelector('[name="src"]') && modal.querySelector('input[type="file"]'), 'Modal nemá být URL formulář.');
   const transfer = new DataTransfer(); transfer.items.add(new File(['test'], 'image.png', { type: 'image/png' }));
@@ -221,27 +230,28 @@ await test('Volitelný editor zachová nadpisy, obrázky, jejich úpravy a modal
   modal.querySelector('[name="alt"]').value = 'Krajina'; modal.querySelector('[name="width"]').value = '50'; modal.querySelector('[name="align"]').value = 'right';
   modal.querySelector('[type="submit"]').click(); await new Promise(resolve => setTimeout(resolve, 0));
   assert(editor.getJSON().blocks[1].type === 'image' && editor.getJSON().blocks[1].width === 50, 'Obrázek není v JSON.');
-  fixture.querySelector('[data-image-action="edit"]').click();
+  fixture.querySelector('[data-image-action="edit"]').click(); await waitFor('[data-editor-dialog="image"][open]');
   modal.querySelector('[name="caption"]').value = 'Popisek'; modal.querySelector('[name="width"]').value = '75'; modal.querySelector('[type="submit"]').click(); await new Promise(resolve => setTimeout(resolve, 0));
   assert(fixture.querySelector('figcaption').textContent === 'Popisek' && editor.getJSON().blocks[1].width === 75, 'Úprava obrázku');
   assert(imageUploads === 1, 'Úprava vlastností znovu nahrála obrázek.');
   editor.command('undo'); assert(editor.getJSON().blocks[1].width === 50, 'Undo obrázku'); editor.command('redo');
-  editor.command('fullscreen'); const fullscreen = document.querySelector('.editor-fullscreen'); assert(fullscreen.matches(':modal') && fullscreen.querySelector('.editor'), 'Fullscreen');
-  fullscreen.querySelector('[data-editor-command="link"]').click(); const link = document.querySelector('[data-editor-dialog="link"]'); assert(link.matches(':modal') && fullscreen.open, 'Odkaz nad fullscreenem');
+  await editor.command('fullscreen'); const fullscreen = document.querySelector('.editor-fullscreen'); assert(fullscreen.matches(':modal') && fullscreen.querySelector('.editor'), 'Fullscreen');
+  fullscreen.querySelector('[data-editor-command="link"]').click(); await waitFor('[data-editor-dialog="link"][open]'); const link = document.querySelector('[data-editor-dialog="link"]'); assert(link.matches(':modal') && fullscreen.open, 'Odkaz nad fullscreenem');
   link.querySelector('[data-modal-close="cancel"]').click(); await new Promise(resolve => setTimeout(resolve, 0)); assert(fullscreen.open, 'Zavření modalu ukončilo fullscreen.');
-  editor.command('fullscreen'); await new Promise(resolve => setTimeout(resolve, 0)); assert(fixture.querySelector('.editor') && !fullscreen.open, 'Návrat z fullscreenu');
+  await editor.command('fullscreen'); await new Promise(resolve => setTimeout(resolve, 0)); assert(fixture.querySelector('.editor') && !fullscreen.open, 'Návrat z fullscreenu');
   fixture.querySelector('[data-editor-image] [data-block-delete]').click(); assert(!editor.getJSON().blocks.some(block => block.type === 'image'), 'Odebrání obrázku'); editor.command('undo'); assert(editor.getJSON().blocks.some(block => block.type === 'image'), 'Undo odebrání');
   editor.destroy(); assert(!document.querySelector('.editor-dialog') && !document.querySelector('.editor-fullscreen') && !source.hidden, 'Cleanup rozšířeného editoru');
 });
 await test('Zrušený upload obrázku nevloží pozdní výsledek do editoru', async () => {
   const source = document.createElement('textarea'); fixture.append(source); let finish;
   const editor = createEditor(source, { features: { images: true, fullscreen: false }, uploadImage: () => new Promise(resolve => { finish = resolve; }) });
-  fixture.querySelector('[data-editor-command="image"]').click(); const modal = document.querySelector('[data-editor-dialog="image"]');
+  await editor.ready;
+  fixture.querySelector('[data-editor-command="image"]').click(); await waitFor('[data-editor-dialog="image"][open]'); const modal = document.querySelector('[data-editor-dialog="image"]');
   const transfer = new DataTransfer(); transfer.items.add(new File(['test'], 'test.png', { type: 'image/png' })); modal.querySelector('[name="file"]').files = transfer.files;
   modal.querySelector('[type="submit"]').click(); assert(finish, 'Upload callback nezačal.'); modal.querySelector('[data-modal-close="cancel"]').click(); await new Promise(resolve => setTimeout(resolve, 0));
   finish('/examples/editor-image.svg'); await new Promise(resolve => setTimeout(resolve, 0)); assert(!editor.getJSON().blocks.some(block => block.type === 'image'), 'Pozdní upload změnil dokument.'); editor.destroy();
 });
-await test('Samostatný resize: kroky, tažení, zrušení, klávesnice a cleanup', () => {
+await test('Samostatný resize: kroky, tažení, zrušení, klávesnice a cleanup', async () => {
   const box = document.createElement('div'); box.style.width = '400px'; fixture.append(box);
   const target = document.createElement('figure'); target.style.width = '33%'; box.append(target);
   const changes = []; const commits = [];
@@ -263,12 +273,14 @@ await test('Samostatný resize: kroky, tažení, zrušení, klávesnice a cleanu
   resize.destroy(); resize.destroy(); pointer('pointermove', 300);
   assert(target.style.width === '33%' && !target.querySelector('[role="slider"]') && !target.classList.contains('resizable'), 'Cleanup');
 });
-await test('Akce a resize editoru ukládají JSON a jednu položku undo', () => {
+await test('Akce a resize editoru ukládají JSON a jednu položku undo', async () => {
   const source = document.createElement('textarea'); fixture.append(source);
   const editor = createEditor(source, { features: { images: true } });
+  await editor.ready;
   editor.setJSON({ version: 1, blocks: [{ type: 'image', src: '/examples/editor-image.svg', alt: 'Test', width: 100, align: 'center' }] });
+  await editor.ready;
   fixture.querySelector('[data-image-action="smaller"]').click();
-  assert(editor.getJSON().blocks[0].width === 75 && !document.querySelector('[data-editor-dialog="image"]').open, 'Přímá akce otevřela modal');
+  assert(editor.getJSON().blocks[0].width === 75 && !document.querySelector('[data-editor-dialog="image"]')?.open, 'Přímá akce otevřela modal');
   fixture.querySelector('[data-image-action="left"]').click(); assert(editor.getJSON().blocks[0].align === 'left', 'Zarovnání');
   editor.command('undo'); assert(editor.getJSON().blocks[0].align === 'center', 'Undo zarovnání');
   let handle = fixture.querySelector('[data-resize-handle]'); handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
@@ -300,7 +312,7 @@ await test('Loader drží souběžné činnosti, uklidí chybu i pozdní dokonč
   activity.destroy(); activity.destroy(); resolve('done'); await pending; first();
   assert(!fixture.querySelector('.activity') && !activity.isActive(), 'Cleanup při aktivní úloze');
 });
-await test('Progress synchronizuje hodnoty, neurčitý průběh, stav a cleanup', () => {
+await test('Progress synchronizuje hodnoty, neurčitý průběh, stav a cleanup', async () => {
   const sentinel = document.createElement('span'); sentinel.textContent = 'Obsah'; fixture.append(sentinel);
   const progress = createProgress(fixture, { max: 200, value: 50, label: 'Nahrávání' });
   const track = fixture.querySelector('[role="progressbar"]'); const root = fixture.querySelector('.progress');
@@ -347,18 +359,20 @@ await test('Search zpracuje debounce, krátký dotaz, chybu a skutečný AJAX', 
   input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); assert(input.getAttribute('aria-expanded') === 'false', 'Escape');
   fixture.querySelector('[aria-label="Vymazat hledání"]').click(); assert(input.value === '' && document.activeElement === input, 'Vymazání a focus'); ajax.destroy();
 });
-await test('Editor má bloky a obrázek sdružuje úchyt i skupiny akcí', () => {
+await test('Editor má bloky a obrázek sdružuje úchyt i skupiny akcí', async () => {
   const source = document.createElement('textarea'); fixture.append(source);
   const editor = createEditor(source, { features: { images: true } });
+  await editor.ready;
   editor.setJSON({ version: 1, blocks: [{ type: 'paragraph', children: [{ text: 'Text' }] }, { type: 'image', src: '/examples/editor-image.svg', alt: 'Test', width: 50, align: 'center' }] });
+  await editor.ready;
   assert(fixture.querySelectorAll('[data-editor-block]').length === 2, 'Blokové UI');
   const figure = fixture.querySelector('.editor-image');
   assert(figure.querySelector('.editor-block-header').textContent.includes('50 %') && figure.querySelector('.editor-image-media [data-resize-handle]') && figure.querySelectorAll('.editor-image-action-group').length === 3, 'Struktura obrázku');
-  figure.querySelector('img').click(); assert(!document.querySelector('[data-editor-dialog="image"]').open && document.activeElement === figure, 'Kliknutí nesmí otevřít modal');
-  figure.querySelector('[data-image-action="edit"]').click(); assert(document.querySelector('[data-editor-dialog="image"]').open, 'Explicitní úprava'); editor.destroy();
+  figure.querySelector('img').click(); assert(!document.querySelector('[data-editor-dialog="image"]')?.open && document.activeElement === figure, 'Kliknutí nesmí otevřít modal');
+  figure.querySelector('[data-image-action="edit"]').click(); await waitFor('[data-editor-dialog="image"][open]'); assert(document.querySelector('[data-editor-dialog="image"]')?.open, 'Explicitní úprava'); editor.destroy();
 });
 
-await test('Globální drag & drop řadí pointerem i klávesnicí a ruší nedokončené gesto', () => {
+await test('Globální drag & drop řadí pointerem i klávesnicí a ruší nedokončené gesto', async () => {
   const list = document.createElement('div'); list.style.width = '400px'; fixture.append(list);
   for (const text of ['A', 'B', 'C']) {
     const item = document.createElement('div'); item.dataset.dragItem = ''; item.style.height = '60px';
@@ -380,9 +394,11 @@ await test('Globální drag & drop řadí pointerem i klávesnicí a ruší nedo
   drag.move(2, 0); assert(list.textContent === 'BCA' && count === 3, 'Programové move');
   drag.destroy(); drag.destroy(); key(list.firstChild.firstChild, ' '); assert(!list.querySelector('[data-dragging]'), 'Cleanup');
 });
-await test('Přesun a smazání bloků editoru zachová model, historii a čistý text', () => {
+await test('Přesun a smazání bloků editoru zachová model, historii a čistý text', async () => {
   const source = document.createElement('textarea'); fixture.append(source); const editor = createEditor(source, { features: { images: true, headings: true } });
+  await editor.ready;
   editor.setJSON({ version: 1, blocks: [{ type: 'heading', level: 2, children: [{ text: 'Nadpis', bold: true }] }, { type: 'image', src: '/examples/editor-image.svg', alt: 'Krajina', width: 50, align: 'center' }, { type: 'paragraph', children: [{ text: 'Konec' }] }] });
+  await editor.ready;
   const handle = fixture.querySelector('[data-drag-handle]');
   for (const key of [' ', 'End', 'Enter']) handle.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
   assert(editor.getJSON().blocks[2].type === 'heading' && editor.getJSON().blocks[2].children[0].bold && editor.getJSON().blocks[0].width === 50, 'Přesun změnil obsah');
@@ -402,16 +418,18 @@ await test('Přesun a smazání bloků editoru zachová model, historii a čist�
   editor.destroy(); assert(!fixture.querySelector('[data-drag-handle]'), 'Cleanup editoru');
 });
 
-await test('Patička editoru sleduje JSON, historii a jazyk dokumentu s vlastními překlady', () => {
+await test('Patička editoru sleduje JSON, historii a jazyk dokumentu s vlastními překlady', async () => {
   const source = document.createElement('textarea'); fixture.append(source); const previous = document.documentElement.lang;
   document.documentElement.lang = 'en-GB';
   let editor; try { editor = createEditor(source, { features: { images: true, headings: true }, messages: { words: 'Word count: {count}' } }); } finally { document.documentElement.lang = previous; }
+  await editor.ready;
   assert(fixture.querySelector('[data-drag-handle]').textContent === 'Paragraph' && fixture.querySelector('[data-editor-command="bold"]').getAttribute('aria-label').startsWith('Bold'), 'Jazyk dokumentu');
   editor.setJSON({ version: 1, blocks: [{ type: 'heading', level: 2, children: [{ text: 'Hello world' }] }, { type: 'image', src: '/examples/editor-image.svg', alt: 'Words not counted', mediaId: 'asset' }] });
+  await editor.ready;
   assert(JSON.stringify(editor.getStats()) === JSON.stringify({ blocks: 2, words: 2, images: 1 }) && fixture.querySelector('[data-editor-count="words"]').textContent === 'Word count: 2', 'Statistiky');
   editor.command('removeBlock', 1); assert(editor.getStats().images === 0 && fixture.querySelector('[data-editor-count="images"]').textContent === 'Images: 0', 'Mazání');
   editor.command('undo'); assert(editor.getStats().images === 1, 'Undo statistiky');
-  fixture.querySelector('[data-image-action="edit"]').click(); const modal = document.querySelector('[data-editor-dialog="image"]');
+  fixture.querySelector('[data-image-action="edit"]').click(); await waitFor('[data-editor-dialog="image"][open]'); const modal = document.querySelector('[data-editor-dialog="image"]');
   assert(modal.textContent.includes('Alternative text') && modal.textContent.includes('Cancel') && !modal.textContent.includes('Vyber nebo'), 'Překlady modalu');
   editor.destroy();
   const cs = createEditor(source, { locale: 'cs-CZ' }); assert(fixture.querySelector('[data-drag-handle]').textContent === 'Nadpis 2', 'Explicitní jazyk'); cs.destroy();
@@ -420,28 +438,30 @@ await test('Knihovna v editoru vloží mediaId až po potvrzení a zachová ho p
   const tick = () => new Promise(resolve => setTimeout(resolve, 0));
   const source = document.createElement('textarea'); fixture.append(source);
   const editor = createEditor(source, { features: { images: true }, mediaLibrary: { load: async () => [{ id: 42, src: '/examples/editor-image.svg', alt: 'Krajina', name: '<b>Media</b>' }] } });
-  fixture.querySelector('[data-editor-command="image"]').click(); const modal = document.querySelector('[data-editor-dialog="image"]');
-  modal.querySelector('[data-editor-media-library]').click(); await tick(); const library = document.querySelector('[data-media-library]');
+  await editor.ready;
+  fixture.querySelector('[data-editor-command="image"]').click(); await waitFor('[data-editor-dialog="image"][open]'); const modal = document.querySelector('[data-editor-dialog="image"]');
+  modal.querySelector('[data-editor-media-library]').click(); await waitFor('[data-media-library][open] [data-media-id]'); const library = document.querySelector('[data-media-library]');
   assert(library.matches(':modal') && library.querySelector('[data-media-id="42"]') && !library.querySelector('b'), 'Načtení médií nebo HTML');
   library.querySelector('[data-media-id="42"]').click(); await tick();
   assert(!library.open && modal.open && editor.getStats().images === 0 && modal.querySelector('[name="alt"]').value === 'Krajina', 'Výběr předčasně změnil dokument');
   modal.querySelector('[type="submit"]').click(); await tick();
   assert(editor.getJSON().blocks[1].mediaId === 42 && editor.getStats().images === 1, 'Vložení mediaId');
-  fixture.querySelector('[data-image-action="edit"]').click(); modal.querySelector('[name="caption"]').value = 'Popisek'; modal.querySelector('[type="submit"]').click(); await tick();
+  fixture.querySelector('[data-image-action="edit"]').click(); await waitFor('[data-editor-dialog="image"][open]'); modal.querySelector('[name="caption"]').value = 'Popisek'; modal.querySelector('[type="submit"]').click(); await tick();
   assert(editor.getJSON().blocks[1].mediaId === 42, 'Úprava ztratila ID'); editor.command('undo'); editor.command('redo'); assert(editor.getJSON().blocks[1].mediaId === 42, 'Historie mediaId');
   editor.destroy(); assert(!document.querySelector('[data-media-library]'), 'Cleanup knihovny');
 });
 await test('Vlastní přímý upload vrátí ID bez závislosti na knihovně', async () => {
   const source = document.createElement('textarea'); fixture.append(source); let received;
   const editor = createEditor(source, { features: { images: true }, uploadImage: async (file, { signal }) => { received = { file, signal }; return { id: 'my-upload', src: '/examples/editor-image.svg' }; } });
-  fixture.querySelector('[data-editor-command="image"]').click(); const modal = document.querySelector('[data-editor-dialog="image"]');
+  await editor.ready;
+  fixture.querySelector('[data-editor-command="image"]').click(); await waitFor('[data-editor-dialog="image"][open]'); const modal = document.querySelector('[data-editor-dialog="image"]');
   const transfer = new DataTransfer(); transfer.items.add(new File(['test'], 'image.png', { type: 'image/png' })); modal.querySelector('[name="file"]').files = transfer.files;
   modal.querySelector('[type="submit"]').click(); await new Promise(resolve => setTimeout(resolve, 0));
   assert(received.file.name === 'image.png' && received.signal instanceof AbortSignal && editor.getJSON().blocks[1].mediaId === 'my-upload' && !document.querySelector('[data-media-library]'), 'Upload adaptér'); editor.destroy();
 });
 await test('Samostatná knihovna ignoruje staré načtení i upload po zavření', async () => {
   const pending = []; let uploads; let selected = 0;
-  const library = createMediaLibrary({ locale: 'en', load: options => new Promise(resolve => pending.push({ ...options, resolve })), upload: () => new Promise(resolve => { uploads = resolve; }), onSelect: () => { selected++; } });
+  const library = createMediaLibrary({ styles: false, locale: 'en', load: options => new Promise(resolve => pending.push({ ...options, resolve })), upload: () => new Promise(resolve => { uploads = resolve; }), onSelect: () => { selected++; } });
   const first = library.open(); const latest = library.refresh(); assert(pending[0].signal.aborted, 'Abort starého načtení');
   pending[1].resolve({ items: [{ id: 'new', src: '/examples/editor-image.svg', name: 'New' }], hasMore: true }); await latest;
   pending[0].resolve([{ id: 'old', src: '/examples/editor-image.svg' }]); await first;
@@ -465,7 +485,7 @@ await test('Zrušený reset zachová soubory a chyby formuláře', async () => {
   form.removeEventListener('reset', stop); form.reset(); await new Promise(resolve => setTimeout(resolve, 0));
   assert(!upload.getFiles().length && form.querySelector('[data-field-error]').hidden, 'Platný reset'); validation.destroy(); upload.destroy();
 });
-await test('Resize připojuje globální pointer listenery pouze po dobu gesta', () => {
+await test('Resize připojuje globální pointer listenery pouze po dobu gesta', async () => {
   const add = window.addEventListener; const remove = window.removeEventListener; const tracked = new Set(['pointermove', 'pointerup', 'pointercancel', 'blur']); let active = 0; let resize;
   window.addEventListener = function (type, ...args) { if (tracked.has(type)) active++; return add.call(this, type, ...args); };
   window.removeEventListener = function (type, ...args) { if (tracked.has(type)) active--; return remove.call(this, type, ...args); };

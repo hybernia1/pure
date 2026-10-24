@@ -8,7 +8,10 @@
   <script>
     try { const theme = localStorage.getItem('pure-theme'); if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme; } catch {}
   </script>
-  <link rel="stylesheet" href="../dist/pure.css">
+  <link rel="stylesheet" href="../dist/css/tokens.css">
+  <link rel="stylesheet" href="../dist/css/base.css">
+  <link rel="stylesheet" href="../dist/css/components.css">
+  <link rel="stylesheet" href="../dist/css/utilities.css">
 </head>
 <body>
   <a class="sr-only" href="#main" id="skip">Přejít na obsah</a>
@@ -65,6 +68,7 @@
       <h2 class="text-2xl mb-4">Stavební bloky</h2>
       <p class="mb-4"><a href="modules.html">Flash, stavy, editor a AJAX →</a></p>
       <p class="mb-4"><a href="forms.html">Formuláře, datum a čas, modal a upload →</a></p>
+      <p class="mb-4"><a href="lazy.html">Načítání editoru a stylů až po kliknutí →</a></p>
       <div class="grid grid-cols-1 dt:grid-cols-2 gap-4">
         <article class="card"><h3 class="text-lg mb-3">Tlačítka a štítky</h3><div class="flex flex-wrap items-center gap-3"><button type="button" class="button" data-disclosure aria-controls="button-demo" aria-expanded="false">Zobrazit detail</button><button type="button" class="button button-outline" data-theme-toggle>Přepnout téma</button><button type="button" class="button" disabled>Neaktivní</button><span class="badge">Bez závislostí</span></div><p id="button-demo" class="mt-4 text-sm text-subtle" hidden>Stejný disclosure modul může ovládat navigaci i jednoduchý detail.</p></article>
         <article class="card"><h3 class="text-lg mb-3">Formulářové pole</h3><label for="name" class="block text-sm font-medium mb-2">Jméno projektu</label><input id="name" class="input" placeholder="Například: Nový začátek" aria-describedby="name-help"><p id="name-help" class="text-xs text-subtle mt-2">Nativní HTML, viditelný focus a vlastní tokeny.</p></article>
@@ -76,7 +80,8 @@
   </main>
   <footer class="border-b"><div class="container py-8 flex flex-col dt:flex-row justify-between gap-3 text-sm text-subtle"><p>pure. / Základ, který nechá vyniknout obsah.</p><a href="../README.md">Dokumentace a zdrojové soubory ↗</a></div></footer>
   <script type="module">
-    import { initTheme, initDisclosures } from '../dist/js/index.js';
+    import { initTheme } from '../dist/js/theme.js';
+    import { initDisclosures } from '../dist/js/disclosure.js';
     initTheme();
     initDisclosures();
     const names = ['home', 'user', 'menu', 'close', 'sun', 'moon', 'arrow-right', 'check', 'search', 'settings', 'bold', 'italic', 'link', 'unlink', 'undo', 'redo', 'mail', 'lock', 'eye', 'eye-off', 'calendar', 'clock', 'chevron-down', 'chevron-left', 'chevron-right', 'list', 'image', 'expand', 'shrink'];

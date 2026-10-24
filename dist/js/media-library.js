@@ -1,16 +1,14 @@
 import { createModal } from './modal.js';
 import { iconButton, icon } from './controls.js';
-import { safeImageSource } from './editor-model.js';
-import { validateFiles } from './upload.js';
+import { normalizeMedia } from './media.js';
+import { ensureStyles } from './styles.js';
+import { validateFiles } from './file-validation.js';
 import { editorI18n } from './editor-i18n.js';
 
-export function normalizeMedia(item) {
-  if (!item || !((typeof item.id === 'string' && item.id.trim()) || (typeof item.id === 'number' && Number.isFinite(item.id))) || typeof item.src !== 'string' || !safeImageSource(item.src)) throw new TypeError('Invalid media: expected id and a safe src.');
-  return { id: item.id, src: safeImageSource(item.src), alt: typeof item.alt === 'string' ? item.alt : '', name: typeof item.name === 'string' ? item.name : item.alt || String(item.id) };
-}
+export { normalizeMedia } from './media.js';
 
 /** Připojitelný modal; API, autentizaci a ukládání vlastní aplikace. */
-export function createMediaLibrary({ document: doc = document, load, upload, locale, messages, onSelect = () => {}, pageSize = 12 } = {}) {
+export function createMediaLibrary({ document: doc = document, load, upload, locale, messages, onSelect = () => {}, pageSize = 12, styles = true } = {}) {
   if (typeof load !== 'function' || !Number.isInteger(pageSize) || pageSize < 1) throw new TypeError('Media library requires load and a positive pageSize.');
   const { t } = editorI18n(doc, { locale, messages });
   const node = (tag, className, text) => { const element = doc.createElement(tag); if (className) element.className = className; if (text !== undefined) element.textContent = text; return element; };
@@ -29,7 +27,7 @@ export function createMediaLibrary({ document: doc = document, load, upload, loc
     const label = node('label', 'field-label', t('uploadImage')); file = node('input', 'input'); file.type = 'file'; file.accept = 'image/png,image/jpeg,image/webp,image/gif,image/avif'; label.append(file); body.append(label);
   }
   body.append(form, status, grid); footer.append(previous, pageLabel, next); dialog.append(header, body, footer); doc.body.append(dialog);
-  const modal = createModal(dialog); let page = 1; let query = ''; let hasMore = false; let controller; let sequence = 0; let destroyed = false; let busy = false;
+  const modal = createModal(dialog); let page = 1; let query = ''; let hasMore = false; let controller; let sequence = 0; let destroyed = false; let busy = false; let openSequence = 0;
   const listeners = []; const listen = (target, type, fn) => { target.addEventListener(type, fn); listeners.push(() => target.removeEventListener(type, fn)); };
   const setBusy = value => {
     busy = value; grid.setAttribute('aria-busy', String(value)); submit.disabled = value; if (file) file.disabled = value;
@@ -84,8 +82,16 @@ export function createMediaLibrary({ document: doc = document, load, upload, loc
   listen(dialog, 'close', () => { if (!dialog.open) { abort(); grid.replaceChildren(); if (file) file.value = ''; setBusy(false); } });
   return {
     dialog, refresh,
-    open(opener = doc.activeElement) { if (destroyed) throw new Error('Media library is destroyed.'); page = 1; query = ''; search.value = ''; hasMore = false; modal.open(opener); return refresh(); },
-    close() { abort(); modal.close(); },
-    destroy() { if (destroyed) return; abort(); destroyed = true; listeners.forEach(fn => fn()); modal.destroy(); dialog.remove(); },
+    open(opener = doc.activeElement) {
+      if (destroyed) throw new Error('Media library is destroyed.');
+      const opening = ++openSequence;
+      const show = () => {
+        if (destroyed || opening !== openSequence) return;
+        page = 1; query = ''; search.value = ''; hasMore = false; modal.open(opener); return refresh();
+      };
+      return styles ? ensureStyles('media-library', { document: doc }).then(show) : show();
+    },
+    close() { openSequence++; abort(); modal.close(); },
+    destroy() { if (destroyed) return; openSequence++; abort(); destroyed = true; listeners.forEach(fn => fn()); modal.destroy(); dialog.remove(); },
   };
 }

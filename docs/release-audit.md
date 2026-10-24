@@ -1,5 +1,7 @@
 # Audit před prvním vydáním — 23. 10. 2026
 
+Aktualizace 24. 10.: [distribuce podle potřeby](distribution.md) přidává lazy vstup a odložené doplňky editoru. Níže uvedené velikosti a hash jsou historický snímek před touto změnou; aktuální hodnoty vrátí audit:size a check:dist.
+
 Výchozí stav: commit `ad2638c`. Audit zahrnuje zdroje CSS/JS/SVG, distribuci, npm obsah, lifecycle a zátěž vybraných funkcí. Níže uvedené opravy jsou implementované a ověřené. Veřejné vydání zatím není dokončené: zůstávají rozhodnutí o licenci, vydávané verzi a podporovaných prohlížečích. Nic se nepublikovalo ani netagovalo.
 
 ## Otevřené nálezy podle priority

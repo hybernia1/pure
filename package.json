@@ -7,6 +7,7 @@
   "sideEffects": ["**/*.css"],
   "exports": {
     ".": "./dist/js/index.js",
+    "./lazy": "./dist/js/lazy.js",
     "./js/*": "./dist/js/*",
     "./css/*": "./dist/css/*",
     "./pure.css": "./dist/pure.css",
@@ -15,7 +16,7 @@
   "description": "Čistý modulární CSS, JS a SVG základ.",
   "scripts": {
     "build": "node scripts/build.mjs",
-    "test": "node --test test/core.test.js test/ajax.test.js test/upload.test.js test/editor-model.test.js test/calendar.test.js test/image-upload.test.js",
+    "test": "node --test test/core.test.js test/ajax.test.js test/upload.test.js test/editor-model.test.js test/calendar.test.js test/image-upload.test.js test/lazy.test.js",
     "dev": "node scripts/serve.mjs",
     "audit:size": "node scripts/audit.mjs",
     "check:dist": "node scripts/check-dist.mjs",

@@ -1,5 +1,3 @@
-import { htmlFragment } from './html.js';
-
 export class HttpError extends Error {
   constructor(response) { super(`HTTP ${response.status}`); this.name = 'HttpError'; this.status = response.status; this.response = response; }
 }
@@ -39,7 +37,11 @@ export function createLoader(target) {
       try {
         const result = await request(url, { ...options, type: 'text', signal: controllerForRequest.signal });
         if (current !== sequence || controllerForRequest.signal.aborted) return null;
-        if (format === 'html') target.replaceChildren(htmlFragment(result, target.ownerDocument));
+        if (format === 'html') {
+          const { htmlFragment } = await import('./html.js');
+          if (current !== sequence || controllerForRequest.signal.aborted) return null;
+          target.replaceChildren(htmlFragment(result, target.ownerDocument));
+        }
         else target.textContent = result;
         return result;
       } catch (error) {

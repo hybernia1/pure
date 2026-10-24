@@ -1,5 +1,7 @@
 # JSON editor: volitelné moduly
 
+[Načítání JS/CSS podle potřeby a asynchronní UI](distribution.md): createEditor vrací instanci synchronně, doplňky čekají přes editor.ready. Otevření dialogu a první fullscreen mohou načítat síťové prostředky; pro programový přístup použij await editor.openDialog('image'/'link') a await editor.command('fullscreen').
+
 [Patička, statistiky, i18n, upload API, media library a mediaId](editor-media-i18n.md).
 
 Bloky lze přesouvat tažením za text typu v záhlaví, nebo klávesnicí (mezerník, šipky, mezerník). Textové „Smazat“ odstraní konkrétní blok; přesun i mazání podporují undo/redo. Implementaci sdílí samostatná [služba drag & drop](drag-drop.md), použitelná i mimo editor. Záhlaví a jeho tlačítka se do JSON ani textových pozic nepočítají.
