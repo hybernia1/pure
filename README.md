@@ -2,22 +2,14 @@
 
 A compact, modular CSS, JavaScript and SVG framework. Tailwind-style utilities, neutral colors, explicit initialization and no runtime dependencies.
 
-## Quick start
+## Use in your project - no Node.js required
 
-Requires Node.js 22 or newer for development. Serve examples over HTTP: ES modules and the external SVG sprite require it.
+Download the [v1.0.0 source archive](https://github.com/hybernia1/pure/archive/refs/tags/v1.0.0.zip) and copy `dist/pure.min/` (minified) or `dist/pure/` (readable) into your project. The files are already built: **no Node.js, npm, bundler or build step is required to use Pure**.
 
-```sh
-git clone https://github.com/hybernia1/pure.git
-cd pure
-npm ci
-npm run build
-npm run dev
-```
-
-Open http://localhost:3000. Build output is committed, so applications can also copy an existing distribution without running Node.
+Serve the files through your existing HTTP server (for example Apache, Nginx or your application's server). Pure's CSS and JavaScript run in the browser; ES modules and the external SVG sprite should be served over HTTP rather than opened through `file://`. The example paths below assume you copied the selected tree to `/assets/pure/`.
 
 ```html
-<link rel="stylesheet" href="/dist/pure.min/pure.css">
+<link rel="stylesheet" href="/assets/pure/pure.css">
 <section class="container py-4 dt:py-8">
   <div class="grid grid-cols-1 dt:grid-cols-3 gap-4">
     <article class="card">Your content</article>
@@ -36,13 +28,13 @@ dist/
 Both directories are self-contained. Production output has no source maps. Keep the selected directory structure when deploying; lazy imports, styles and icons resolve relative to it.
 
 ```js
-import { loadComponent } from './dist/pure.min/js/lazy.js';
+import { loadComponent } from '/assets/pure/js/lazy.js';
 const { createEditor } = await loadComponent('editor');
 const editor = createEditor(document.querySelector('#content'));
 await editor.ready;
 ```
 
-Use a textarea as the editor source. Importing a module never initializes UI automatically. The lazy entry loads only requested components and their CSS; editor dialogs, uploads and the media library load when used. Direct module imports are also available. The shared `js/index.js` entry loads the complete static graph in a browser.
+Use a textarea as the editor source and put JavaScript imports inside a `<script type="module">` or an application ES module. Importing a module never initializes UI automatically. The lazy entry loads only requested components and their CSS; editor dialogs, uploads and the media library load when used. Direct module imports are also available. The shared `js/index.js` entry loads the complete static graph in a browser.
 
 Package exports such as `@pure-ui/core/lazy`, `@pure-ui/core/min/lazy` and `@pure-ui/core/css/tokens.css` work when the package is installed locally or from Git. The package is currently private to prevent accidental npm publication; this GitHub repository is the distribution source.
 
@@ -73,6 +65,17 @@ Package exports such as `@pure-ui/core/lazy`, `@pure-ui/core/min/lazy` and `@pur
 Runnable examples: [basic UI](examples/index.html), [modules and editor](examples/modules.html), [forms](examples/forms.html), [lazy loading](examples/lazy.html), [minified distribution](examples/minified.html), [themes](examples/themes.html), [data](examples/data.html), [tabs](examples/tabs.html), [navigation](examples/navigation.html). Existing demos use Czech sample content to exercise localization; API documentation is English.
 
 ## Development and checks
+
+**Node.js 22+ and npm are needed only to develop Pure, rebuild its distribution, run its tests or use its optional demo server.** They are not required by a website using the built files.
+
+```sh
+git clone https://github.com/hybernia1/pure.git
+cd pure
+npm ci
+npm run dev
+```
+
+Open http://localhost:3000 for local examples. To rebuild and verify changes:
 
 ```sh
 npm test

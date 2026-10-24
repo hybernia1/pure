@@ -1,6 +1,6 @@
 # Publishing and release checklist
 
-The canonical repository is https://github.com/hybernia1/pure. Code and documentation are MIT licensed. GitHub source publication and npm publication are separate. The package stays private to prevent accidental npm publication; its current development version is 0.6.1. Pushing source does not imply a stable 1.0.0 tag.
+The canonical repository is https://github.com/hybernia1/pure. Code and documentation are MIT licensed. Version 1.0.0 is distributed through Git tag `v1.0.0`, including the prebuilt `dist/pure/` and `dist/pure.min/` trees. Using those files needs no Node.js or npm. Node.js 22+ is required only for development/build tooling. GitHub source publication and npm publication are separate; the package stays private to prevent accidental npm publication.
 
 ## Before a versioned release
 

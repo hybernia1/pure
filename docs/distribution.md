@@ -2,6 +2,8 @@
 
 ## Readable and minified output
 
+Using either prebuilt tree requires no Node.js, npm or build tool. Copy it into your application and serve it over HTTP using your existing web server. The Node commands below apply only when developing Pure or rebuilding its files.
+
 `npm ci` installs build tooling. `npm run build` generates two self-contained variants using esbuild transform API without bundling. There are no runtime dependencies. Minification preserves ESM exports, function names, object properties, dynamic imports and import.meta.url. JavaScript syntax targets ES2022 without polyfills; the SVG sprite is copied with symbol IDs intact.
 
 ```text
