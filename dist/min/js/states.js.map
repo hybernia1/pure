@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../js/states.js"],
+  "sourcesContent": ["export const states = Object.freeze(['error', 'success', 'info']);\nexport function assertState(state) {\n  if (!states.includes(state)) throw new TypeError(`Neznámý stav: ${state}`);\n  return state;\n}\n"],
+  "mappings": "+EAAO,MAAMA,EAAS,OAAO,OAAO,CAAC,QAAS,UAAW,MAAM,CAAC,EACzD,SAASC,EAAYC,EAAO,CACjC,GAAI,CAACF,EAAO,SAASE,CAAK,EAAG,MAAM,IAAI,UAAU,iBAAiBA,CAAK,EAAE,EACzE,OAAOA,CACT,CAHgBC,EAAAF,EAAA",
+  "names": ["states", "assertState", "state", "__name"]
+}

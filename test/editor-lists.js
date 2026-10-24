@@ -1,4 +1,5 @@
-import { loadComponent } from '../dist/js/lazy.js';
+import { distRoot } from './distribution.js';
+const { loadComponent } = await import(`${distRoot}js/lazy.js`);
 const [{ createEditor }, { createMediaLibrary }] = await Promise.all(['editor', 'media-library'].map(name => loadComponent(name)));
 const fixture = document.querySelector('#fixture'); let passed = 0; let failed = 0;
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
@@ -90,7 +91,7 @@ await test('Server total, zmenšení počtu stránek, filtr a chyba s retry', as
 });
 await test('Galerie i paginace se vejdou do 375px modalu', async () => {
   const frame = document.createElement('iframe'); frame.title = 'Mobile gallery'; frame.style.width = '375px'; frame.style.height = '700px'; frame.style.border = '0'; fixture.append(frame);
-  const doc = frame.contentDocument; doc.documentElement.lang = 'cs'; const css = doc.createElement('link'); css.rel = 'stylesheet'; css.href = new URL('../dist/pure.css', location.href).href;
+  const doc = frame.contentDocument; doc.documentElement.lang = 'cs'; const css = doc.createElement('link'); css.rel = 'stylesheet'; css.href = `${distRoot}pure.css`;
   const loaded = new Promise((resolve, reject) => { css.onload = resolve; css.onerror = reject; }); doc.head.append(css); await loaded;
   const library = createMediaLibrary({ document: doc, pageSize: 2, load: () => ({ items: [{ id: 'long-id-'.repeat(10), src: '/examples/editor-image.svg', name: 'LongName'.repeat(15) }], total: 7 }) });
   try {

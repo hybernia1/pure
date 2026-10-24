@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../css/progress.css"],
+  "sourcesContent": ["@layer components {\n  .progress { color: var(--p-state, var(--p-text)); }\n  .progress-description { display: flex; justify-content: space-between; gap: var(--p-space-2); margin-bottom: var(--p-space-1); font-size: .875rem; }\n  .progress-track { height: var(--p-progress-height); overflow: hidden; border-radius: var(--p-radius-sm); background: var(--p-muted); }\n  .progress-fill { display: block; height: 100%; background: currentColor; }\n  .progress[data-indeterminate=\"true\"] .progress-fill { width: 35%; animation: pure-progress 1.2s ease-in-out infinite alternate; }\n  @keyframes pure-progress { from { transform: translateX(0); } to { transform: translateX(185%); } }\n  @media (prefers-reduced-motion: reduce) { .progress[data-indeterminate=\"true\"] .progress-fill { animation: none; width: 100%; opacity: .5; } }\n}\n"],
+  "mappings": "AAAA,kBACE,CAAC,SAAW,MAAO,IAAI,SAAS,EAAE,IAAI,UAAY,CAClD,CAAC,qBAAuB,QAAS,KAAM,gBAAiB,cAAe,IAAK,IAAI,aAAc,cAAe,IAAI,aAAc,UAAW,OAAS,CACnJ,CAAC,eAAiB,OAAQ,IAAI,qBAAsB,SAAU,OAAQ,cAAe,IAAI,eAAgB,WAAY,IAAI,UAAY,CACrI,CAAC,cAAgB,QAAS,MAAO,OAAQ,KAAM,WAAY,YAAc,CACzE,CAJC,QAIQ,CAAC,yBAA2B,CADpC,cACqD,MAAO,IAAK,UAAW,cAAc,KAAK,YAAY,SAAS,SAAW,CAChI,WAD6E,cAClD,GAAO,UAAW,UAAW,EAAI,CAAE,GAAK,UAAW,UAAW,KAAO,CAAE,CAClG,OAAO,uBAAyB,QAAU,CANzC,QAMkD,CAAC,yBAA2B,CAH9E,cAG+F,UAAW,KAAM,MAAO,KAAM,QAAS,EAAI,CAAE,CAC/I",
+  "names": []
+}

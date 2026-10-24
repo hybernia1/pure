@@ -1,0 +1,94 @@
+{
+  "node": "v24.15.0",
+  "minifier": "esbuild 0.28.2",
+  "gzip": "Sum of separately compressed files, not an HTTP measurement; source maps excluded",
+  "entries": {
+    "pure.css": {
+      "files": 1,
+      "bytes": 49141,
+      "gzipBytes": 8098
+    },
+    "min/pure.css": {
+      "files": 1,
+      "bytes": 42379,
+      "gzipBytes": 7742
+    },
+    "icons.svg": {
+      "files": 1,
+      "bytes": 4309,
+      "gzipBytes": 1205
+    },
+    "min/icons.svg": {
+      "files": 1,
+      "bytes": 4309,
+      "gzipBytes": 1205
+    },
+    "js/lazy.js": {
+      "files": 3,
+      "bytes": 9527,
+      "gzipBytes": 3597
+    },
+    "min/js/lazy.js": {
+      "files": 3,
+      "bytes": 7363,
+      "gzipBytes": 3271
+    },
+    "js/index.js": {
+      "files": 38,
+      "bytes": 208292,
+      "gzipBytes": 68358
+    },
+    "min/js/index.js": {
+      "files": 38,
+      "bytes": 137934,
+      "gzipBytes": 60412
+    },
+    "js/editor.js": {
+      "files": 9,
+      "bytes": 82587,
+      "gzipBytes": 24665
+    },
+    "min/js/editor.js": {
+      "files": 9,
+      "bytes": 53030,
+      "gzipBytes": 21535
+    },
+    "js/search.js": {
+      "files": 5,
+      "bytes": 27785,
+      "gzipBytes": 9860
+    },
+    "min/js/search.js": {
+      "files": 5,
+      "bytes": 19558,
+      "gzipBytes": 8791
+    },
+    "js/theme.js": {
+      "files": 2,
+      "bytes": 8255,
+      "gzipBytes": 2897
+    },
+    "min/js/theme.js": {
+      "files": 2,
+      "bytes": 5853,
+      "gzipBytes": 2484
+    },
+    "js/activity.js": {
+      "files": 3,
+      "bytes": 9965,
+      "gzipBytes": 4030
+    },
+    "min/js/activity.js": {
+      "files": 3,
+      "bytes": 8074,
+      "gzipBytes": 3796
+    }
+  },
+  "statsBenchmark": {
+    "blocks": 1000,
+    "words": 5000,
+    "runs": 15,
+    "medianMs": 1.347,
+    "minMs": 1.017
+  }
+}

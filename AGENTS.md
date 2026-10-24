@@ -2,6 +2,7 @@
 
 - Pure je malý CSS, JS a SVG framework bez runtime závislostí. Drž KISS.
 - Zdrojové soubory patří do `src/`; `dist/` vzniká příkazem `npm run build`.
+- Build vytváří čitelný strom i `dist/min/` pomocí esbuild transform API bez bundlování. Zachovej stejné ESM hranice, relativní importy, asset URL, názvy funkcí a externí source mapy; minifikované soubory neupravuj ručně. Browserové testy podporují `?min`.
 - CSS vrstvy: tokens → base → components → utilities. Komponenty a JS jsou volitelné.
 - Pouze dva viewporty: mobile (výchozí) a desktop od 960 px (`dt:`). Breakpoint měň pouze spolu s dokumentací a generátorem.
 - Používej neutrální paletu a sémantické tokeny. Podporuj light i dark bez duplikace komponent.

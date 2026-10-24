@@ -1,5 +1,7 @@
 # Výkon a kontrola před 1.0.0
 
+Navazující kontrola: [minifikace distribuce](minification.md). Níže uvedený manifest a velikosti popisují stav před přidáním `dist/min/`; aktuální build kontroluje oba stromy.
+
 Měřeno 24. 10. 2026. Výchozí stav je commit `784e4e5`, finální stav jsou navazující optimalizace pracovního stromu. Předchozí [audit](release-audit.md) zůstává historickým záznamem.
 
 ## Metoda

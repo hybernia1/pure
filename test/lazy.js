@@ -1,4 +1,5 @@
-import { loadComponent, ensureStyles } from '../dist/js/lazy.js';
+import { distRoot } from './distribution.js';
+const { loadComponent, ensureStyles } = await import(`${distRoot}js/lazy.js`);
 
 const results = document.querySelector('#results'); const fixture = document.querySelector('#fixture');
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
@@ -69,6 +70,11 @@ await test('Destroy a změna JSON během načítání neotevřou opožděný mod
 await test('Chybná jména se odmítnou bez nových požadavků', async () => {
   let rejected = 0; try { await loadComponent('unknown'); } catch { rejected++; } try { await ensureStyles('constructor'); } catch { rejected++; }
   assert(rejected === 2, 'Neplatný modul nebo styl prošel');
+});
+await test('JS, dynamické doplňky, CSS i sprite zůstávají ve zvolené distribuci', () => {
+  const assets = performance.getEntriesByType('resource').filter(entry => new URL(entry.name).pathname.startsWith('/dist/'));
+  assert(assets.length && assets.every(entry => entry.name.startsWith(distRoot)), 'Smíchané distribuční grafy');
+  assert([...document.querySelectorAll('link[rel="stylesheet"]')].every(link => link.href.startsWith(distRoot)), 'CSS mimo distribuci');
 });
 document.querySelector('#summary').textContent = `${passed} prošlo, ${failed} selhalo.`;
 document.documentElement.dataset.testResult = failed ? 'fail' : 'pass';

@@ -1,5 +1,29 @@
 # Distribuce a načítání podle potřeby
 
+## Čitelná a minifikovaná varianta
+
+`npm ci` nainstaluje build nástroj a `npm run build` vytvoří obě varianty: čitelnou v `dist/` a minifikovanou v `dist/min/`. Minifikace používá pouze transform API esbuild (přesná verze v lockfile), bez bundlování. Framework dál nemá runtime závislosti. JS zachovává ESM exporty, názvy funkcí, vlastnosti objektů, dynamické importy i `import.meta.url`; syntax target je ES2022, bez polyfillů. SVG se kopíruje beze změny, včetně symbol ID.
+
+Pro přímé produkční použití lze vybrat minifikovaný lazy vstup:
+
+```js
+import { loadComponent } from '/dist/min/js/lazy.js';
+// V npm: import { loadComponent } from '@pure-ui/core/min/lazy';
+const { createEditor } = await loadComponent('editor');
+const editor = createEditor(document.querySelector('#content'));
+await editor.ready;
+```
+
+CSS a sprite se automaticky řeší uvnitř stejné `dist/min/` struktury. Samostatné cesty jsou `/dist/min/pure.css`, `/dist/min/css/forms.css`, `/dist/min/icons.svg`; npm exporty například `@pure-ui/core/min/pure.css`, `@pure-ui/core/min/js/editor.js`. Společný statický vstup je `@pure-ui/core/min`. Funkční [ukázka](../examples/minified.html) načítá editor až po kliknutí.
+
+Pro jednu aplikaci vyber jednu variantu. Smíchání čitelného a minifikovaného JS vytváří dvě ESM instance konfigurace a CSS registru. Používá-li frontend vlastní bundler, může zůstat u čitelných exportů a minifikovat výsledné chunky sám.
+
+Vedle každého minifikovaného JS/CSS je externí `.map` se zdrojovým obsahem pro debugging; mapy nejsou součástí měřené JS/CSS velikosti a běžný runtime je nepotřebuje. Publikovaný balíček obsahuje oba stromy i mapy, takže zabere více místa na disku. Na serveru stačí nasadit vybraný kompletní strom a podle potřeby mapy. Minifikace nenahrazuje gzip/Brotli, HTTP cache ani načítání komponent podle potřeby.
+
+[Měření přínosu](minification.md) obsahuje raw i gzip velikosti. Regresní browserové stránky podporují `?min` (například `/test/lazy.html?min`), bez parametru testují čitelný strom.
+
+## Načítání komponent
+
 Pure poskytuje lehký vstup `lazy.js`. Frontend určuje okamžik použití komponenty; Pure načte její JS, závislosti a CSS. Inicializace zůstává explicitní, žádný automatický průchod DOM se neprovádí.
 
 ```js

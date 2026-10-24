@@ -1,4 +1,5 @@
-import { loadComponent, getPureConfig, configurePure } from '../dist/js/lazy.js';
+import { distRoot } from './distribution.js';
+const { loadComponent, getPureConfig, configurePure } = await import(`${distRoot}js/lazy.js`);
 const { createNavigation, initNavigations } = await loadComponent('navigation');
 const fixture = document.querySelector('#fixture'); let passed = 0; let failed = 0; let nextId = 0;
 const assert = (condition, text) => { if (!condition) throw new Error(text); };
@@ -52,7 +53,7 @@ await test('Cleanup obnoví markup a duplicitní/chybná inicializace se odmítn
 });
 await test('375px menu, focus bez pasti, resize na desktop a zpět, žádné přetékání', async () => {
   const frame = document.createElement('iframe'); frame.title = 'Mobile navigation'; frame.style.width = '375px'; frame.style.height = '600px'; frame.style.border = '0'; fixture.append(frame);
-  const doc = frame.contentDocument; doc.documentElement.lang = 'cs'; const css = doc.createElement('link'); css.rel = 'stylesheet'; css.href = new URL('../dist/pure.css', location.href).href;
+  const doc = frame.contentDocument; doc.documentElement.lang = 'cs'; const css = doc.createElement('link'); css.rel = 'stylesheet'; css.href = `${distRoot}pure.css`;
   const loaded = new Promise((resolve, reject) => { css.onload = resolve; css.onerror = reject; }); doc.head.append(css); await loaded;
   const root = markup(doc); doc.body.append(root); const outside = doc.createElement('button'); outside.textContent = 'Outside'; doc.body.append(outside);
   const fallbackPanel = root.querySelector('[data-nav-panel]'); assert(!fallbackPanel.hidden, 'No-JS obsah viditelný');

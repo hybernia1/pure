@@ -3,9 +3,19 @@
   "version": "0.6.1",
   "private": true,
   "type": "module",
-  "files": ["dist", "docs", "README.md"],
-  "sideEffects": ["**/*.css"],
+  "files": [
+    "dist",
+    "docs",
+    "README.md"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
   "exports": {
+    "./min": "./dist/min/js/index.js",
+    "./min/lazy": "./dist/min/js/lazy.js",
+    "./min/config": "./dist/min/js/config.js",
+    "./min/*": "./dist/min/*",
     ".": "./dist/js/index.js",
     "./lazy": "./dist/js/lazy.js",
     "./config": "./dist/js/config.js",
@@ -23,5 +33,8 @@
     "bench": "node scripts/benchmark.mjs",
     "check:dist": "node scripts/check-dist.mjs",
     "prepack": "npm run build && npm run check:dist"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
   }
 }

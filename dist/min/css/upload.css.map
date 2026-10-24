@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../css/upload.css"],
+  "sourcesContent": ["@layer components {\n  .upload { padding: var(--p-panel-padding); border: 1px dashed var(--p-border); border-radius: var(--p-radius); background: var(--p-surface); }\n  .upload[data-drag-active] { border-color: var(--p-focus); background: var(--p-muted); }\n  .upload-list { display: grid; gap: var(--p-space-2); padding: 0; margin: var(--p-space-2) 0 0; list-style: none; }\n  .upload-item { display: flex; align-items: center; gap: var(--p-space-2); min-width: 0; }\n  .upload-name { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: .875rem; }\n  .upload-preview { width: var(--p-upload-preview); height: var(--p-upload-preview); object-fit: cover; border: 1px solid var(--p-border); border-radius: var(--p-radius-sm); }\n}\n"],
+  "mappings": "AAAA,kBACE,CAAC,OAAS,QAAS,IAAI,mBAAoB,OAAQ,IAAI,OAAO,IAAI,YAAa,cAAe,IAAI,YAAa,WAAY,IAAI,YAAc,CAC7I,CADC,MACM,CAAC,kBAAoB,aAAc,IAAI,WAAY,WAAY,IAAI,UAAY,CACtF,CAAC,YAAc,QAAS,KAAM,IAAK,IAAI,aAHzC,QAGgE,EAAG,OAAQ,IAAI,aAAa,EAAE,EAAG,WAAY,IAAM,CACjH,CAAC,YAAc,QAAS,KAAM,YAAa,OAAQ,IAAK,IAAI,aAAc,UAAW,CAAG,CACxF,CAAC,YAAc,KAAM,EAAG,UAAW,EAAG,cAAe,SAAU,UAAW,OAAS,CACnF,CAAC,eAAiB,MAAO,IAAI,oBAAqB,OAAQ,IAAI,oBAAqB,WAAY,MAAO,OAAQ,IAAI,MAAM,IAAI,YAAa,cAAe,IAAI,cAAgB,CAC9K",
+  "names": []
+}

@@ -1,4 +1,5 @@
-import { initTheme, setTheme, setScheme } from '../dist/js/theme.js';
+import { distRoot } from './distribution.js';
+const { initTheme, setTheme, setScheme } = await import(`${distRoot}js/theme.js`);
 const fixture = document.querySelector('#fixture'); let passed = 0; let failed = 0;
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
 async function test(name, fn) {
@@ -9,7 +10,7 @@ async function test(name, fn) {
 async function frameFixture() {
   const frame = document.createElement('iframe'); frame.title = 'Isolated theme'; fixture.append(frame);
   const doc = frame.contentDocument;
-  await Promise.all(['../dist/pure.css', '../examples/themes.css'].map(path => new Promise((resolve, reject) => { const link = doc.createElement('link'); link.rel = 'stylesheet'; link.href = new URL(path, location.href).href; link.onload = resolve; link.onerror = reject; doc.head.append(link); })));
+  await Promise.all([`${distRoot}pure.css`, '../examples/themes.css'].map(path => new Promise((resolve, reject) => { const link = doc.createElement('link'); link.rel = 'stylesheet'; link.href = new URL(path, location.href).href; link.onload = resolve; link.onerror = reject; doc.head.append(link); })));
   const root = doc.documentElement; const options = { root, persist: false };
   const color = name => frame.contentWindow.getComputedStyle(root).getPropertyValue(`--p-${name}`).trim();
   return { frame, doc, root, options, color };

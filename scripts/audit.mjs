@@ -1,4 +1,5 @@
-import { readFile, stat } from 'node:fs/promises';
+import { readFile, stat, mkdir, writeFile } from 'node:fs/promises';
+import { version } from 'esbuild';
 import { resolve, dirname } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { performance } from 'node:perf_hooks';
@@ -24,10 +25,14 @@ const closure = async entry => {
 const entries = {};
 for (const entry of ['pure.css', 'icons.svg', 'js/lazy.js', 'js/index.js', 'js/editor.js', 'js/search.js', 'js/theme.js', 'js/activity.js']) {
   entries[entry] = await size(entry.endsWith('.js') ? await closure(entry) : [resolve(root, entry)]);
+  entries[`min/${entry}`] = await size(entry.endsWith('.js') ? await closure(`min/${entry}`) : [resolve(root, `min/${entry}`)]);
 }
 const document = { version: 1, blocks: Array.from({ length: 1000 }, () => ({ type: 'paragraph', children: [{ text: 'Alpha beta gamma delta epsilon' }] })) };
 for (let index = 0; index < 3; index++) editorStats(document, 'en');
 const timings = [];
 for (let index = 0; index < 15; index++) { const start = performance.now(); editorStats(document, 'en'); timings.push(performance.now() - start); }
 timings.sort((a, b) => a - b);
-console.log(JSON.stringify({ node: process.version, gzip: 'Sum of separately compressed files, not an HTTP measurement', entries, statsBenchmark: { blocks: 1000, words: 5000, runs: 15, medianMs: +timings[7].toFixed(3), minMs: +timings[0].toFixed(3) } }, null, 2));
+const report = { node: process.version, minifier: `esbuild ${version}`, gzip: 'Sum of separately compressed files, not an HTTP measurement; source maps excluded', entries, statsBenchmark: { blocks: 1000, words: 5000, runs: 15, medianMs: +timings[7].toFixed(3), minMs: +timings[0].toFixed(3) } };
+const output = process.argv.indexOf('--output');
+if (output >= 0) { const path = process.argv[output + 1]; if (!path) throw new Error('Missing output path'); await mkdir(dirname(path), { recursive: true }); await writeFile(path, JSON.stringify(report, null, 2) + '\n'); }
+console.log(JSON.stringify(report, null, 2));

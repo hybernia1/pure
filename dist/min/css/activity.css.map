@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../css/activity.css"],
+  "sourcesContent": ["@layer components {\n  .activity { display: flex; align-items: center; gap: var(--p-space-2); color: var(--p-text); }\n  .activity-global { position: fixed; inset-block-start: var(--p-gutter); inset-inline-end: var(--p-gutter); z-index: var(--p-activity-z); max-width: calc(100% - 2 * var(--p-gutter)); padding: var(--p-control-py) var(--p-control-px); border: 1px solid var(--p-border); border-radius: var(--p-radius-sm); background: var(--p-surface); pointer-events: none; }\n  .spinner { display: inline-block; flex-shrink: 0; width: var(--p-spinner-size); height: var(--p-spinner-size); border: 2px solid var(--p-border); border-top-color: currentColor; border-radius: 50%; animation: pure-spin .8s linear infinite; }\n  @keyframes pure-spin { to { transform: rotate(360deg); } }\n  @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }\n}\n"],
+  "mappings": "AAAA,kBACE,CAAC,SAAW,QAAS,KAAM,YAAa,OAAQ,IAAK,IAAI,aAAc,MAAO,IAAI,SAAW,CAC7F,CAAC,gBAAkB,SAAU,MAAO,kBAAmB,IAAI,YAAa,iBAAkB,IAAI,YAAa,QAAS,IAAI,gBAAiB,UAAW,KAAK,KAAK,EAAE,EAAE,EAAE,IAAI,aAAc,QAAS,IAAI,gBAAgB,IAAI,gBAAiB,OAAQ,IAAI,MAAM,IAAI,YAAa,cAAe,IAAI,eAAgB,WAAY,IAAI,aAAc,eAAgB,IAAM,CAClW,CAAC,QAAU,QAAS,aAAc,YAAa,EAAG,MAAO,IAAI,kBAAmB,OAAQ,IAAI,kBAAmB,OAAQ,IAAI,MAAM,IAAI,YAAa,iBAAkB,aAHtK,cAGmM,IAAK,UAAW,UAAU,IAAI,OAAO,QAAU,CAChP,WADiN,UAC1L,GAAK,UAAW,OAAO,OAAS,CAAE,CACzD,OAAO,uBAAyB,QAAU,CAFzC,QAEoD,UAAW,IAAM,CAAE,CAC1E",
+  "names": []
+}

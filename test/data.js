@@ -1,4 +1,5 @@
-import { loadComponent } from '../dist/js/lazy.js';
+import { distRoot } from './distribution.js';
+const { loadComponent } = await import(`${distRoot}js/lazy.js`);
 const [{ createDataController }, { createTable }, { createList }, { createPagination }] = await Promise.all(['data', 'table', 'list', 'pagination'].map(name => loadComponent(name)));
 const fixture = document.querySelector('#fixture'); const results = document.querySelector('#results');
 let passed = 0; let failed = 0;
@@ -71,7 +72,7 @@ await test('Destroy vlastního pohledu abortuje transport a nevytvoří opoždě
 await test('375px bloková tabulka a paginace nepřetékají; od 960px se vrací sloupce', async () => {
   const frame = document.createElement('iframe'); frame.title = 'Responsive test'; frame.style.width = '375px'; frame.style.height = '600px'; frame.style.border = '0'; fixture.append(frame);
   const doc = frame.contentDocument; doc.documentElement.lang = 'cs';
-  const css = doc.createElement('link'); css.rel = 'stylesheet'; css.href = new URL('../dist/pure.css', location.href).href;
+  const css = doc.createElement('link'); css.rel = 'stylesheet'; css.href = `${distRoot}pure.css`;
   const loaded = new Promise((resolve, reject) => { css.onload = resolve; css.onerror = reject; }); doc.head.append(css); await loaded;
   const columns = ['name', 'email', 'team', 'status'].map(key => ({ key, label: key, sortable: key === 'name' }));
   const table = createTable(doc.body, { columns, responsive: 'stack', load: async () => ({ items: [{ name: 'Anna', email: 'longaddress@example.cz', team: 'Design', status: 'Active' }], total: 100 }) });

@@ -1,5 +1,7 @@
 # Pure
 
+Produkční [minifikovaná distribuce](docs/distribution.md) vzniká při `npm run build` v `dist/min/`, včetně modulárního lazy načítání a source map. [Naměřený přínos](docs/minification.md) · [ukázka](examples/minified.html).
+
 Před vydáním 1.0.0: [výkon, optimalizace a zbývající release body](docs/release-1.0-audit.md). Reprodukovatelné měření modelu: `npm run bench`; prohlížeče: `/test/performance.html` po buildu a spuštění dev serveru.
 
 [Vlastní light/dark barvy a schémata](docs/themes.md): palety zůstávají v CSS, režim a pojmenované schéma se přepínají nezávisle. [Živá ukázka](examples/themes.html).
@@ -30,7 +32,7 @@ Globální i lokální loader libovolné činnosti a klasický progress bar: [AP
 
 Obrázky v editoru mají přímé akce pro velikost a zarovnání. Samostatný [resize modul](docs/resize.md) funguje i mimo editor; [živá ukázka](examples/modules.html#resize-title).
 
-Čistý, modulární CSS / JS / SVG framework. Utility ve stylu Tailwindu, neutrální vzhled, žádné závislosti.
+Čistý, modulární CSS / JS / SVG framework. Utility ve stylu Tailwindu, neutrální vzhled, žádné runtime závislosti.
 
 ```sh
 npm run build

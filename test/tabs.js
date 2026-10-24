@@ -1,4 +1,5 @@
-import { loadComponent, configurePure, getPureConfig } from '../dist/js/lazy.js';
+import { distRoot } from './distribution.js';
+const { loadComponent, configurePure, getPureConfig } = await import(`${distRoot}js/lazy.js`);
 const { createTabs, initTabs } = await loadComponent('tabs');
 const fixture = document.querySelector('#fixture'); let passed = 0; let failed = 0;
 const assert = (condition, message) => { if (!condition) throw new Error(message); };

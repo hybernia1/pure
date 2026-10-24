@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../js/media.js"],
+  "sourcesContent": ["import { safeImageSource } from './editor-model.js';\n\nexport function normalizeMedia(item) {\n  if (!item || !((typeof item.id === 'string' && item.id.trim()) || (typeof item.id === 'number' && Number.isFinite(item.id))) || typeof item.src !== 'string' || !safeImageSource(item.src)) throw new TypeError('Invalid media: expected id and a safe src.');\n  const alt = typeof item.alt === 'string' ? item.alt : '';\n  return { id: item.id, src: safeImageSource(item.src), alt, name: typeof item.name === 'string' ? item.name : alt || String(item.id) };\n}\n"],
+  "mappings": "+EAAA,OAAS,mBAAAA,MAAuB,oBAEzB,SAASC,EAAeC,EAAM,CACnC,GAAI,CAACA,GAAQ,EAAG,OAAOA,EAAK,IAAO,UAAYA,EAAK,GAAG,KAAK,GAAO,OAAOA,EAAK,IAAO,UAAY,OAAO,SAASA,EAAK,EAAE,IAAO,OAAOA,EAAK,KAAQ,UAAY,CAACF,EAAgBE,EAAK,GAAG,EAAG,MAAM,IAAI,UAAU,4CAA4C,EAC5P,MAAMC,EAAM,OAAOD,EAAK,KAAQ,SAAWA,EAAK,IAAM,GACtD,MAAO,CAAE,GAAIA,EAAK,GAAI,IAAKF,EAAgBE,EAAK,GAAG,EAAG,IAAAC,EAAK,KAAM,OAAOD,EAAK,MAAS,SAAWA,EAAK,KAAOC,GAAO,OAAOD,EAAK,EAAE,CAAE,CACtI,CAJgBE,EAAAH,EAAA",
+  "names": ["safeImageSource", "normalizeMedia", "item", "alt", "__name"]
+}

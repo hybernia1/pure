@@ -1,6 +1,7 @@
-import { createEditor, createFlash, createLoader, createForm, initPasswords, initInputs, createSelect, createPicker, createModal, createUpload, createResize, createActivity, createProgress, createSearch, createDragDrop, createMediaLibrary } from '../dist/js/index.js';
-import { cleanHTML } from '../dist/js/html.js';
-import { configurePure, getPureConfig } from '../dist/js/config.js';
+import { distRoot } from './distribution.js';
+const { createEditor, createFlash, createLoader, createForm, initPasswords, initInputs, createSelect, createPicker, createModal, createUpload, createResize, createActivity, createProgress, createSearch, createDragDrop, createMediaLibrary } = await import(`${distRoot}js/index.js`);
+const { cleanHTML } = await import(`${distRoot}js/html.js`);
+const { configurePure, getPureConfig } = await import(`${distRoot}js/config.js`);
 const fixture = document.querySelector('#fixture');
 const results = document.querySelector('#results');
 let failed = 0; let passed = 0;
