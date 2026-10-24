@@ -1,5 +1,6 @@
 import { getPureConfig, componentOptions } from './config.js';
 import { safeHref } from './url.js';
+import { colorNames } from './colors.js';
 import { emptyDocument, normalizeDocument, documentText, plainText, selectionMarks, replaceText, formatText, setHeading, setList, blockAt, blockText, textRows, rowAt, exitListItem } from './editor-model.js';
 import { createDragDrop } from './drag-drop.js';
 import { editorI18n } from './editor-i18n.js';
@@ -13,6 +14,7 @@ export function createEditor(source, options = {}) {
     label,
     iconsUrl = getPureConfig().iconsUrl,
     features = {},
+    colors = null,
     uploadImage,
     prepareFile = getPureConfig().upload.prepareFile,
     mediaLibrary,
@@ -28,6 +30,8 @@ export function createEditor(source, options = {}) {
   const parse = text => text.trim() ? normalizeDocument(JSON.parse(text)) : emptyDocument();
   let value = parse(source.value);
   const enabled = { headings: false, images: false, fullscreen: true, lists: true, ...features };
+  const palette = colors ?? {};
+  if (!palette || typeof palette !== 'object' || Array.isArray(palette) || Object.entries(palette).some(([key, label]) => !colorNames.includes(key) || typeof label !== 'string' || !label.trim()) || enabled.colors && !Object.keys(palette).length) throw new TypeError('Provide named editor colors and labels.');
   const doc = source.ownerDocument; const win = doc.defaultView;
   const node = (tag, className) => { const element = doc.createElement(tag); if (className) element.className = className; return element; };
   const shell = node('div', 'editor'); const toolbar = node('div', 'editor-toolbar');
@@ -48,6 +52,7 @@ export function createEditor(source, options = {}) {
   let openSequence = 0; const dialogTasks = new Map();
   let selectTask; let resizeTask; let resizeFactory; let fullscreenTask;
   const buttons = new Map(); const listeners = [];
+  let colorPicker; let colorSummary;
   const imageResizers = new Map();
   const clearResizers = () => { imageResizers.forEach(resizer => resizer.destroy()); imageResizers.clear(); };
   const updateImage = (index, changes, focusSelector) => {
@@ -63,7 +68,11 @@ export function createEditor(source, options = {}) {
     const activeBlock = blockAt(value, selected.from).index;
     [...content.querySelectorAll('[data-editor-block]')].forEach((block, index) => block.toggleAttribute('data-active', index === activeBlock));
     const marks = selected.from === selected.to ? pending : active();
-    for (const name of ['bold', 'italic', 'link']) buttons.get(name)?.setAttribute('aria-pressed', String(Boolean(marks[name])));
+    if (colorSummary) {
+      colorSummary.style.color = marks.color ? `var(--p-${marks.color}, var(--p-text))` : '';
+      for (const button of colorPicker.querySelectorAll('[data-editor-color]')) button.setAttribute('aria-pressed', String((marks.color || '') === button.dataset.editorColor));
+    }
+    for (const name of ['bold', 'italic', 'underline', 'strike', 'link']) buttons.get(name)?.setAttribute('aria-pressed', String(Boolean(marks[name])));
     const first = blockAt(value, selected.from).index; const last = blockAt(value, Math.max(selected.from, selected.to - 1)).index;
     const selectedBlocks = value.blocks.slice(first, last + 1).filter(block => block.type !== 'image');
     for (const style of ['bullet', 'ordered']) buttons.get(`${style}List`)?.setAttribute('aria-pressed', String(Boolean(selectedBlocks.length) && selectedBlocks.every(block => block.type === 'list' && block.style === style)));
@@ -101,7 +110,8 @@ export function createEditor(source, options = {}) {
     paragraph.dataset.editorText = '';
     for (const run of children) {
       let child = doc.createTextNode(run.text);
-      for (const [mark, tag] of [['italic', 'em'], ['bold', 'strong'], ['link', 'a']]) {
+      if (run.color) { const span = node('span'); span.dataset.textColor = run.color; span.style.color = `var(--p-${run.color}, var(--p-text))`; span.append(child); child = span; }
+      for (const [mark, tag] of [['italic', 'em'], ['bold', 'strong'], ['underline', 'u'], ['strike', 's'], ['link', 'a']]) {
         if (!run[mark]) continue;
         const wrapper = node(tag); if (mark === 'link') wrapper.setAttribute('href', run.link);
         wrapper.append(child); child = wrapper;
@@ -367,10 +377,12 @@ export function createEditor(source, options = {}) {
       const next = normalizeDocument(value); next.blocks.splice(imageIndex, 1); if (!next.blocks.length) next.blocks.push({ type: 'paragraph', children: [] });
       imageIndex = null; commit(next, { from: 0, to: 0 }); return true;
     }
-    if (!['bold', 'italic', 'link', 'unlink'].includes(name)) throw new TypeError(`Neznámý příkaz: ${name}`);
+    if (name === 'color' && (!enabled.colors || setting !== null && !Object.hasOwn(palette, setting))) return false;
+    if (!['bold', 'italic', 'underline', 'strike', 'link', 'unlink', 'color'].includes(name)) throw new TypeError(`Neznámý příkaz: ${name}`);
     const mark = name === 'unlink' ? 'link' : name;
     let next;
-    if (mark === 'link') {
+    if (mark === 'color') next = setting;
+    else if (mark === 'link') {
       next = name === 'unlink' ? null : safeHref(setting);
       if (name !== 'unlink' && !next) { hint.textContent = t('invalidLink'); return false; }
     } else next = !(selected.from === selected.to ? pending[mark] : active()[mark]);
@@ -528,8 +540,25 @@ export function createEditor(source, options = {}) {
     else { fullscreenHost.append(shell); fullscreenModal.open(buttons.get('fullscreen')); }
     restore(); updateToolbar(); return true;
   };
+  if (enabled.colors) {
+    colorPicker = node('details', 'editor-colors'); colorSummary = node('summary', 'editor-tool');
+    colorSummary.textContent = 'A'; colorSummary.title = t('textColor'); colorSummary.setAttribute('aria-label', t('textColor'));
+    const choices = node('div', 'editor-color-options'); choices.setAttribute('role', 'group'); choices.setAttribute('aria-label', t('textColor'));
+    for (const [key, label] of [['', t('defaultColor')], ...Object.entries(palette)]) {
+      const button = node('button', 'editor-color-choice'); button.type = 'button'; button.dataset.editorColor = key;
+      button.setAttribute('aria-label', label);
+      const swatch = node('span', 'editor-color-swatch'); swatch.setAttribute('aria-hidden', 'true'); swatch.style.background = key ? `var(--p-${key}, var(--p-text))` : 'var(--p-text)';
+      const text = node('span'); text.textContent = label; button.append(swatch, text);
+      listen(button, 'pointerdown', event => event.preventDefault());
+      listen(button, 'click', () => { command('color', key || null); colorPicker.open = false; restore(); }); choices.append(button);
+    }
+    listen(colorPicker, 'keydown', event => { if (event.key === 'Escape') { event.preventDefault(); colorPicker.open = false; colorSummary.focus(); } });
+    listen(doc, 'pointerdown', event => { if (!colorPicker.contains(event.target)) colorPicker.open = false; });
+    colorPicker.append(colorSummary, choices); toolbar.append(colorPicker);
+  }
   for (const [name, title, icon] of [
     ['bold', t('bold'), 'bold'], ['italic', t('italic'), 'italic'],
+    ['underline', t('underline'), 'underline'], ['strike', t('strike'), 'strikethrough'],
     ...(enabled.lists ? [['bulletList', t('bulletList'), 'list-bullet'], ['orderedList', t('orderedList'), 'list-ordered']] : []),
     ['link', t('link'), 'link'], ['unlink', t('unlink'), 'unlink'],
     ['undo', t('undo'), 'undo'], ['redo', t('redo'), 'redo'],
@@ -557,8 +586,11 @@ export function createEditor(source, options = {}) {
       if (element.nodeName === 'BR') return element.nextSibling ? [{ text: '\n' }] : [];
       if (['SCRIPT', 'STYLE', 'SVG', 'MATH', 'IFRAME'].includes(element.nodeName)) return [];
       const inherited = { ...marks };
+      if (element.nodeType === 1 && colorNames.includes(element.getAttribute('data-text-color'))) inherited.color = element.getAttribute('data-text-color');
       if (['B', 'STRONG'].includes(element.nodeName)) inherited.bold = true;
       if (['I', 'EM'].includes(element.nodeName)) inherited.italic = true;
+      if (element.nodeName === 'U') inherited.underline = true;
+      if (['S', 'STRIKE', 'DEL'].includes(element.nodeName)) inherited.strike = true;
       if (element.nodeName === 'A' && safeHref(element.getAttribute('href'))) inherited.link = safeHref(element.getAttribute('href'));
       return [...element.childNodes].flatMap(child => read(child, inherited));
     };
@@ -596,10 +628,10 @@ export function createEditor(source, options = {}) {
   listen(content, 'keydown', event => {
     if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
     const key = event.key.toLowerCase();
-    if (['b', 'i', 'k', 'z', 'y'].includes(key)) {
+    if (['b', 'i', 'u', 'k', 'z', 'y'].includes(key)) {
       event.preventDefault(); remember();
       if (key === 'k') buttons.get('link').click();
-      else command(key === 'b' ? 'bold' : key === 'i' ? 'italic' : key === 'y' || event.shiftKey ? 'redo' : 'undo');
+      else command(key === 'b' ? 'bold' : key === 'i' ? 'italic' : key === 'u' ? 'underline' : key === 'y' || event.shiftKey ? 'redo' : 'undo');
     }
   });
   listen(content, 'beforeinput', event => {
@@ -612,8 +644,8 @@ export function createEditor(source, options = {}) {
       else insert('\n');
     }
     else if (event.inputType === 'deleteContentBackward' && selected.from === selected.to && rowAt(value, selected.from).row.type === 'list-item' && rowAt(value, selected.from).start === selected.from) { event.preventDefault(); commit(exitListItem(value, selected.from)); }
-    else if (['historyUndo', 'historyRedo', 'formatBold', 'formatItalic'].includes(event.inputType)) {
-      event.preventDefault(); command({ historyUndo: 'undo', historyRedo: 'redo', formatBold: 'bold', formatItalic: 'italic' }[event.inputType]);
+    else if (['historyUndo', 'historyRedo', 'formatBold', 'formatItalic', 'formatUnderline', 'formatStrikeThrough'].includes(event.inputType)) {
+      event.preventDefault(); command({ historyUndo: 'undo', historyRedo: 'redo', formatBold: 'bold', formatItalic: 'italic', formatUnderline: 'underline', formatStrikeThrough: 'strike' }[event.inputType]);
     }
   });
   listen(content, 'input', nativeInput);

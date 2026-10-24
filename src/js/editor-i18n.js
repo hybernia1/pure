@@ -1,6 +1,8 @@
 import { getPureConfig, resolveLocale } from './config.js';
 export const editorLocales = {
   cs: {
+    underline: 'Podtržení (Ctrl/Cmd+U)', strike: 'Přeškrtnutí',
+    textColor: 'Barva textu', defaultColor: 'Výchozí barva',
     uploadPreparing: 'Připravuji soubory…',
     bulletList: 'Odrážkový seznam', orderedList: 'Číslovaný seznam', listItem: 'Položka seznamu', mediaCount: 'Médií: {count}', mediaChoose: 'Vybrat {name}', mediaRetry: 'Zkusit znovu',
     editor: 'Textový editor', formatting: 'Formátování textu', paragraph: 'Odstavec', heading: 'Nadpis {level}', image: 'Obrázek', remove: 'Smazat',
@@ -19,6 +21,8 @@ export const editorLocales = {
     dragMoved: 'Blok přesunut na pozici {index} z {count}.', dragMoving: 'Přesouvání. Uvolni pro vložení, Escape pro zrušení.', dragCanceled: 'Přesun zrušen.', dragPicked: 'Blok vybrán. Šipkami nahoru a dolů vyber pozici, mezerníkem potvrď, Escape zruš.', dragPosition: 'Cílová pozice {index} z {count}.',
   },
   en: {
+    underline: 'Underline (Ctrl/Cmd+U)', strike: 'Strikethrough',
+    textColor: 'Text color', defaultColor: 'Default color',
     uploadPreparing: 'Preparing files…',
     bulletList: 'Bullet list', orderedList: 'Numbered list', listItem: 'List item', mediaCount: 'Media: {count}', mediaChoose: 'Choose {name}', mediaRetry: 'Try again',
     editor: 'Text editor', formatting: 'Text formatting', paragraph: 'Paragraph', heading: 'Heading {level}', image: 'Image', remove: 'Delete',

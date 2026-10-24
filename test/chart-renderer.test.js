@@ -6,7 +6,7 @@ import { createRenderer, renderDocument } from '../src/js/renderer.js';
 // Minimal DOM tree for structural/security checks; real browser coverage is in content-chart.html.
 function fixture() {
   class Node {
-    constructor(tag, text = '') { this.tag = tag; this.children = []; this.attrs = {}; this.dataset = {}; this.text = text; this.ownerDocument = doc; }
+    constructor(tag, text = '') { this.tag = tag; this.children = []; this.attrs = {}; this.dataset = {}; this.style = {}; this.text = text; this.ownerDocument = doc; }
     append(...nodes) { for (const node of nodes) { if (node.tag === '#fragment') this.append(...node.children); else { node.parent = this; this.children.push(node); } } }
     replaceChildren(...nodes) { this.children = []; this.append(...nodes); }
     setAttribute(name, value) { this.attrs[name] = String(value); }
@@ -57,6 +57,8 @@ const documentValue=()=>({version:1,blocks:[{type:'paragraph',children:[{text:'<
 test('renderer preserves semantics and media IDs without parsing strings as markup',()=>{
   const {doc,target}=fixture();const preserved=doc.createElement('aside');target.append(preserved);
   const renderer=createRenderer(target,documentValue());
+  const colored=documentValue();colored.blocks[0].children[0].color='blue';renderer.update(colored);
+  assert.equal(find(renderer.element,'span')[0].style.color,'var(--p-blue, var(--p-text))');
   assert.equal(find(renderer.element,'strong').length,1);assert.equal(find(renderer.element,'em').length,1);assert.equal(find(renderer.element,'ol').length,1);assert.equal(find(renderer.element,'li').length,2);
   const image=find(renderer.element,'img')[0];assert.equal(image.attrs.alt,'<alt>');assert.equal(image.attrs.src,'/image.png');assert.equal(find(renderer.element,'figure')[0].dataset.mediaId,'42');
   assert.equal(find(renderer.element,'a')[0].attrs.href,'/safe');

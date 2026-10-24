@@ -1,5 +1,7 @@
 # Colors, modes and custom schemes
 
+For shared names such as `blue` and `red` with template-owned values, see [named colors](colors.md). They are independent of semantic UI colors.
+
 Pure separates **mode** (light, dark, system) from **scheme** (default or an application name). Each scheme can define light and dark palettes. Components read the same semantic variables; colors are not duplicated in JavaScript configuration.
 
 [Example](../examples/themes.html) - [Scheme CSS](../examples/themes.css) - [Computed-color tests](../test/themes.html)

@@ -1,0 +1,20 @@
+@layer components {
+  :where(.scrollbar, .scrollbars, .scrollbars *) {
+    scrollbar-width:thin;
+    scrollbar-color:var(--p-scrollbar-thumb, var(--p-subtle)) var(--p-scrollbar-track, var(--p-muted));
+  }
+  .scrollbar-stable { scrollbar-gutter:stable; }
+  @supports not (scrollbar-width:thin) {
+    :where(.scrollbar, .scrollbars, .scrollbars *)::-webkit-scrollbar { width:var(--p-scrollbar-size, var(--p-space-3)); height:var(--p-scrollbar-size, var(--p-space-3)); }
+    :where(.scrollbar, .scrollbars, .scrollbars *)::-webkit-scrollbar-track,
+    :where(.scrollbar, .scrollbars, .scrollbars *)::-webkit-scrollbar-corner { background:var(--p-scrollbar-track, var(--p-muted)); }
+    :where(.scrollbar, .scrollbars, .scrollbars *)::-webkit-scrollbar-thumb { background:var(--p-scrollbar-thumb, var(--p-subtle)); border:var(--p-space-1) solid var(--p-scrollbar-track, var(--p-muted)); border-radius:var(--p-radius); }
+    :where(.scrollbar, .scrollbars, .scrollbars *)::-webkit-scrollbar-thumb:hover { background:var(--p-scrollbar-hover, var(--p-text)); }
+  }
+  @media (forced-colors:active) {
+    :where(.scrollbar, .scrollbars, .scrollbars *) { scrollbar-width:auto; scrollbar-color:auto; }
+    :where(.scrollbar, .scrollbars, .scrollbars *)::-webkit-scrollbar-thumb { background:CanvasText; border-color:Canvas; }
+    :where(.scrollbar, .scrollbars, .scrollbars *)::-webkit-scrollbar-track,
+    :where(.scrollbar, .scrollbars, .scrollbars *)::-webkit-scrollbar-corner { background:Canvas; }
+  }
+}

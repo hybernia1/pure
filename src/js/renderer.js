@@ -8,7 +8,8 @@ export function renderDocument(value, { document: doc = globalThis.document } = 
   const runs = (parent, children) => {
     for (const run of children) {
       let node = doc.createTextNode(run.text);
-      for (const [mark, tag] of [['bold', 'strong'], ['italic', 'em'], ['link', 'a']]) if (run[mark]) {
+      if (run.color) { const span = element('span'); span.dataset.textColor = run.color; span.style.color = `var(--p-${run.color}, var(--p-text))`; span.append(node); node = span; }
+      for (const [mark, tag] of [['bold', 'strong'], ['italic', 'em'], ['underline', 'u'], ['strike', 's'], ['link', 'a']]) if (run[mark]) {
         const wrapper = element(tag); if (mark === 'link') wrapper.setAttribute('href', run.link); wrapper.append(node); node = wrapper;
       }
       parent.append(node);

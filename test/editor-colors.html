@@ -1,0 +1,32 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pure color picker tests</title><link rel="stylesheet" href="../examples/palette.css"><style>body{max-width:50rem;margin:auto;padding:var(--p-space-4)}</style></head><body><h1>Editor color picker</h1><pre id="results">Running…</pre><label for="body">Article</label><textarea id="body"></textarea><div id="preview"></div><script type="module">
+import { englishColors } from '../examples/palette.js';
+const variant=new URLSearchParams(location.search).has('min')?'pure.min':'pure';
+const {loadComponent}=await import(`../dist/${variant}/js/lazy.js`);
+const [{createEditor},{createRenderer}]=await Promise.all(['editor','renderer'].map(name=>loadComponent(name)));
+const source=document.querySelector('#body');const initial={version:1,blocks:[{type:'paragraph',children:[{text:'Color this text'}]}]};source.value=JSON.stringify(initial);
+const editor=createEditor(source,{features:{colors:true},colors:{blue:'Blue',red:'Red'}});await editor.ready;
+const output=document.querySelector('#results');const assert=(value,message)=>{if(!value)throw Error(message)};
+try{
+ const select=()=>{const text=document.querySelector('[data-editor-text]').firstChild;const range=document.createRange();range.setStart(text,0);range.setEnd(text,5);const selection=getSelection();selection.removeAllRanges();selection.addRange(range);document.dispatchEvent(new Event('selectionchange'));};
+ document.querySelector('[contenteditable]').focus();select();
+ document.querySelector('.editor-colors summary').click();document.querySelector('[data-editor-color="blue"]').click();
+ assert(editor.getJSON().blocks[0].children[0].color==='blue','Picker selection');assert(!document.querySelector('.editor-colors').open,'Picker closed');
+ assert(document.querySelector('[data-text-color="blue"]'),'Colored DOM');
+ const details=document.querySelector('.editor-colors');details.open=true;details.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert(!details.open,'Escape closes picker');
+ editor.command('undo');assert(!editor.getJSON().blocks[0].children[0].color,'Undo');editor.command('redo');assert(editor.getJSON().blocks[0].children[0].color==='blue','Redo');
+ assert(editor.command('color','green')===false,'Unconfigured color');
+ editor.command('color',null);assert(editor.getJSON().blocks[0].children.every(run=>!run.color),'Default color');
+ editor.setJSON(initial);document.querySelector('[contenteditable]').focus();select();
+ for(const name of ['italic','underline','strike'])document.querySelector(`[data-editor-command="${name}"]`).click();
+ let run=editor.getJSON().blocks[0].children[0];assert(run.italic&&run.underline&&run.strike,'Combined inline marks');
+ assert(document.querySelector('[data-editor-text] em')&&document.querySelector('[data-editor-text] u')&&document.querySelector('[data-editor-text] s'),'Inline DOM');
+ editor.command('undo');assert(!editor.getJSON().blocks[0].children[0].strike,'Strike undo');editor.command('redo');assert(editor.getJSON().blocks[0].children[0].strike,'Strike redo');
+ const formatted=createRenderer(document.querySelector('#preview'),editor.getJSON());assert(formatted.element.querySelector('em u s')||formatted.element.querySelector('s u em'),'Rendered marks');formatted.destroy();
+ document.querySelector('[contenteditable]').dispatchEvent(new KeyboardEvent('keydown',{key:'u',ctrlKey:true,bubbles:true,cancelable:true}));assert(!editor.getJSON().blocks[0].children[0].underline,'Underline shortcut toggles');
+ editor.setJSON({version:1,blocks:[{type:'paragraph',children:[{text:'Rendered blue',color:'blue'}]}]});const renderer=createRenderer(document.querySelector('#preview'),editor.getJSON());assert(renderer.element.querySelector('[data-text-color="blue"]'),'Renderer');renderer.destroy();
+ editor.destroy();assert(!document.querySelector('.editor-colors'),'Cleanup');source.value=JSON.stringify(initial);
+ const demo=createEditor(source,{features:{colors:true},colors:englishColors});await demo.ready;
+ demo.setJSON({version:1,blocks:[{type:'paragraph',children:[{text:'Italic',italic:true},{text:' · '},{text:'Underline',underline:true},{text:' · '},{text:'Strikethrough',strike:true}]}]});
+ output.textContent='PASS: colors, italic, underline, strike, selection, undo/redo, renderer, cleanup · '+variant;document.title='PASS — Editor formatting';
+}catch(error){output.textContent='FAIL: '+error.stack;console.error(error);document.title='FAIL — Editor colors'}
+</script></body></html>

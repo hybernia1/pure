@@ -1,5 +1,19 @@
 # JSON editor and optional modules
 
+## Inline formatting
+
+The toolbar includes bold, italic, underline and strikethrough. JSON runs store optional boolean `bold`, `italic`, `underline`, `strike` fields; false values normalize away. Combine marks with colors and links. `editor.command('underline')` and `editor.command('strike')` toggle the current selection or subsequent typing at a caret. Formatting supports list items, undo/redo, reset and safe renderer output (`strong`, `em`, `u`, `s`).
+
+Keyboard shortcuts: Ctrl/Cmd+B for bold, Ctrl/Cmd+I for italic and Ctrl/Cmd+U for underline. Strikethrough is available through its named toolbar button. Native formatting beforeinput events are handled without storing HTML. Older Pure versions reject the new optional JSON fields, so update the editor and renderer together.
+
+## Text colors
+
+Enable the optional picker with `createEditor(textarea, {features:{colors:true}, colors:{blue:'Blue',red:'Red',green:'Green'}})`. Define `--p-blue`, `--p-red`, etc. in template CSS; core supplies no named hex values. Palette keys come from `colorNames`; labels are application-translated nonempty strings. Both options can also be set through `configurePure({editor:{...}})` for future instances. Colors are disabled by default; enabling requires a nonempty palette.
+
+Choose a color for selected text or subsequent typing at a caret. **Default color** removes the mark. Escape closes the palette; choices are native buttons reached with Tab. Color formatting supports undo/redo, list text and JSON synchronization. `editor.command('color','blue')` applies a configured key; `editor.command('color',null)` removes it. Disabled/unconfigured choices return false.
+
+JSON runs may include `color:'blue'`; arbitrary CSS values and unknown names are rejected. Existing version-1 documents remain valid; older Pure versions reject the new optional field, so update the editor and renderer together. The renderer uses safe spans with `var(--p-blue, var(--p-text))`. Valid existing marks survive even if absent from the current picker. Templates own contrast in both modes.
+
 The editor renders compact paragraph, heading, list and image blocks. Each block has one header with a text drag handle and Delete action. UI is excluded from JSON/text offsets. Moves/deletion support undo/redo and use the shared [drag service](drag-drop.md). Lists are true [list blocks](editor-lists.md).
 
 [Example](../examples/modules.html#editor-title). [Statistics, localization and media adapters](editor-media-i18n.md). [Lazy loading and asynchronous UI](distribution.md).

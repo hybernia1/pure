@@ -1,3 +1,4 @@
+import { colorNames } from '../src/js/colors.js';
 export const breakpoint = 960;
 
 export function utilities() {
@@ -18,6 +19,11 @@ export function utilities() {
     'leading-tight': 'line-height:1.1', 'no-underline': 'text-decoration:none',
   };
   const scale = [0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24];
+  for (const name of colorNames) {
+    rules[`text-${name}`] = `color:var(--p-${name},var(--p-text))`;
+    rules[`bg-${name}`] = `background:var(--p-${name},transparent)`;
+    rules[`border-${name}`] = `border-color:var(--p-${name},var(--p-border))`;
+  }
   const spacing = { p: 'padding', px: 'padding-inline', py: 'padding-block', pt: 'padding-top', pb: 'padding-bottom', m: 'margin', mx: 'margin-inline', my: 'margin-block', mt: 'margin-top', mb: 'margin-bottom', gap: 'gap' };
   for (const [prefix, property] of Object.entries(spacing)) {
     for (const step of scale) rules[`${prefix}-${step}`] = `${property}:var(--p-space-${step})`;

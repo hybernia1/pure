@@ -1,5 +1,7 @@
 # JSON content renderer
 
+Inline text supports bold, italic, underline (`underline:true`) and strikethrough (`strike:true`), combined with named colors and links. These render through safe semantic DOM nodes, never HTML parsing.
+
 Render the editor's versioned JSON through safe DOM nodes, without initializing the editor or parsing HTML.
 
 ```js

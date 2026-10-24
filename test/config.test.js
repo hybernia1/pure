@@ -6,13 +6,19 @@ import { uiI18n } from '../src/js/i18n.js';
 import { initTheme, setTheme } from '../src/js/theme.js';
 import { loadComponent, ensureStyles } from '../src/js/lazy.js';
 const initial = getPureConfig();
+test('editor color palettes validate atomically and keep detached labels', () => {
+  configurePure({editor:{colors:{blue:'Blue'},features:{colors:true}}});
+  const snapshot=getPureConfig();snapshot.editor.colors.blue='Changed';assert.equal(getPureConfig().editor.colors.blue,'Blue');
+  for(const colors of [{unknown:'Unknown'},{blue:''},{red:12}]) assert.throws(()=>configurePure({editor:{colors}}));
+  assert.deepEqual(getPureConfig().editor.colors,{blue:'Blue'});
+});
 afterEach(() => configurePure(initial));
 
 test('konfigurace slučuje vnořené volby a izoluje vstup, výstup i existující snapshot', () => {
   const patch = { editor: { features: { images: true } }, search: { delay: 50 } };
   configurePure(patch); patch.editor.features.images = false;
   const old = componentOptions('editor', { features: { headings: true } });
-  assert.deepEqual(old.features, { images: true, headings: true, fullscreen: true, lists: true });
+  assert.deepEqual(old.features, { images: true, headings: true, fullscreen: true, lists: true, colors: false });
   configurePure({ editor: { features: { images: false } } });
   assert.equal(old.features.images, true);
   const result = getPureConfig(); result.search.delay = 900;

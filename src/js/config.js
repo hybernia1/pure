@@ -1,10 +1,11 @@
+import { colorNames } from './colors.js';
 const defaults = {
   locale: 'auto', messages: {}, iconsUrl: new URL('../icons.svg', import.meta.url).href,
   styles: { auto: true, baseUrl: new URL('../css/', import.meta.url).href },
   theme: { default: 'system', scheme: 'default', persist: true, storageKey: 'pure-theme', schemeStorageKey: 'pure-scheme' },
   search: { delay: 250, minLength: 2, limit: 8 },
   upload: { accept: '', maxFiles: Infinity, maxSize: Infinity, prepareFile: null },
-  editor: { features: { headings: false, images: false, fullscreen: true, lists: true }, uploadImage: null, mediaLibrary: null },
+  editor: { features: { headings: false, images: false, fullscreen: true, lists: true, colors: false }, colors: null, uploadImage: null, mediaLibrary: null },
   mediaLibrary: { pageSize: 12 }, flash: { duration: 0 }, modal: { closeOnBackdrop: true },
   data: { pageSize: 20 }, pagination: { siblings: 1 },
   tabs: { activation: 'auto', orientation: 'horizontal' },
@@ -39,6 +40,7 @@ function validate(patch, schema = defaults, path = '') {
 export function configurePure(patch) {
   validate(patch);
   const next = merge(configuration, patch);
+  if (next.editor.colors !== null && (!object(next.editor.colors) || Object.entries(next.editor.colors).some(([key, label]) => !colorNames.includes(key) || typeof label !== 'string' || !label.trim()))) throw new TypeError('Invalid editor color palette.');
   if (!['path', 'exact'].includes(next.navigation.match)) throw new TypeError('Invalid navigation match.');
   if (!['auto', 'manual'].includes(next.tabs.activation) || !['horizontal', 'vertical'].includes(next.tabs.orientation)) throw new TypeError('Invalid tabs defaults.');
   if (!['system', 'light', 'dark'].includes(next.theme.default)) throw new TypeError('Invalid theme.default');

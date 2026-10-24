@@ -1,4 +1,5 @@
 export { configurePure, getPureConfig } from './config.js';
+export { colorNames } from './colors.js';
 export { createChart, normalizeChart } from './chart.js';
 export { renderDocument, createRenderer } from './renderer.js';
 export { prepareImage } from './image.js';

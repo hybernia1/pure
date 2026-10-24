@@ -55,6 +55,12 @@ Next development additions: [WordPress-style post tags](docs/tag-picker.md), [op
 
 New optional modules: [SVG charts](docs/chart.md) and the [JSON content renderer](docs/renderer.md). Try the [combined example](examples/content-chart.html) or [browser checks](test/content-chart.html); both support `?min`.
 
+[Segmented controls](docs/segmented.md) provide compact native radio groups without JavaScript.
+
+[Scrollbars](docs/scrollbar.md) optionally style native scrolling areas with semantic theme colors.
+
+[Named colors](docs/colors.md) define shared color keys; templates supply their actual values.
+
 | Topic | Guide |
 | --- | --- |
 | Structure and CSS | [Architecture](docs/architecture.md), [CSS API](docs/css.md), [icons](docs/icons.md) |

@@ -1,0 +1,73 @@
+/* Template palette: actual values are intentionally outside Pure core. */
+:root {
+  --p-light-gray: #62635e; --p-dark-gray: #b8b9b2;
+  --p-light-red: #a84440; --p-dark-red: #e79c96;
+  --p-light-orange: #9a5329; --p-dark-orange: #e6b18a;
+  --p-light-amber: #88601e; --p-dark-amber: #dfbe80;
+  --p-light-yellow: #79671c; --p-dark-yellow: #d8cd82;
+  --p-light-lime: #617326; --p-dark-lime: #bccc82;
+  --p-light-green: #3f733f; --p-dark-green: #9dc69b;
+  --p-light-emerald: #287652; --p-dark-emerald: #88c9ab;
+  --p-light-teal: #307572; --p-dark-teal: #8bc9c5;
+  --p-light-cyan: #267384; --p-dark-cyan: #89c8d8;
+  --p-light-sky: #326e9a; --p-dark-sky: #99c2e5;
+  --p-light-blue: #466da6; --p-dark-blue: #a4bfe9;
+  --p-light-indigo: #5b5aab; --p-dark-indigo: #b6b0ed;
+  --p-light-violet: #77549e; --p-dark-violet: #c6ade5;
+  --p-light-purple: #94508c; --p-dark-purple: #d9a9d0;
+  --p-light-pink: #a34d70; --p-dark-pink: #e4adc1;
+  --p-gray: var(--p-light-gray);
+  --p-red: var(--p-light-red);
+  --p-orange: var(--p-light-orange);
+  --p-amber: var(--p-light-amber);
+  --p-yellow: var(--p-light-yellow);
+  --p-lime: var(--p-light-lime);
+  --p-green: var(--p-light-green);
+  --p-emerald: var(--p-light-emerald);
+  --p-teal: var(--p-light-teal);
+  --p-cyan: var(--p-light-cyan);
+  --p-sky: var(--p-light-sky);
+  --p-blue: var(--p-light-blue);
+  --p-indigo: var(--p-light-indigo);
+  --p-violet: var(--p-light-violet);
+  --p-purple: var(--p-light-purple);
+  --p-pink: var(--p-light-pink);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --p-gray: var(--p-dark-gray);
+    --p-red: var(--p-dark-red);
+    --p-orange: var(--p-dark-orange);
+    --p-amber: var(--p-dark-amber);
+    --p-yellow: var(--p-dark-yellow);
+    --p-lime: var(--p-dark-lime);
+    --p-green: var(--p-dark-green);
+    --p-emerald: var(--p-dark-emerald);
+    --p-teal: var(--p-dark-teal);
+    --p-cyan: var(--p-dark-cyan);
+    --p-sky: var(--p-dark-sky);
+    --p-blue: var(--p-dark-blue);
+    --p-indigo: var(--p-dark-indigo);
+    --p-violet: var(--p-dark-violet);
+    --p-purple: var(--p-dark-purple);
+    --p-pink: var(--p-dark-pink);
+  }
+}
+:root[data-theme="dark"] {
+  --p-gray: var(--p-dark-gray);
+  --p-red: var(--p-dark-red);
+  --p-orange: var(--p-dark-orange);
+  --p-amber: var(--p-dark-amber);
+  --p-yellow: var(--p-dark-yellow);
+  --p-lime: var(--p-dark-lime);
+  --p-green: var(--p-dark-green);
+  --p-emerald: var(--p-dark-emerald);
+  --p-teal: var(--p-dark-teal);
+  --p-cyan: var(--p-dark-cyan);
+  --p-sky: var(--p-dark-sky);
+  --p-blue: var(--p-dark-blue);
+  --p-indigo: var(--p-dark-indigo);
+  --p-violet: var(--p-dark-violet);
+  --p-purple: var(--p-dark-purple);
+  --p-pink: var(--p-dark-pink);
+}

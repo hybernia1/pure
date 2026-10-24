@@ -1,4 +1,5 @@
 import { loadComponent } from '../dist/pure/js/lazy.js';
+import { editorColors } from './palette.js';
 const [{ initTheme }, { createFlash }, { createEditor }, { createLoader, request, HttpError }, { createResize }, { createActivity }, { createProgress }, { createDragDrop }] = await Promise.all([
   loadComponent('theme'), loadComponent('flash'), loadComponent('editor'), loadComponent('ajax'), loadComponent('resize'), loadComponent('activity'), loadComponent('progress'), loadComponent('drag-drop'),
 ]);
@@ -41,7 +42,8 @@ document.querySelectorAll('[data-flash]').forEach((button) => {
   button.addEventListener('click', () => flash.show(messages[button.dataset.flash], { state: button.dataset.flash, duration: button.dataset.flash === 'error' ? 0 : 5000 }));
 });
 const editor = createEditor(document.querySelector('#article'), {
-  features: { headings: true, images: true, fullscreen: true },
+  features: { headings: true, images: true, fullscreen: true, colors: true },
+  colors: editorColors,
   mediaLibrary: {
     pageSize: 6,
     async load({ query, page, pageSize, signal }) {

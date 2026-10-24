@@ -1,9 +1,11 @@
 const variant = new URLSearchParams(location.search).has('min') ? 'pure.min' : 'pure';
 const {loadComponent} = await import(`../dist/${variant}/js/lazy.js`);
+const {ensureStyles} = await import(`../dist/${variant}/js/lazy.js`);
+await ensureStyles('segmented');
 const [{createChart},{createRenderer},{initTheme}] = await Promise.all(['chart','renderer','theme'].map(name=>loadComponent(name)));
 initTheme();
 const weekly = {labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],series:[{name:'Visits',values:[420,680,540,920,790,1200,1040]},{name:'Previous week',values:[350,490,null,720,650,810,900]}]};
 const chart=createChart(document.querySelector('#line'),weekly,{title:'Article visits',description:'Illustrative data · missing values create gaps.',area:true});
 createChart(document.querySelector('#bar'),{labels:['Mon','Tue','Wed','Thu'],series:[{name:'New subscribers',values:[12,18,9,24]},{name:'Unsubscribed',values:[-3,-2,-4,-1]}]},{title:'Subscription changes',type:'bar'});
-let monthly=false;document.querySelector('#period').addEventListener('click',event=>{monthly=!monthly;chart.update(monthly?{labels:['Week 1','Week 2','Week 3','Week 4'],series:[{name:'Visits',values:[3200,4100,3900,5230]},{name:'Previous month',values:[2900,3300,3600,4100]}]}:weekly);event.currentTarget.textContent=monthly?'Show 7 days':'Show 30 days';});
+document.querySelector('#period').addEventListener('change',event=>{chart.update(event.target.value==='30'?{labels:['Week 1','Week 2','Week 3','Week 4'],series:[{name:'Visits',values:[3200,4100,3900,5230]},{name:'Previous month',values:[2900,3300,3600,4100]}]}:weekly);});
 createRenderer(document.querySelector('#article'),{version:1,blocks:[{type:'heading',level:2,children:[{text:'Small things, good stories'}]},{type:'paragraph',children:[{text:'The same JSON document, '},{text:'without editor UI.',bold:true},{text:' Read about Pure.',link:'https://github.com/hybernia1/pure'}]},{type:'list',style:'bullet',items:[{children:[{text:'One actual list block.'}]},{children:[{text:'Safe text and semantic DOM.'}]}]},{type:'image',src:'media-hills.svg',alt:'Mountain illustration',caption:'An image with a durable source and media ID.',mediaId:'example-mountains',width:50,align:'center'}]});

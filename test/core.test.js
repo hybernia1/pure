@@ -1,5 +1,20 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { colorNames } from '../src/js/colors.js';
+import { editorColors, englishColors } from '../examples/palette.js';
+
+test('template palette covers all sixteen editor colors with readable light/dark contrast', () => {
+  const css=readFileSync(new URL('../examples/palette.css',import.meta.url),'utf8');
+  assert.equal(colorNames.length,16);assert.ok(Object.isFrozen(colorNames));
+  assert.deepEqual(Object.keys(editorColors),[...colorNames]);assert.deepEqual(Object.keys(englishColors),[...colorNames]);
+  const luminance=hex=>{const rgb=hex.match(/../g).map(part=>parseInt(part,16)/255).map(value=>value<=.04045?value/12.92:((value+.055)/1.055)**2.4);return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;};
+  for(const mode of ['light','dark'])for(const name of colorNames){
+    const match=css.match(new RegExp(`--p-${mode}-${name}: #([a-f0-9]{6})`));assert.ok(match,`${mode} ${name}`);
+    const a=luminance(match[1]);const b=luminance(mode==='light'?'f6f6f5':'22261f');const ratio=(Math.max(a,b)+.05)/(Math.min(a,b)+.05);
+    assert.ok(ratio>=4.5,`${mode} ${name}: contrast ${ratio}`);
+  }
+});
 import { utilities, breakpoint } from '../scripts/utilities.mjs';
 import { setTheme, setScheme, initTheme } from '../src/js/theme.js';
 import { initDisclosures } from '../src/js/disclosure.js';

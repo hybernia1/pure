@@ -2,6 +2,8 @@ import { getPureConfig } from './config.js';
 const documents = new WeakMap();
 const failedLinks = new WeakSet();
 const dependencies = {
+  scrollbar: ['base'],
+  segmented: ['components'],
   chart: ['base'], renderer: ['base'],
   'tag-picker': ['search', 'states'],
   navigation: ['components'],

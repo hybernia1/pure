@@ -1,10 +1,11 @@
 import { safeHref } from './url.js';
+import { colorNames } from './colors.js';
 
 export const emptyDocument = () => ({ version: 1, blocks: [{ type: 'paragraph', children: [] }] });
 const keys = (object, allowed) => {
   if (!object || typeof object !== 'object' || Array.isArray(object) || Object.keys(object).some(key => !allowed.includes(key))) throw new TypeError('Neplatná struktura dokumentu.');
 };
-const sameMarks = (a, b) => Boolean(a.bold) === Boolean(b.bold) && Boolean(a.italic) === Boolean(b.italic) && a.link === b.link;
+const sameMarks = (a, b) => ['bold', 'italic', 'underline', 'strike'].every(mark => Boolean(a[mark]) === Boolean(b[mark])) && a.link === b.link && a.color === b.color;
 const append = (runs, run) => {
   if (!run.text) return;
   if (runs.length && !run.image && !run.nextBlock && !runs.at(-1).image && !runs.at(-1).nextBlock && sameMarks(runs.at(-1), run)) runs.at(-1).text += run.text;
@@ -15,11 +16,12 @@ const normalizeChildren = runs => {
   if (!Array.isArray(runs)) throw new TypeError('Invalid text children.');
   const children = [];
   for (const run of runs) {
-    keys(run, ['text', 'bold', 'italic', 'link']);
+    keys(run, ['text', 'bold', 'italic', 'underline', 'strike', 'link', 'color']);
+    if (run.color !== undefined && !colorNames.includes(run.color)) throw new TypeError('Invalid text color.');
     if (typeof run.text !== 'string' || /[\r\n]/.test(run.text)) throw new TypeError('Text odstavce musí být řetězec bez nových řádků.');
-    for (const mark of ['bold', 'italic']) if (run[mark] !== undefined && typeof run[mark] !== 'boolean') throw new TypeError(`Neplatné ${mark}.`);
+    for (const mark of ['bold', 'italic', 'underline', 'strike']) if (run[mark] !== undefined && typeof run[mark] !== 'boolean') throw new TypeError(`Neplatné ${mark}.`);
     if (run.link !== undefined && (typeof run.link !== 'string' || !safeHref(run.link))) throw new TypeError('Neplatný odkaz.');
-    append(children, { text: run.text, ...(run.bold ? { bold: true } : {}), ...(run.italic ? { italic: true } : {}), ...(run.link !== undefined ? { link: safeHref(run.link) } : {}) });
+    append(children, { text: run.text, ...(run.bold ? { bold: true } : {}), ...(run.italic ? { italic: true } : {}), ...(run.underline ? { underline: true } : {}), ...(run.strike ? { strike: true } : {}), ...(run.color ? { color: run.color } : {}), ...(run.link !== undefined ? { link: safeHref(run.link) } : {}) });
   }
   return children;
 };
@@ -117,6 +119,9 @@ export function selectionMarks(value, from, to = from) {
   return {
     ...(selected.every(run => run.bold) ? { bold: true } : {}),
     ...(selected.every(run => run.italic) ? { italic: true } : {}),
+    ...(selected.every(run => run.underline) ? { underline: true } : {}),
+    ...(selected.every(run => run.strike) ? { strike: true } : {}),
+    ...(selected[0].color && selected.every(run => run.color === selected[0].color) ? { color: selected[0].color } : {}),
     ...(selected[0].link && selected.every(run => run.link === selected[0].link) ? { link: selected[0].link } : {}),
   };
 }
@@ -130,9 +135,10 @@ export function replaceText(value, from, to, text, marks = {}) {
 
 export function formatText(value, from, to, mark, setting) {
   bounds(value, from, to);
-  if (!['bold', 'italic', 'link'].includes(mark)) throw new TypeError('Neznámé formátování.');
+  if (!['bold', 'italic', 'underline', 'strike', 'link', 'color'].includes(mark)) throw new TypeError('Neznámé formátování.');
+  if (mark === 'color' && setting !== null && !colorNames.includes(setting)) throw new TypeError('Invalid text color.');
   if (mark === 'link' && setting !== null && !safeHref(setting)) throw new TypeError('Neplatný odkaz.');
-  if (mark !== 'link' && typeof setting !== 'boolean') throw new TypeError('Formátování musí být boolean.');
+  if (!['link', 'color'].includes(mark) && typeof setting !== 'boolean') throw new TypeError('Formátování musí být boolean.');
   const runs = stream(value);
   const selected = slice(runs, from, to).map(run => {
     const next = { ...run };

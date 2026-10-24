@@ -5,6 +5,29 @@ import { editorStats } from '../src/js/editor-stats.js';
 import { editorI18n, editorLocales } from '../src/js/editor-i18n.js';
 import { normalizeMedia } from '../src/js/media-library.js';
 
+test('underline and strike combine with italic, preserve offsets and normalize boolean marks',()=>{
+  const input=normalizeDocument({version:1,blocks:[{type:'paragraph',children:[{text:'Hello world',italic:true}]}]});
+  let value=formatText(input,0,5,'underline',true);value=formatText(value,0,5,'strike',true);
+  assert.deepEqual(selectionMarks(value,0,5),{italic:true,underline:true,strike:true});
+  assert.equal(selectionMarks(value,0,11).underline,undefined);
+  const typed=replaceText(value,5,5,'!',{italic:true,underline:true,strike:true});assert.equal(typed.blocks[0].children[0].text,'Hello!');
+  value=formatText(value,0,5,'underline',false);value=formatText(value,0,5,'strike',false);assert.deepEqual(value,input);
+  assert.throws(()=>formatText(input,0,5,'underline','true'));
+  assert.throws(()=>normalizeDocument({version:1,blocks:[{type:'paragraph',children:[{text:'x',strike:1}]}]}));
+});
+
+test('named text colors split and merge safely, survive edits and reject CSS values', () => {
+  const value=normalizeDocument({version:1,blocks:[{type:'paragraph',children:[{text:'Hello world',bold:true}]}]});
+  const colored=formatText(value,0,5,'color','blue');
+  assert.deepEqual(colored.blocks[0].children,[{text:'Hello',bold:true,color:'blue'},{text:' world',bold:true}]);
+  assert.equal(selectionMarks(colored,0,5).color,'blue');assert.equal(selectionMarks(colored,0,11).color,undefined);
+  const typed=replaceText(colored,5,5,'!',{color:'blue',bold:true});assert.equal(typed.blocks[0].children[0].text,'Hello!');
+  assert.deepEqual(formatText(colored,0,5,'color',null),value);
+  const list=setList(colored,0,5,'bullet');assert.equal(list.blocks[0].items[0].children[0].color,'blue');
+  for(const color of ['#fff','var(--evil)','unknown',null]) assert.throws(()=>normalizeDocument({version:1,blocks:[{type:'paragraph',children:[{text:'x',color}]}]}));
+  assert.throws(()=>formatText(value,0,5,'color','#fff'));assert.equal(value.blocks[0].children.length,1);
+});
+
 test('seznamy zachovají formátování, řádky, sourozence a umí převod zpět na odstavce', () => {
   const input = normalizeDocument({ version: 1, blocks: [{ type: 'paragraph', children: [{ text: 'One', bold: true }] }, { type: 'paragraph', children: [{ text: 'Two' }] }] });
   const list = setList(input, 0, 7, 'ordered');
