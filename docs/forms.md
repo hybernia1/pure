@@ -42,7 +42,7 @@ Původní select je skrytý a stále nese hodnotu pro `new FormData(form).getAll
 <input class="input" data-picker id="meeting" name="meeting" type="datetime-local">
 ```
 
-`initPickers(scope = document)` vylepší `input[data-picker]` a vrací cleanup. `createPicker(source, { locale = 'cs-CZ' })` nabízí individuální `open()`, `close()`, `refresh()`, `destroy()`. Typ musí být date, time nebo datetime-local. Po inicializaci se systémový picker nepoužívá: Pure vykreslí vlastní kalendář a sloupce času. Data nadále nese původní input.
+`initPickers(scope = document)` vylepší `input[data-picker]` a vrací cleanup. `createPicker(source, { locale })` nabízí individuální `open()`, `close()`, `refresh()`, `destroy()`. Jazyk přebírá z [globální konfigurace](configuration.md), ve výchozím stavu z `html lang`. Typ musí být date, time nebo datetime-local. Po inicializaci se systémový picker nepoužívá: Pure vykreslí vlastní kalendář a sloupce času. Data nadále nese původní input.
 
 Vedle ikony zůstává editovatelné textové pole. Datum můžeš zadat jako 23.10.2026, 23. 10. 2026 nebo 2026-10-23; přijímá se také číselný formát locale. Čas jako 14:30 nebo 14:30:15, datum s časem jako 23.10.2026 14:30 nebo 2026-10-23T14:30. Po opuštění pole se platná hodnota sjednotí. Alt+šipka dolů otevře picker, samotné psaní jej neotevírá.
 

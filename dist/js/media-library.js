@@ -1,3 +1,4 @@
+import { getPureConfig, componentOptions } from './config.js';
 import { createModal } from './modal.js';
 import { iconButton, icon } from './controls.js';
 import { normalizeMedia } from './media.js';
@@ -8,8 +9,10 @@ import { editorI18n } from './editor-i18n.js';
 export { normalizeMedia } from './media.js';
 
 /** Připojitelný modal; API, autentizaci a ukládání vlastní aplikace. */
-export function createMediaLibrary({ document: doc = document, load, upload, locale, messages, onSelect = () => {}, pageSize = 12, styles = true } = {}) {
+export function createMediaLibrary(options = {}) {
+  const { document: doc = document, load, upload, locale, messages, onSelect = () => {}, pageSize = 12, styles = getPureConfig().styles.auto } = componentOptions('mediaLibrary', options);
   if (typeof load !== 'function' || !Number.isInteger(pageSize) || pageSize < 1) throw new TypeError('Media library requires load and a positive pageSize.');
+  const imageMaxSize = getPureConfig().upload.maxSize === Infinity ? 10 * 1024 * 1024 : getPureConfig().upload.maxSize;
   const { t } = editorI18n(doc, { locale, messages });
   const node = (tag, className, text) => { const element = doc.createElement(tag); if (className) element.className = className; if (text !== undefined) element.textContent = text; return element; };
   const dialog = node('dialog', 'modal media-library'); dialog.setAttribute('aria-label', t('library')); dialog.dataset.mediaLibrary = '';
@@ -68,7 +71,7 @@ export function createMediaLibrary({ document: doc = document, load, upload, loc
   listen(next, 'click', () => { if (!busy && hasMore) { page++; refresh(); } });
   if (file) listen(file, 'change', async () => {
     if (busy || !file.files[0]) return;
-    const chosen = file.files[0]; const errors = validateFiles([chosen], { accept: file.accept, maxFiles: 1, maxSize: 10 * 1024 * 1024, translate: t });
+    const chosen = file.files[0]; const errors = validateFiles([chosen], { accept: file.accept, maxFiles: 1, maxSize: imageMaxSize, translate: t });
     if (errors.length) { status.textContent = errors.join(' '); file.value = ''; return; }
     abort(); controller = new AbortController(); const signal = controller.signal; const id = sequence; setBusy(true); status.textContent = t('loading');
     try {

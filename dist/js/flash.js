@@ -1,8 +1,12 @@
+import { uiI18n } from './i18n.js';
+import { getPureConfig } from './config.js';
 import { assertState } from './states.js';
 
 /** Notifikace jsou textové a zůstávají viditelné, pokud nezadáš duration. */
 export function createFlash(region) {
+  const defaults = getPureConfig().flash;
   const doc = region.ownerDocument;
+  const { t } = uiI18n(doc);
   const active = new Set();
   let destroyed = false;
   const announcers = ['status', 'alert'].map((role) => {
@@ -12,7 +16,7 @@ export function createFlash(region) {
     return node;
   });
   return {
-    show(message, { state = 'info', duration = 0 } = {}) {
+    show(message, { state = 'info', duration = defaults.duration } = {}) {
       if (destroyed) throw new Error('Flash modul byl odpojen.');
       assertState(state);
       if (!Number.isFinite(duration) || duration < 0) throw new TypeError('duration musí být nezáporné číslo.');
@@ -21,7 +25,7 @@ export function createFlash(region) {
       const text = doc.createElement('div'); text.className = 'flash-message';
       text.textContent = String(message);
       const close = doc.createElement('button'); close.type = 'button'; close.className = 'flash-close';
-      close.textContent = '×'; close.setAttribute('aria-label', 'Zavřít oznámení');
+      close.textContent = '×'; close.setAttribute('aria-label', t('closeFlash'));
       item.append(text, close); region.append(item);
       let timer;
       const announcer = announcers[state === 'error' ? 1 : 0];

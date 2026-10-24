@@ -1,3 +1,4 @@
+import { getPureConfig, componentOptions } from './config.js';
 import { safeHref } from './url.js';
 import { emptyDocument, normalizeDocument, documentText, plainText, selectionMarks, replaceText, formatText, setHeading, blockAt } from './editor-model.js';
 import { createDragDrop } from './drag-drop.js';
@@ -7,16 +8,18 @@ import { normalizeMedia } from './media.js';
 import { ensureStyles } from './styles.js';
 let editorId = 0;
 
-export function createEditor(source, {
-  label,
-  iconsUrl = new URL('../icons.svg', import.meta.url).href,
-  features = {},
-  uploadImage,
-  mediaLibrary,
-  locale,
-  messages,
-  styles = true,
-} = {}) {
+export function createEditor(source, options = {}) {
+  let {
+    label,
+    iconsUrl = getPureConfig().iconsUrl,
+    features = {},
+    uploadImage,
+    mediaLibrary,
+    locale,
+    messages,
+    styles = getPureConfig().styles.auto,
+  } = componentOptions('editor', options);
+  const imageMaxSize = getPureConfig().upload.maxSize === Infinity ? 10 * 1024 * 1024 : getPureConfig().upload.maxSize;
   const { t, locale: language } = editorI18n(source.ownerDocument, { locale, messages });
   label ??= source.labels?.[0]?.textContent || t('editor');
   if (source.tagName !== 'TEXTAREA' || source.required || source.disabled || source.readOnly) throw new TypeError('Editor vyžaduje editovatelnou textarea bez required.');
@@ -354,7 +357,7 @@ export function createEditor(source, {
   const createImageDialog = (createEditorDialog, selectFactory, uploadFactory, validateFiles) => {
     imageDialog = createEditorDialog(doc, {
       t,
-      selectFactory, uploadFactory,
+      selectFactory, uploadFactory: (input, options) => uploadFactory(input, { ...options, maxSize: imageMaxSize }),
       title: t('image'),
       fields: {
         file: { label: t('uploadImage'), type: 'file', accept: 'image/png,image/jpeg,image/webp,image/gif,image/avif' },
@@ -367,7 +370,7 @@ export function createEditor(source, {
         let mediaId = pickedMedia?.id ?? (imageIndex === null ? null : value.blocks[imageIndex]?.mediaId); const file = fields.file.files[0];
         if (file) {
           if (typeof uploadImage !== 'function') throw new Error(t('uploadMissing'));
-          const errors = validateFiles([file], { accept: fields.file.accept, maxFiles: 1, maxSize: 10 * 1024 * 1024, translate: t });
+          const errors = validateFiles([file], { accept: fields.file.accept, maxFiles: 1, maxSize: imageMaxSize, translate: t });
           if (errors.length) throw new Error(errors.join(' '));
           const result = await uploadImage(file, { signal });
           if (typeof result === 'string') { src = result; mediaId = null; }

@@ -37,7 +37,7 @@ export function createEditorDialog(doc, { title, fields, submit, remove, selectF
   const removeButton = doc.createElement('button'); removeButton.type = 'button'; removeButton.className = 'button button-outline'; removeButton.textContent = t('removeImage'); removeButton.hidden = true;
   footer.append(removeButton, cancel, apply); form.append(header, body, error, footer); dialog.append(form); doc.body.append(dialog);
   const selects = Object.values(controls).filter(input => input.tagName === 'SELECT').map(input => selectFactory(input));
-  const uploads = Object.values(controls).filter(input => input.type === 'file').map(input => uploadFactory(input, { maxFiles: 1, maxSize: 10 * 1024 * 1024, translate: t }));
+  const uploads = Object.values(controls).filter(input => input.type === 'file').map(input => uploadFactory(input, { maxFiles: 1, translate: t }));
   const modal = createModal(dialog); let abort; let destroyed = false;
   const setBusy = busy => { apply.disabled = busy; Object.values(controls).forEach(input => { input.disabled = busy; }); form.setAttribute('aria-busy', String(busy)); };
   const onSubmit = async event => {

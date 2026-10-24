@@ -1,5 +1,7 @@
+import { componentOptions } from './config.js';
 import { icon } from './controls.js';
-export function createModal(dialog, { closeOnBackdrop = true } = {}) {
+export function createModal(dialog, options = {}) {
+  const { closeOnBackdrop = true } = componentOptions('modal', options);
   if (dialog.tagName !== 'DIALOG') throw new TypeError('Modal vyžaduje element dialog.');
   const doc = dialog.ownerDocument;
   let opener;

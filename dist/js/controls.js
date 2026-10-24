@@ -1,8 +1,10 @@
+import { uiI18n } from './i18n.js';
+import { getPureConfig } from './config.js';
 let controlId = 0;
 const proxies = new WeakMap();
 export const formControl = source => proxies.get(source) || source;
 export const iconsUrl = new URL('../icons.svg', import.meta.url).href;
-export function icon(doc, name, sprite = iconsUrl) {
+export function icon(doc, name, sprite = getPureConfig().iconsUrl) {
   const svg = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('class', 'icon'); svg.setAttribute('aria-hidden', 'true');
   const use = doc.createElementNS('http://www.w3.org/2000/svg', 'use'); use.setAttribute('href', `${sprite}#${name}`); svg.append(use); return svg;
@@ -20,6 +22,7 @@ export function emitValue(source) {
 export function createFieldPopup(source, { glyph, kind, placeholder, editable = false }) {
   if (proxies.has(source)) throw new Error('Pole už má vlastní ovládání.');
   const doc = source.ownerDocument; const win = doc.defaultView; const originalHidden = source.hidden;
+  const { t } = uiI18n(doc);
   const wrapper = doc.createElement('div'); wrapper.className = 'control control-with-icon control-with-action';
   const leading = icon(doc, glyph); leading.classList.add('control-icon');
   const trailing = icon(doc, 'chevron-down'); trailing.classList.add('control-end');
@@ -60,10 +63,10 @@ export function createFieldPopup(source, { glyph, kind, placeholder, editable = 
     if (trigger.disabled) close(); onRefresh(); position();
   };
   const setDisplay = value => {
-    const label = [...(source.labels || [])].map(label => label.textContent.trim()).join(' ') || source.getAttribute('aria-label') || 'Výběr';
+    const label = [...(source.labels || [])].map(label => label.textContent.trim()).join(' ') || source.getAttribute('aria-label') || t('selection');
     text.textContent = value || placeholder; text.classList.toggle('text-subtle', !value);
     trigger.setAttribute('aria-label', `${label}: ${value || placeholder}`); panel.setAttribute('aria-label', label);
-    if (entry) { entry.setAttribute('aria-label', label); entry.placeholder = placeholder; trigger.setAttribute('aria-label', `Otevřít výběr: ${label}`); if (doc.activeElement !== entry) entry.value = value; }
+    if (entry) { entry.setAttribute('aria-label', label); entry.placeholder = placeholder; trigger.setAttribute('aria-label', t('openSelection', { label })); if (doc.activeElement !== entry) entry.value = value; }
   };
   const open = () => { refresh(); if (trigger.disabled || destroyed) return; panel.showPopover(); trigger.setAttribute('aria-expanded', 'true'); onOpen(); position(); };
   listen(trigger, 'pointerdown', () => { pointerWasOpen = isOpen(); });

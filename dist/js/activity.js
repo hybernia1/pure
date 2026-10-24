@@ -1,5 +1,6 @@
+import { uiI18n } from './i18n.js';
 /** Indikátor libovolné asynchronní činnosti; každé start() vlastní svůj cleanup. */
-export function createActivity({ target = document.body, global = target === target.ownerDocument.body, label = 'Probíhá zpracování…' } = {}) {
+export function createActivity({ target = document.body, global = target === target.ownerDocument.body, label = uiI18n(target.ownerDocument).t('activity') } = {}) {
   const doc = target.ownerDocument;
   const element = doc.createElement('div'); element.className = `activity${global ? ' activity-global' : ''}`;
   element.setAttribute('role', 'status'); element.setAttribute('aria-live', 'polite'); element.setAttribute('aria-atomic', 'true'); element.hidden = true;

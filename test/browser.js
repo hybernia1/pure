@@ -1,5 +1,6 @@
 import { createEditor, createFlash, createLoader, createForm, initPasswords, initInputs, createSelect, createPicker, createModal, createUpload, createResize, createActivity, createProgress, createSearch, createDragDrop, createMediaLibrary } from '../dist/js/index.js';
 import { cleanHTML } from '../dist/js/html.js';
+import { configurePure, getPureConfig } from '../dist/js/config.js';
 const fixture = document.querySelector('#fixture');
 const results = document.querySelector('#results');
 let failed = 0; let passed = 0;
@@ -498,5 +499,40 @@ await test('Resize připojuje globální pointer listenery pouze po dobu gesta',
   } finally { resize?.destroy(); window.addEventListener = add; window.removeEventListener = remove; }
 });
 
+await test('Upload přebírá globální limit a dovolí lokální přepsání', async () => {
+  const original = getPureConfig(); let upload;
+  try {
+    configurePure({ upload: { maxSize: 2 } });
+    const region = document.createElement('div'); region.dataset.upload = '';
+    const input = document.createElement('input'); input.type = 'file';
+    const list = document.createElement('div'); list.dataset.uploadList = '';
+    const status = document.createElement('p'); status.dataset.uploadStatus = '';
+    region.append(input, list, status); fixture.append(region);
+    const files = new DataTransfer(); files.items.add(new File(['large'], 'test.txt', { type: 'text/plain' }));
+    upload = createUpload(input); input.files = files.files; input.dispatchEvent(new Event('change', { bubbles: true }));
+    assert(input.files.length === 0 && status.textContent.includes('limit'), 'Globální limit odmítne velký soubor');
+    upload.destroy(); upload = createUpload(input, { maxSize: 10 });
+    input.files = files.files; input.dispatchEvent(new Event('change', { bubbles: true }));
+    assert(input.files.length === 1, 'Lokální limit má přednost');
+  } finally { upload?.destroy(); configurePure(original); }
+});
+await test('Globální konfigurace se projeví v UI; lokální volby a staré instance zůstávají nezávislé', async () => {
+  const original = getPureConfig(); let editor; let select;
+  try {
+    configurePure({ locale: 'en', iconsUrl: '/dist/icons.svg', editor: { features: { headings: true, fullscreen: false } }, messages: { selectPlaceholder: 'Pick one' } });
+    const source = document.createElement('textarea'); fixture.append(source);
+    editor = createEditor(source, { features: { headings: false } }); await editor.ready;
+    assert(!fixture.querySelector('.editor-toolbar select'), 'Lokální headings:false má přednost');
+    assert(!fixture.querySelector('[title="Celá obrazovka"]'), 'Globální fullscreen:false');
+    assert(fixture.textContent.includes('Words: 0'), 'Globální anglický slovník');
+    const field = document.createElement('select'); const option = document.createElement('option'); option.value = ''; field.append(option); fixture.append(field);
+    select = createSelect(field);
+    assert(fixture.textContent.includes('Pick one'), 'Vlastní globální text');
+    assert(fixture.querySelector('use').getAttribute('href').startsWith(location.origin + '/dist/icons.svg#'), 'Globální sprite');
+    configurePure({ locale: 'cs', messages: { selectPlaceholder: 'Nový výběr' } });
+    select.refresh();
+    assert(fixture.textContent.includes('Pick one'), 'Existující select drží svůj text');
+  } finally { editor?.destroy(); select?.destroy(); configurePure(original); }
+});
 document.querySelector('#summary').textContent = `${passed} prošlo, ${failed} selhalo.`;
 document.documentElement.dataset.testResult = failed ? 'fail' : 'pass';

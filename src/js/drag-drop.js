@@ -1,7 +1,8 @@
+import { editorI18n } from './editor-i18n.js';
 const instances = new WeakSet();
 
 /** Svislé řazení přímých potomků; transport ani datový model nejsou součástí služby. */
-export function createDragDrop(container, { items = '[data-drag-item]', handle = '[data-drag-handle]', onMove = () => {}, translate } = {}) {
+export function createDragDrop(container, { items = '[data-drag-item]', handle = '[data-drag-handle]', onMove = () => {}, translate = editorI18n(container.ownerDocument).t } = {}) {
   if (instances.has(container)) throw new Error('Drag & drop už je inicializovaný.');
   const doc = container.ownerDocument; const win = doc.defaultView;
   const status = doc.createElement('span'); status.className = 'sr-only'; status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite'); container.after(status);

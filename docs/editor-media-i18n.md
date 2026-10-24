@@ -1,6 +1,6 @@
 # Editor: počty, jazyky a média
 
-Samostatný export `editorStats(documentJSON, locale)` vrací stejné počty jako metoda editoru pro již normalizovaný dokument. `createUpload` a `validateFiles` nově přijímají volitelný callback `translate(key, values)` pro souborové zprávy; klíče jsou `uploadRemove`, `uploadRemoveFile`, `uploadSelected`, `uploadEmpty`, `uploadError`, `maxFiles`, `maxSize`, `invalidType` ze slovníku `editorLocales`. Bez callbacku zachovávají původní češtinu.
+Samostatný export `editorStats(documentJSON, locale)` vrací stejné počty jako metoda editoru pro již normalizovaný dokument. `createUpload` a `validateFiles` přijímají volitelný callback `translate(key, values)` pro souborové zprávy; klíče jsou `uploadRemove`, `uploadRemoveFile`, `uploadSelected`, `uploadEmpty`, `uploadError`, `maxFiles`, `maxSize`, `invalidType` ze slovníku `editorLocales`. `createUpload` bez callbacku přebírá [globální jazyk a překlady](configuration.md); čisté `validateFiles` bez callbacku zachovává původní češtinu.
 
 Editor má patičku se statistikami `blocks`, `words`, `images`; stejné hodnoty vrací `editor.getStats()`. Počítají se všechny bloky (včetně prázdného odstavce), slova pouze z odstavců a nadpisů. Alt texty a popisky obrázků ani ovládání nejsou slova dokumentu. Používá se `Intl.Segmenter`, bez něj Unicode rozdělení podle písmen a číslic. Patička se aktualizuje při psaní, změně JSON, resetu i undo/redo; zůstává viditelná i ve fullscreenu.
 
@@ -33,7 +33,7 @@ const editor = createEditor(textarea, {
 });
 ```
 
-Upload je klasický file picker s náhledem a drag & drop, bez URL pole. Není závislý na media library. Způsob přenosu, endpoint, hlavičky, autorizaci a strukturu odpovědi řeší callback; výše je jen adaptér. Aplikace může stejně použít `request` s raw tělem File. Signál abort předávej transportu. Zrušený modal ignoruje opožděný výsledek. PNG/JPEG/WebP/GIF/AVIF mají limit 10 MiB; server musí soubor také ověřit. Jde o obrázky, nikoli obecné přílohové bloky.
+Upload je klasický file picker s náhledem a drag & drop, bez URL pole. Není závislý na media library. Způsob přenosu, endpoint, hlavičky, autorizaci a strukturu odpovědi řeší callback; výše je jen adaptér. Aplikace může stejně použít `request` s raw tělem File. Signál abort předávej transportu. Zrušený modal ignoruje opožděný výsledek. PNG/JPEG/WebP/GIF/AVIF mají limit 10 MiB (nebo globální `upload.maxSize`); server musí soubor také ověřit. Jde o obrázky, nikoli obecné přílohové bloky.
 
 Nový callback vrací `{ id, src, alt?, name? }`. Pro kompatibilitu lze stále vrátit URL řetězec, potom je `mediaId: null`. Při úpravě alt/popisku/velikosti se znovu nenahrává a ID zůstane. Nový soubor nebo výběr z knihovny nahradí ID původního média.
 

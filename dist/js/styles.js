@@ -1,3 +1,4 @@
+import { getPureConfig } from './config.js';
 const documents = new WeakMap();
 const failedLinks = new WeakSet();
 const dependencies = {
@@ -10,6 +11,7 @@ const dependencies = {
 /** Sdílené styly zůstávají po destroy komponenty v dokumentu. */
 export function ensureStyles(names, { document: doc = globalThis.document } = {}) {
   if (!doc?.head) return Promise.reject(new TypeError('A document with a head is required.'));
+  const baseUrl = getPureConfig().styles.baseUrl;
   const requested = typeof names === 'string' ? [names] : names;
   const ordered = new Set();
   const visit = name => {
@@ -36,5 +38,5 @@ export function ensureStyles(names, { document: doc = globalThis.document } = {}
   };
   const bundle = [...doc.querySelectorAll('link[rel="stylesheet"]')].find(link => link.href && !failedLinks.has(link) && (link.dataset.pureStyles === 'all' || new URL(link.href).pathname.endsWith('/pure.css')));
   if (bundle) return load(bundle.href, bundle);
-  return Promise.all([...ordered].map(name => load(new URL(`../css/${name}.css`, import.meta.url).href))).then(() => undefined);
+  return Promise.all([...ordered].map(name => load(new URL(`${name}.css`, baseUrl).href))).then(() => undefined);
 }

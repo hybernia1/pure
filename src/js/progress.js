@@ -1,7 +1,8 @@
+import { uiI18n } from './i18n.js';
 import { assertState } from './states.js';
 
 const instances = new WeakSet();
-export function createProgress(target, { max = 100, value = 0, label = 'Průběh' } = {}) {
+export function createProgress(target, { max = 100, value = 0, label = uiI18n(target.ownerDocument).t('progress') } = {}) {
   if (instances.has(target)) throw new Error('Progress už je inicializovaný.');
   if (!Number.isFinite(max) || max <= 0) throw new TypeError('Maximum musí být kladné číslo.');
   const normalize = number => {
@@ -11,6 +12,7 @@ export function createProgress(target, { max = 100, value = 0, label = 'Průběh
   };
   let current = normalize(value); let destroyed = false;
   const doc = target.ownerDocument;
+  const { t } = uiI18n(doc);
   const element = doc.createElement('div'); element.className = 'progress';
   const description = doc.createElement('div'); description.className = 'progress-description';
   const text = doc.createElement('span'); text.textContent = label;
@@ -26,7 +28,7 @@ export function createProgress(target, { max = 100, value = 0, label = 'Průběh
     element.dataset.indeterminate = String(current === null);
     track.setAttribute('aria-label', text.textContent);
     if (current === null) track.removeAttribute('aria-valuenow'); else track.setAttribute('aria-valuenow', current);
-    amount.textContent = percent === null ? 'Probíhá…' : `${percent} %`;
+    amount.textContent = percent === null ? t('pending') : `${percent} %`;
     fill.style.width = percent === null ? '' : `${current / max * 100}%`;
   };
   render();
@@ -36,7 +38,7 @@ export function createProgress(target, { max = 100, value = 0, label = 'Průběh
     setState(state, message) {
       check(); if (state !== null) assertState(state);
       if (state === null) element.removeAttribute('data-state'); else element.dataset.state = state;
-      const defaults = { error: 'Chyba', success: 'Hotovo', info: 'Probíhá zpracování' };
+      const defaults = { error: t('error'), success: t('success'), info: t('info') };
       text.textContent = message ?? (state === null ? label : defaults[state]); status.textContent = state === null ? '' : text.textContent; render();
     },
     destroy() { if (destroyed) return; destroyed = true; element.remove(); instances.delete(target); },

@@ -1,16 +1,20 @@
+import { editorI18n } from './editor-i18n.js';
+import { componentOptions } from './config.js';
 import { validateFiles } from './file-validation.js';
 export { validateFiles } from './file-validation.js';
 
 /** Pouze výběr souborů; přenos provádí aplikace přes FormData. */
-export function createUpload(input, {
-  dropzone = input.closest('[data-upload]'),
-  list = dropzone?.querySelector('[data-upload-list]'),
-  status = dropzone?.querySelector('[data-upload-status]'),
-  maxFiles = input.multiple ? Infinity : 1,
-  maxSize = Infinity,
-  onChange = () => {},
-  translate,
-} = {}) {
+export function createUpload(input, options = {}) {
+  const {
+    dropzone = input.closest('[data-upload]'),
+    list = dropzone?.querySelector('[data-upload-list]'),
+    status = dropzone?.querySelector('[data-upload-status]'),
+    maxFiles = input.multiple ? Infinity : 1,
+    maxSize = Infinity,
+    accept = input.accept,
+    onChange = () => {},
+    translate = editorI18n(input.ownerDocument).t,
+  } = componentOptions('upload', options);
   if (input.type !== 'file' || !dropzone || !list || !status) throw new TypeError('Upload vyžaduje file input, dropzone, list a status.');
   validateFiles([], { maxFiles, maxSize });
   const doc = input.ownerDocument;
@@ -50,7 +54,7 @@ export function createUpload(input, {
     if (destroyed) throw new Error('Upload byl odpojen.');
     if (disabled()) return false;
     const next = [...files];
-    const errors = validateFiles(next, { accept: input.accept, maxFiles: input.multiple ? maxFiles : Math.min(maxFiles, 1), maxSize, translate });
+    const errors = validateFiles(next, { accept: input.accept || accept, maxFiles: input.multiple ? maxFiles : Math.min(maxFiles, 1), maxSize, translate });
     if (errors.length) {
       sync(selected); announce(translate ? translate('uploadError', { errors: errors.join(' ') }) : `Chyba: ${errors.join(' ')} Původní výběr zachován.`, 'error'); return false;
     }

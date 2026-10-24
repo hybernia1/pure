@@ -1,9 +1,10 @@
+import { uiI18n } from './i18n.js';
 import { icon } from './controls.js';
 
 const instances = new WeakMap();
 export function createResize(target, {
   container = target.parentElement, width = 100, min = 10, max = 100, step = 1,
-  label = 'Šířka', help = 'Táhni pro změnu šířky; šipky mění velikost, Escape ruší tažení.', iconsUrl, onChange = () => {}, onCommit = () => {},
+  label = uiI18n(target.ownerDocument).t('width'), help = uiI18n(target.ownerDocument).t('resizeHelp'), iconsUrl, onChange = () => {}, onCommit = () => {},
 } = {}) {
   if (!container || instances.has(target)) throw new TypeError('Resize vyžaduje kontejner a dosud neinicializovaný prvek.');
   if (![width, min, max, step].every(Number.isFinite) || min <= 0 || max > 100 || min > max || step <= 0) throw new TypeError('Neplatné meze resize.');

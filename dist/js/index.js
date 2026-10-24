@@ -1,3 +1,4 @@
+export { configurePure, getPureConfig } from './config.js';
 export { initTheme, setTheme } from './theme.js';
 export { initDisclosures } from './disclosure.js';
 export { states } from './states.js';

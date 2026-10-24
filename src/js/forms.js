@@ -1,3 +1,4 @@
+import { uiI18n } from './i18n.js';
 import { formControl, icon, iconButton } from './controls.js';
 let errorId = 0;
 
@@ -71,6 +72,7 @@ export function initPasswords(scope = document) {
     const input = button.ownerDocument.getElementById(button.getAttribute('aria-controls'));
     if (!input || input.type !== 'password') return;
     const original = [...button.childNodes];
+    const { t } = uiI18n(button.ownerDocument);
     original.forEach(node => node.remove());
     const graphic = icon(button.ownerDocument, 'eye'); button.append(graphic);
     const use = graphic.querySelector('use'); const sprite = use.getAttribute('href').split('#')[0];
@@ -80,7 +82,7 @@ export function initPasswords(scope = document) {
     const update = visible => {
       button.disabled = input.matches(':disabled');
       input.type = visible ? 'text' : 'password'; use.setAttribute('href', `${sprite}#${visible ? 'eye-off' : 'eye'}`);
-      button.setAttribute('aria-label', visible ? 'Skrýt heslo' : 'Zobrazit heslo'); button.title = visible ? 'Skrýt heslo' : 'Zobrazit heslo'; button.setAttribute('aria-pressed', String(visible));
+      button.setAttribute('aria-label', t(visible ? 'hidePassword' : 'showPassword')); button.title = t(visible ? 'hidePassword' : 'showPassword'); button.setAttribute('aria-pressed', String(visible));
     };
     const hide = () => update(false);
     const toggle = () => {

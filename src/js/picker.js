@@ -1,11 +1,16 @@
+import { uiI18n } from './i18n.js';
+import { resolveLocale } from './config.js';
 import { createFieldPopup, emitValue, iconButton } from './controls.js';
 import { dateKey, parseDate, shiftDate, monthGrid, pad } from './calendar.js';
 import { parsePickerText } from './picker-value.js';
 
-export function createPicker(source, { locale = 'cs-CZ' } = {}) {
+export function createPicker(source, { locale } = {}) {
+  locale = resolveLocale(source.ownerDocument, locale);
+  const { t } = uiI18n(source.ownerDocument, { locale });
   if (!['date', 'time', 'datetime-local'].includes(source.type)) throw new TypeError('Picker vyžaduje date, time nebo datetime-local.');
   const doc = source.ownerDocument; const hasDate = source.type !== 'time'; const hasTime = source.type !== 'date';
-  const ui = createFieldPopup(source, { glyph: hasDate ? 'calendar' : 'clock', kind: 'dialog', placeholder: source.type === 'date' ? 'DD.MM.RRRR' : hasDate ? 'DD.MM.RRRR HH:mm' : 'HH:mm', editable: true });
+  const dateHint = new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', year: 'numeric' }).formatToParts(new Date(2006, 10, 22)).map(part => ({ day: 'DD', month: 'MM', year: 'YYYY' })[part.type] || part.value).join('');
+  const ui = createFieldPopup(source, { glyph: hasDate ? 'calendar' : 'clock', kind: 'dialog', placeholder: hasDate ? `${dateHint}${hasTime ? ' HH:mm' : ''}` : 'HH:mm', editable: true });
   let manualError = false; let resetTimer; let destroyed = false;
   const probe = source.cloneNode(); probe.removeAttribute('id'); probe.removeAttribute('name'); probe.required = true;
   let day; let month; let hour = '00'; let minute = '00'; let second = '00'; let focusDay;
@@ -34,7 +39,7 @@ export function createPicker(source, { locale = 'cs-CZ' } = {}) {
   const commit = value => { if (value && !allowed(value)) return false; if (manualError) source.setCustomValidity(''); manualError = false; source.value = value; ui.entry.value = display(); emitValue(source); ui.close(true); return true; };
   ui.listen(ui.entry, 'input', () => {
     const parsed = parsePickerText(ui.entry.value, source.type, { locale });
-    if (parsed === null) { source.value = ''; source.setCustomValidity(hasDate ? 'Zadej platné datum (DD.MM.RRRR nebo YYYY-MM-DD) a případně čas HH:mm.' : 'Zadej platný čas HH:mm nebo HH:mm:ss.'); manualError = true; }
+    if (parsed === null) { source.value = ''; source.setCustomValidity(t(hasDate ? 'invalidDate' : 'invalidTime')); manualError = true; }
     else { if (manualError) source.setCustomValidity(''); manualError = false; source.value = parsed; }
     emitValue(source);
   });
@@ -62,15 +67,15 @@ export function createPicker(source, { locale = 'cs-CZ' } = {}) {
     const heading = element('span', 'picker-heading'); heading.id = `${ui.panel.id}-heading`; heading.setAttribute('aria-live', 'polite');
     if (hasDate) {
       heading.textContent = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(parseDate(month));
-      for (const [delta, glyph, name] of [[-1, 'chevron-left', 'Předchozí měsíc'], [1, 'chevron-right', 'Další měsíc']]) {
+      for (const [delta, glyph, name] of [[-1, 'chevron-left', t('previousMonth')], [1, 'chevron-right', t('nextMonth')]]) {
         const nav = iconButton(doc, glyph, name); nav.dataset.monthDelta = String(delta);
         const target = shiftDate(month, 0, delta);
         nav.disabled = (source.min && target.slice(0, 7) < source.min.slice(0, 7)) || (source.max && target.slice(0, 7) > source.max.slice(0, 7));
         nav.addEventListener('click', () => { month = target; focusDay = month; render(); ui.panel.querySelector(`[data-month-delta="${delta}"]`)?.focus(); });
         if (delta < 0) header.append(nav, heading); else header.append(nav);
       }
-    } else { heading.textContent = 'Vyber čas'; header.append(heading); }
-    const close = iconButton(doc, 'close', 'Zavřít výběr'); close.addEventListener('click', () => ui.close(true)); header.append(close); ui.panel.append(header);
+    } else { heading.textContent = t('chooseTime'); header.append(heading); }
+    const close = iconButton(doc, 'close', t('closePicker')); close.addEventListener('click', () => ui.close(true)); header.append(close); ui.panel.append(header);
     if (hasDate) {
       const table = element('table', 'picker-calendar'); table.setAttribute('role', 'grid'); table.setAttribute('aria-labelledby', heading.id);
       const head = element('thead'); const labels = element('tr');
@@ -106,7 +111,7 @@ export function createPicker(source, { locale = 'cs-CZ' } = {}) {
         }
       }
       const columns = element('div', 'picker-time');
-      for (const [part, title, count, selected] of [['hour', 'Hodiny', 24, hour], ['minute', 'Minuty', 60, minute], ...(seconds() ? [['second', 'Sekundy', 60, second]] : [])]) {
+      for (const [part, title, count, selected] of [['hour', t('hours'), 24, hour], ['minute', t('minutes'), 60, minute], ...(seconds() ? [['second', t('seconds'), 60, second]] : [])]) {
         const column = element('div', 'picker-time-column'); const name = element('p', 'field-help', title); name.id = `${ui.panel.id}-${part}`;
         const list = element('div', 'picker-time-list'); list.setAttribute('role', 'listbox'); list.setAttribute('aria-labelledby', name.id);
         for (let index = 0; index < count; index++) {
@@ -121,9 +126,9 @@ export function createPicker(source, { locale = 'cs-CZ' } = {}) {
       columns.querySelectorAll('[aria-selected="true"]').forEach(item => { item.parentElement.scrollTop = item.offsetTop - item.parentElement.clientHeight / 2 + item.offsetHeight / 2; });
       const valid = allowed(candidate()); const message = valid ? candidate().replace('T', ' · ') : probe.validationMessage;
       const status = element('p', 'picker-status', message); status.setAttribute('role', 'status'); ui.panel.append(status);
-      const footer = element('div', 'picker-footer'); const apply = button('Použít', () => commit(candidate()), 'button'); apply.disabled = !valid;
-      footer.append(button('Vymazat', () => commit('')), apply); ui.panel.append(footer);
-    } else { const footer = element('div', 'picker-footer'); footer.append(button('Vymazat', () => commit(''))); ui.panel.append(footer); }
+      const footer = element('div', 'picker-footer'); const apply = button(t('apply'), () => commit(candidate()), 'button'); apply.disabled = !valid;
+      footer.append(button(t('clear'), () => commit('')), apply); ui.panel.append(footer);
+    } else { const footer = element('div', 'picker-footer'); footer.append(button(t('clear'), () => commit(''))); ui.panel.append(footer); }
   };
   ui.listen(ui.panel, 'keydown', event => {
     const dateButton = event.target.closest('[data-date]');

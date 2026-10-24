@@ -1,5 +1,7 @@
 # Pure
 
+[Globální konfigurace](docs/configuration.md): jazyk a překlady, ikony, načítání CSS, téma a výchozí volby komponent přes lehké `configurePure()`. Lokální nastavení instance má přednost.
+
 [Načítání podle potřeby](docs/distribution.md): lehký `@pure-ui/core/lazy` načte komponentu i CSS. Editor své modaly, upload a knihovnu načítá až při použití. [Ukázka po kliknutí](examples/lazy.html), [síťové testy](test/lazy.html). JSON API zůstává synchronní; pro připravenost UI použij `await editor.ready`, pro dialog `await editor.openDialog('image')` a pro fullscreen `await editor.command('fullscreen')`.
 
 [Audit před prvním vydáním](docs/release-audit.md) obsahuje opravy, měření a otevřené kroky. `npm run check:dist` ověří distribuci, `npm run audit:size` změří velikosti a statistiky. `prepack` sestaví a zkontroluje balíček; zůstává private.

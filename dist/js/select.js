@@ -1,6 +1,7 @@
+import { uiI18n } from './i18n.js';
 import { createFieldPopup, emitValue, icon } from './controls.js';
 
-export function createSelect(source, { placeholder = 'Vyber možnost' } = {}) {
+export function createSelect(source, { placeholder = uiI18n(source.ownerDocument).t('selectPlaceholder') } = {}) {
   if (source.tagName !== 'SELECT') throw new TypeError('createSelect vyžaduje select.');
   const doc = source.ownerDocument;
   const ui = createFieldPopup(source, { glyph: 'list', kind: 'listbox', placeholder });

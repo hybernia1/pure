@@ -1,3 +1,5 @@
+import { getPureConfig } from './config.js';
+export { configurePure, getPureConfig } from './config.js';
 import { ensureStyles } from './styles.js';
 
 const modules = {
@@ -19,7 +21,7 @@ const modules = {
   'drag-drop': [() => import('./drag-drop.js'), ['drag-drop']],
 };
 
-export async function loadComponent(name, { document: doc = globalThis.document, styles = true } = {}) {
+export async function loadComponent(name, { document: doc = globalThis.document, styles = getPureConfig().styles.auto } = {}) {
   if (!Object.hasOwn(modules, name)) throw new TypeError(`Unknown Pure component: ${name}`);
   const [load, css] = modules[name];
   const [module] = await Promise.all([load(), styles && css.length ? ensureStyles(css, { document: doc }) : undefined]);

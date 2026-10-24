@@ -1,4 +1,11 @@
-import { loadComponent } from '../dist/js/lazy.js';
+import { loadComponent, configurePure } from '../dist/js/lazy.js';
+
+// Výchozí nastavení celé aplikace; instance může každou volbu přepsat.
+configurePure({
+  locale: 'auto',
+  editor: { features: { images: true, headings: true } },
+  upload: { maxSize: 5 * 1024 * 1024 },
+});
 
 const toggle = document.querySelector('#lazy-toggle'); const mount = document.querySelector('#lazy-editor');
 const status = document.querySelector('#lazy-status'); let editor;
@@ -12,7 +19,6 @@ toggle.addEventListener('click', async () => {
   try {
     const { createEditor } = await loadComponent('editor');
     editor = createEditor(document.querySelector('#lazy-source'), {
-      features: { images: true },
       async uploadImage(file, { signal }) {
         const { request } = await loadComponent('ajax');
         const result = await request('/api/images', { method: 'POST', headers: { 'Content-Type': file.type }, body: file, type: 'json', signal });

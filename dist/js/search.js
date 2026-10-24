@@ -1,20 +1,24 @@
+import { uiI18n } from './i18n.js';
+import { componentOptions } from './config.js';
 import { icon, iconButton } from './controls.js';
 import { request } from './ajax.js';
 
 let nextId = 0;
 const instances = new WeakSet();
-export function createSearch(source, { url, param = 'q', fetch: fetchItems, delay = 250, minLength = 2, limit = 8, onSelect = () => {} } = {}) {
+export function createSearch(source, options = {}) {
+  const { url, param = 'q', fetch: fetchItems, delay = 250, minLength = 2, limit = 8, onSelect = () => {} } = componentOptions('search', options);
   if (source.tagName !== 'INPUT' || !['text', 'search'].includes(source.type) || instances.has(source)) throw new TypeError('Search vyžaduje neinicializovaný textový nebo search input.');
   if ((!url && typeof fetchItems !== 'function') || !Number.isFinite(delay) || delay < 0 || !Number.isInteger(minLength) || minLength < 0 || !Number.isInteger(limit) || limit < 1) throw new TypeError('Neplatné nastavení search.');
   const doc = source.ownerDocument; const win = doc.defaultView;
+  const { t } = uiI18n(doc);
   const attrs = ['role', 'autocomplete', 'aria-autocomplete', 'aria-controls', 'aria-expanded', 'aria-activedescendant', 'aria-busy'];
   const original = new Map(attrs.map(name => [name, source.getAttribute(name)]));
   const wrapper = doc.createElement('div'); wrapper.className = 'control control-with-icon control-with-action search'; source.before(wrapper); wrapper.append(source);
   const glyph = icon(doc, 'search'); glyph.classList.add('control-icon'); wrapper.append(glyph);
-  const clear = iconButton(doc, 'close', 'Vymazat hledání'); clear.classList.add('control-action'); wrapper.append(clear);
+  const clear = iconButton(doc, 'close', t('clearSearch')); clear.classList.add('control-action'); wrapper.append(clear);
   const syncClear = () => { clear.hidden = !source.value; clear.disabled = source.matches(':disabled') || source.readOnly; }; syncClear();
   const panel = doc.createElement('div'); panel.className = 'control-panel search-panel'; panel.id = `pure-search-${++nextId}`; panel.setAttribute('popover', 'auto');
-  panel.setAttribute('role', 'listbox'); panel.setAttribute('aria-label', 'Návrhy vyhledávání'); wrapper.append(panel);
+  panel.setAttribute('role', 'listbox'); panel.setAttribute('aria-label', t('suggestions')); wrapper.append(panel);
   const status = doc.createElement('span'); status.className = 'search-status field-help'; status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite'); wrapper.append(status);
   source.setAttribute('role', 'combobox'); source.setAttribute('autocomplete', 'off'); source.setAttribute('aria-autocomplete', 'list'); source.setAttribute('aria-controls', panel.id); source.setAttribute('aria-expanded', 'false');
   let items = []; let active = -1; let timer; let resetTimer; let controller; let sequence = 0; let destroyed = false; let composing = false;
@@ -53,7 +57,7 @@ export function createSearch(source, { url, param = 'q', fetch: fetchItems, dela
     close(); syncClear(); const query = source.value.trim(); const current = sequence;
     if (composing || source.matches(':disabled') || source.readOnly || query.length < minLength) { close(); return; }
     controller = new AbortController(); const signal = controller.signal;
-    source.setAttribute('aria-busy', 'true'); status.textContent = 'Vyhledávám…';
+    source.setAttribute('aria-busy', 'true'); status.textContent = t('searching');
     try {
       let result;
       if (fetchItems) result = await fetchItems(query, { signal });
@@ -64,11 +68,11 @@ export function createSearch(source, { url, param = 'q', fetch: fetchItems, dela
       items.forEach((item, index) => {
         const row = doc.createElement('div'); row.className = 'control-option'; row.id = `${panel.id}-${index}`; row.setAttribute('role', 'option'); row.setAttribute('aria-selected', 'false'); row.dataset.searchIndex = index; row.textContent = item.label; panel.append(row);
       });
-      status.textContent = items.length ? `Nalezeno návrhů: ${items.length}.` : 'Žádné výsledky.';
+      status.textContent = items.length ? t('found', { count: items.length }) : t('noResults');
       if (items.length && doc.activeElement === source) { panel.showPopover(); source.setAttribute('aria-expanded', 'true'); position(); }
     } catch (error) {
       if (destroyed || current !== sequence || signal.aborted) return;
-      panel.replaceChildren(); items = []; status.textContent = 'Vyhledávání se nezdařilo. Zkus to znovu.';
+      panel.replaceChildren(); items = []; status.textContent = t('searchFailure');
       source.dispatchEvent(new win.CustomEvent('pure:search-error', { bubbles: true, detail: error }));
     } finally { if (!destroyed && current === sequence) source.removeAttribute('aria-busy'); }
   };

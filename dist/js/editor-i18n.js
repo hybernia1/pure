@@ -1,3 +1,4 @@
+import { getPureConfig, resolveLocale } from './config.js';
 export const editorLocales = {
   cs: {
     editor: 'Textový editor', formatting: 'Formátování textu', paragraph: 'Odstavec', heading: 'Nadpis {level}', image: 'Obrázek', remove: 'Smazat',
@@ -9,7 +10,7 @@ export const editorLocales = {
     insertImage: 'Vložit obrázek', fullscreen: 'Celá obrazovka', exitFullscreen: 'Ukončit celou obrazovku', textStyle: 'Styl textu', formatted: 'Formátování upraveno.',
     linkTitle: 'Vložit nebo upravit odkaz', linkAddress: 'Adresa odkazu', linkPlaceholder: 'https://… nebo /cesta', invalidLink: 'Zadej platnou HTTP(S), mailto nebo relativní adresu.',
     uploadImage: 'Nahrát obrázek', alt: 'Alternativní text', caption: 'Popisek', currentImage: 'Aktuální obrázek', chooseImage: 'Vyber obrázek k nahrání.', uploadMissing: 'Nahrávání obrázků není nakonfigurované. Připoj uploadImage callback.', changed: 'Obsah se mezitím změnil. Otevři obrázek znovu.',
-    close: 'Zavřít dialog', cancel: 'Zrušit', apply: 'Použít', removeImage: 'Odebrat obrázek', failure: 'Změnu se nepodařilo provést.', uploadHelp: 'Vyber nebo přetáhni obrázek. PNG, JPEG, WebP, GIF či AVIF, nejvýše 10 MiB.',
+    close: 'Zavřít dialog', cancel: 'Zrušit', apply: 'Použít', removeImage: 'Odebrat obrázek', failure: 'Změnu se nepodařilo provést.', uploadHelp: 'Vyber nebo přetáhni obrázek. PNG, JPEG, WebP, GIF či AVIF.',
     uploadRemove: 'Odebrat', uploadRemoveFile: 'Odebrat {name}', uploadSelected: 'Vybráno souborů: {count}.', uploadEmpty: 'Žádné vybrané soubory.', uploadError: 'Chyba: {errors} Původní výběr zachován.', maxFiles: 'Vyber nejvýše {count} souborů.', maxSize: '{name}: soubor překračuje limit {size} bajtů.', invalidType: '{name}: nepovolený typ souboru.',
     statistics: 'Statistiky dokumentu', blocks: 'Bloky: {count}', words: 'Slova: {count}', images: 'Obrázky: {count}',
     library: 'Knihovna médií', search: 'Hledat', searchMedia: 'Hledat média', loading: 'Načítání…', noMedia: 'Žádná média.', mediaError: 'Média se nepodařilo načíst.', previous: 'Předchozí', next: 'Další', page: 'Strana {page}', upload: 'Nahrát', invalidMedia: 'API musí vrátit médium s id a bezpečným src.',
@@ -25,7 +26,7 @@ export const editorLocales = {
     insertImage: 'Insert image', fullscreen: 'Fullscreen', exitFullscreen: 'Exit fullscreen', textStyle: 'Text style', formatted: 'Formatting updated.',
     linkTitle: 'Insert or edit link', linkAddress: 'Link address', linkPlaceholder: 'https://… or /path', invalidLink: 'Enter a valid HTTP(S), mailto or relative address.',
     uploadImage: 'Upload image', alt: 'Alternative text', caption: 'Caption', currentImage: 'Current image', chooseImage: 'Choose an image to upload.', uploadMissing: 'Image uploads are not configured. Provide an uploadImage callback.', changed: 'The document has changed. Open the image again.',
-    close: 'Close dialog', cancel: 'Cancel', apply: 'Apply', removeImage: 'Remove image', failure: 'The change could not be completed.', uploadHelp: 'Choose or drop an image. PNG, JPEG, WebP, GIF or AVIF, up to 10 MiB.',
+    close: 'Close dialog', cancel: 'Cancel', apply: 'Apply', removeImage: 'Remove image', failure: 'The change could not be completed.', uploadHelp: 'Choose or drop an image. PNG, JPEG, WebP, GIF or AVIF.',
     uploadRemove: 'Remove', uploadRemoveFile: 'Remove {name}', uploadSelected: 'Selected files: {count}.', uploadEmpty: 'No files selected.', uploadError: 'Error: {errors} Previous selection preserved.', maxFiles: 'Choose at most {count} files.', maxSize: '{name}: file exceeds {size} bytes.', invalidType: '{name}: file type is not allowed.',
     statistics: 'Document statistics', blocks: 'Blocks: {count}', words: 'Words: {count}', images: 'Images: {count}',
     library: 'Media library', search: 'Search', searchMedia: 'Search media', loading: 'Loading…', noMedia: 'No media found.', mediaError: 'Could not load media.', previous: 'Previous', next: 'Next', page: 'Page {page}', upload: 'Upload', invalidMedia: 'The API must return media with an id and a safe src.',
@@ -33,8 +34,9 @@ export const editorLocales = {
   },
 };
 
-export function editorI18n(doc, { locale = doc.documentElement.lang || 'en', messages = {} } = {}) {
+export function editorI18n(doc, { locale, messages = {} } = {}) {
+  locale = resolveLocale(doc, locale);
   const language = String(locale).toLowerCase().split('-')[0];
-  const dictionary = { ...editorLocales.en, ...(editorLocales[language] || {}), ...messages };
+  const dictionary = { ...editorLocales.en, ...(editorLocales[language] || {}), ...getPureConfig().messages, ...messages };
   return { locale, t: (key, values = {}) => String(dictionary[key] ?? key).replace(/\{(\w+)\}/g, (_, name) => String(values[name] ?? `{${name}}`)) };
 }
