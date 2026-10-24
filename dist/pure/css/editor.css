@@ -12,7 +12,9 @@
   .editor-tool:hover:not(:disabled) { background: var(--p-muted); }
   .editor-tool[aria-pressed="true"] { background: var(--p-muted); border-color: var(--p-border); }
   .editor-tool:disabled { opacity: .35; }
-  .editor-toolbar > .control { width: var(--p-editor-style-width); }
+  .editor-style { width: var(--p-editor-style-width); max-width: 100%; min-width: 0; min-height: var(--p-control-height); flex-shrink: 0; }
+  .editor-style > .control { width: 100%; }
+  .editor-style-placeholder { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
   .editor-content { padding: var(--p-panel-padding); min-height: var(--p-editor-height); white-space: pre-wrap; }
   .editor-content > * + * { margin-top: var(--p-space-2); }
   .editor-content:focus-visible { outline-offset: -2px; }

@@ -520,11 +520,13 @@ export function createEditor(source, options = {}) {
     selected = selection; linkDialog.open({ url: (selected.from === selected.to ? currentLinkRange()?.link : active().link) || '' }, buttons.get('link')); return true;
   };
   if (enabled.headings) {
+    const headingSlot = node('div', 'editor-style'); headingSlot.setAttribute('aria-busy', 'true');
+    const placeholder = node('span', 'input editor-style-placeholder'); placeholder.textContent = t('paragraph'); placeholder.setAttribute('aria-hidden', 'true');
     headingSource = node('select', 'input'); headingSource.setAttribute('aria-label', t('textStyle'));
     for (const level of [0, 2, 3, 4]) { const option = node('option'); option.value = String(level); option.textContent = level ? t('heading', { level }) : t('paragraph'); headingSource.append(option); }
-    headingSource.hidden = true; toolbar.append(headingSource);
+    headingSource.hidden = true; headingSlot.append(placeholder, headingSource); toolbar.append(headingSlot);
     selectTask = Promise.all([import('./select.js'), styles ? ensureStyles('controls', { document: doc }) : undefined])
-      .then(([module]) => { if (!destroyed) { headingControl = module.createSelect(headingSource); updateToolbar(); } });
+      .then(([module]) => { if (!destroyed) { headingControl = module.createSelect(headingSource); placeholder.remove(); headingSlot.removeAttribute('aria-busy'); updateToolbar(); } });
     selectTask.catch(loadFailed);
     listen(headingSource, 'change', () => command('heading', headingSource.value));
   }

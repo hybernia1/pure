@@ -34,6 +34,8 @@ const editor = createEditor(document.querySelector('#article'), {
 await editor.ready;
 ```
 
+When headings are enabled, the toolbar reserves the text-style selector's width and height before its optional module loads. The placeholder is replaced in place when `editor.ready` resolves, keeping toolbar wrapping and editor content stable. Customize its width through `--p-editor-style-width`.
+
 Defaults: headings:false, images:false, fullscreen:true, lists:true. Disabling features hides their controls but preserves valid loaded data. createEditor returns synchronously; await editor.ready for current addons. Programmatic dialog/fullscreen opening is asynchronous: await editor.openDialog('link'/'image') and await editor.command('fullscreen'). JSON commands stay synchronous.
 
 editor-model.js is DOM-free; editor.js supplies UI; editor-dialog.js supplies modal forms. Individual CSS needs tokens/base/components/forms/controls/editor/drag-drop plus modal/upload/resize as used; media-library/data add library pagination. pure.css includes everything. Initialize once per source.
