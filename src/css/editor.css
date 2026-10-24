@@ -12,6 +12,10 @@
   .editor-source { display: block; width: 100%; min-height: var(--p-editor-height); }
   .editor-footer { display: flex; flex-wrap: wrap; gap: var(--p-space-3); padding: var(--p-space-2) var(--p-panel-padding); border-top: 1px solid var(--p-border); color: var(--p-subtle); font-size: .75rem; font-variant-numeric: tabular-nums; }
   .editor-block { border: 1px solid var(--p-border); border-radius: var(--p-radius-sm); margin: 0; }
+  .editor-list { margin: 0; padding: var(--p-space-2) var(--p-space-3); padding-inline-start: var(--p-space-8); }
+  .editor-list > li { padding-inline-start: var(--p-space-1); }
+  .editor-list > li + li { margin-top: var(--p-space-1); }
+  .editor-list > li::marker { color: var(--p-subtle); font-variant-numeric: tabular-nums; }
   .editor-content > .editor-block + .editor-block { margin-top: var(--p-space-2); }
   .editor-text-block { padding: var(--p-space-2) var(--p-space-3); min-height: var(--p-control-height); }
   .editor-content:focus .editor-block[data-active], .editor-image:focus-within { border-color: var(--p-focus); }

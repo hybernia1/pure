@@ -49,7 +49,7 @@ createEditor(textarea, {
       url.search = new URLSearchParams({ q: query, page, limit: pageSize });
       const response = await fetch(url, { signal });
       if (!response.ok) throw new Error('Load failed');
-      return response.json(); // { items: [{ id, src, alt?, name? }], hasMore: boolean }
+      return response.json(); // { items: [{ id, src, alt?, name? }], total: 42 }
     },
     upload: myUpload, // volitelné nahrávání přímo v knihovně
     pageSize: 12,
@@ -59,7 +59,13 @@ createEditor(textarea, {
 
 V modalu obrázku se objeví „Knihovna médií“. Její modal umožňuje hledání, stránkování a výběr. Návrat vyplní náhled a alt text v modalu obrázku; do dokumentu se médium vloží až tlačítkem Použít. Otevření knihovny tedy samo dokument nezmění. Změněný dokument během otevření odmítne zastaralý výběr. Upload v knihovně je volitelný a nezávislý na přímém `uploadImage`.
 
-`load` přijímá stránku od 1 a vrací uvedený objekt, nebo prosté pole (pak není další stránka). Položky vyžadují bezpečné trvalé `src` a `id`: neprázdný řetězec nebo konečné číslo, včetně nuly. `blob:`, `data:`, `javascript:` se odmítají. `name` je text názvu v knihovně, do obrázkového JSON se neukládá. Požadavky se ruší při zavření a staré odpovědi se ignorují. Chyba se zobrazí v modalu a lze znovu hledat; načítání a upload nemění dokument před potvrzením.
+`load` přijímá stránku od 1 a doporučeně vrací `{ items, total }`, kde total je celkový počet vyhovujících médií. Knihovna používá společnou číslovanou paginaci Pure, na mobilu kompaktní předchozí / aktuální / další. Po změně filtru se vrací na stránku 1; pokud stránka po změně celkového počtu zanikne, jednou načte nejbližší platnou stránku. Velikost položek odpovědi nesmí překročit pageSize ani total.
+
+Prosté pole znamená celý vyfiltrovaný dataset a knihovna jej stránkuje lokálně. Starší `{ items, hasMore }` bez total zůstává podporované s předchozí/další navigací; počet stránek se neodhaduje a nefinguje. Pro číslované stránky přejdi na total. Pole, které dříve vracelo jen jednu serverovou stránku, obal do odpovědi s total nebo hasMore.
+
+Položky vyžadují bezpečné trvalé `src` a `id`: neprázdný řetězec nebo konečné číslo, včetně nuly. `blob:`, `data:`, `javascript:` se odmítají. Karty ukazují náhled, název a ID. `name` je text názvu v knihovně, do obrázkového JSON se neukládá. Požadavky se ruší při zavření a staré odpovědi se ignorují. Při načítání nebo chybě zůstává poslední obsah viditelný; při chybě se objeví tlačítko pro opakování. Načítání a upload nemění dokument před potvrzením.
+
+Hledání, volitelný upload, karty a patička jsou oddělené části. Šířku knihovny řídí CSS token `--p-media-library-width`, výchozí 52rem s omezením na viewport. Styl knihovny závisí také na `data.css` kvůli sdílené paginaci. Překlady doplňují `mediaCount`, `mediaChoose`, `mediaRetry`; texty samotné paginace používají společné UI klíče z docs/data.md.
 
 ## Samostatný modal
 

@@ -1,5 +1,7 @@
 # Pure
 
+Editor má [odrážkové a číslované seznamy](docs/editor-lists.md). [Knihovna médií](docs/editor-media-i18n.md) používá číslovanou paginaci přes `{ items, total }`, přehledné karty a opakování při chybě.
+
 [Navigace](docs/navigation.md) používá stejné odkazy na mobilu i desktopu, nativní podnabídky a označení aktivní URL. [Ukázka](examples/navigation.html).
 
 [Záložkový obsah](docs/tabs.md) funguje na stránce i v modalu, s klávesnicí, ruční/automatickou aktivací a vnořením. [Ukázka](examples/tabs.html).

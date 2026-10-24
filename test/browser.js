@@ -57,7 +57,7 @@ await test('JSON editor formátuje více odstavců a má SVG ikony s názvy', as
   const selection = getSelection(); selection.removeAllRanges(); selection.addRange(range); document.dispatchEvent(new Event('selectionchange'));
   editor.command('italic');
   assert(editor.getJSON().blocks.every(block => block.children[0].italic), 'Formátování napříč odstavci');
-  assert(fixture.querySelectorAll('.editor-tool svg use').length === 7, 'Chybí SVG ikony.');
+  assert([...fixture.querySelectorAll('.editor-tool')].every(button => button.querySelector('svg use')), 'Chybí SVG ikony.');
   assert([...fixture.querySelectorAll('.editor-tool')].every(button => button.getAttribute('aria-label') && button.title), 'Chybí názvy ikon.');
   editor.destroy();
 });
@@ -467,7 +467,7 @@ await test('Samostatná knihovna ignoruje staré načtení i upload po zavření
   pending[1].resolve({ items: [{ id: 'new', src: '/examples/editor-image.svg', name: 'New' }], hasMore: true }); await latest;
   pending[0].resolve([{ id: 'old', src: '/examples/editor-image.svg' }]); await first;
   assert(library.dialog.querySelector('[data-media-id="new"]') && !library.dialog.querySelector('[data-media-id="old"]'), 'Staré médium přepsalo nové');
-  const buttons = [...library.dialog.querySelectorAll('.modal-actions button')]; assert(buttons[0].disabled && !buttons[1].disabled, 'Stránkování');
+  const buttons = [...library.dialog.querySelectorAll('.media-legacy-pagination button')]; assert(buttons[0].disabled && !buttons[1].disabled, 'Stránkování');
   buttons[1].click(); assert(pending[2].page === 2, 'Index stránky'); pending[2].resolve({ items: [], hasMore: false }); await new Promise(resolve => setTimeout(resolve, 0));
   assert(library.dialog.textContent.includes('No media found.') && buttons[1].disabled, 'Prázdná stránka');
   const input = library.dialog.querySelector('[type="file"]'); const transfer = new DataTransfer(); transfer.items.add(new File(['x'], 'image.png', { type: 'image/png' })); input.files = transfer.files; input.dispatchEvent(new Event('change', { bubbles: true }));

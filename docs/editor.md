@@ -1,5 +1,7 @@
 # JSON editor: volitelné moduly
 
+[Odrážkové a číslované seznamy](editor-lists.md) používají jeden blok `list` s položkami `items`, sémantické ul/ol a jedno společné záhlaví pro přesun a mazání. Zachovávají formátování i historii. `features.lists` je standardně zapnuté.
+
 [Načítání JS/CSS podle potřeby a asynchronní UI](distribution.md): createEditor vrací instanci synchronně, doplňky čekají přes editor.ready. Otevření dialogu a první fullscreen mohou načítat síťové prostředky; pro programový přístup použij await editor.openDialog('image'/'link') a await editor.command('fullscreen').
 
 [Patička, statistiky, i18n, upload API, media library a mediaId](editor-media-i18n.md).
@@ -26,7 +28,7 @@ const editor = createEditor(document.querySelector('#article'), {
 });
 ```
 
-Výchozí features: headings=false, images=false, fullscreen=true. Vypnutí funkce skryje její ovládání; platná data nadpisů i obrázků se při načtení zachovají. Propojení JS: editor-model.js je čistý model, editor.js UI, editor-dialog.js formuláře v Pure modalech. Samostatné CSS potřebuje tokens, base, components, forms, controls, modal, editor, drag-drop, resize a upload; pro knihovnu také media-library. Komplet pure.css obsahuje vše. Každý inicializátor volej jednou.
+Výchozí features: headings=false, images=false, fullscreen=true, lists=true. Vypnutí funkce skryje její ovládání; platná data nadpisů, seznamů i obrázků se při načtení zachovají. Propojení JS: editor-model.js je čistý model, editor.js UI, editor-dialog.js formuláře v Pure modalech. Samostatné CSS potřebuje tokens, base, components, forms, controls, modal, editor, drag-drop, resize a upload; pro knihovnu také media-library a data kvůli paginaci. Komplet pure.css obsahuje vše. Každý inicializátor volej jednou.
 
 ## Nadpisy
 

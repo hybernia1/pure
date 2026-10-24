@@ -3,6 +3,7 @@ export function editorStats(value, locale = 'en') {
   const parts = []; let images = 0;
   for (const block of value.blocks) {
     if (block.type === 'image') images++;
+    else if (block.type === 'list') for (const item of block.items) parts.push(item.children.map(run => run.text).join(''));
     else parts.push(block.children.map(run => run.text).join(''));
   }
   const text = parts.join('\n'); let words = 0;

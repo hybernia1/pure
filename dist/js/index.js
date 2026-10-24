@@ -26,4 +26,5 @@ export { createMediaLibrary } from './media-library.js';
 export { normalizeMedia } from './media.js';
 export { editorLocales } from './editor-i18n.js';
 export { editorStats } from './editor-stats.js';
+export { setList } from './editor-model.js';
 export { loadComponent, ensureStyles } from './lazy.js';

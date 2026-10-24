@@ -9,6 +9,7 @@
 - Rozestupy čerpají z `--p-space-*` nebo sémantických tokenů; žádné lokální číselné paddingy. Výchozí layout drž kompaktní. Nepoužívej box-shadow.
 - Informační stavy jsou `error`, `success`, `info`, sdílené přes `data-state`. Stav vyjádři i textem, nejen barvou.
 - Editor ukládá výhradně verzovaný JSON s textovými bloky a obrázky; nepřidávej HTML import/export ani HTML string renderování. Nadpisy/obrázky jsou volitelné funkce; odkazy a obrázky používají Pure modaly. Nahrávání vrací trvalou URL, nikdy neukládej blob/data URL. UI používá bezpečné DOM uzly a ikony z icons.svg.
+- Seznam editoru je jeden blok {type:list,style:bullet/ordered,items:[{children}]}, s jedním záhlavím, úchytem a mazáním. Položky mají pouze text, nikoli vlastní blokové UI. Staré sousední list-item migruj při normalizaci do jednoho seznamu. Zachovej UTF-16 offsety uvnitř položek, historii a přesun seznamu jako celku. Knihovna médií preferuje {items,total} a společnou paginaci; legacy hasMore neodhaduj jako skutečný total.
 - Modal obrázku nabízí klasický file upload s náhledem, nikoli zadávání URL. Adresa obrázku zůstává pouze datem modelu a výsledkem upload callbacku.
 - Editor přebírá jazyk z html lang, podporuje locale/messages a slovníky cs/en. Nové UI texty patří do editor-i18n.js. Obrázky zachovávají mediaId (u starých dat null); upload a media library jsou nezávislé callbacky aplikace. Patička počítá jen model, nikdy řídicí texty DOM.
 - AJAX načítá standardně text; jeho explicitní HTML režim prochází allowlistem. Server musí obsah znovu validovat.

@@ -43,7 +43,7 @@
       <form id="editor-form">
         <label for="article" class="block text-sm mb-1">Text příspěvku</label>
         <p id="editor-help" class="text-sm text-subtle mb-2">Styly, obrázky i celá obrazovka jsou volitelné moduly. Obrázek vyber ze souboru nebo přetáhni do modalu. Ctrl/Cmd+B, I, K, Z. Ukládá se pouze JSON.</p>
-        <textarea id="article" name="article" class="input editor-source" aria-describedby="editor-help">{"version":1,"blocks":[{"type":"paragraph","children":[{"text":"Čistý editor. "},{"text":"Tvůj obsah","bold":true},{"text":" má hlavní slovo."}]},{"type":"image","src":"/examples/editor-image.svg","alt":"Abstraktní krajina","width":50,"align":"center"},{"type":"paragraph","children":[]}]}</textarea>
+        <textarea id="article" name="article" class="input editor-source" aria-describedby="editor-help">{"version":1,"blocks":[{"type":"paragraph","children":[{"text":"Čistý editor. "},{"text":"Tvůj obsah","bold":true},{"text":" má hlavní slovo."}]},{"type":"list","style":"bullet","items":[{"children":[{"text":"Textové bloky a seznamy"}]},{"children":[{"text":"Obrázky a knihovna médií"}]}]},{"type":"image","src":"/examples/editor-image.svg","alt":"Abstraktní krajina","width":50,"align":"center"},{"type":"paragraph","children":[]}]}</textarea>
         <div class="flex gap-2 mt-3"><button class="button" type="submit">Zobrazit JSON</button><button class="button button-outline" type="reset">Obnovit</button></div>
         <p class="text-xs text-subtle mt-2">Obrázky se ukládají lokálně přes vývojový server do .pure/uploads. Příspěvek se neodesílá.</p>
       </form>

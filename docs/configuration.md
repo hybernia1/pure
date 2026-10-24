@@ -41,7 +41,7 @@ Konfigurace je sdílená v rámci jedné ESM instance. Na serveru ji neměň pro
 | `search.delay` / `minLength` / `limit` | `250` / `2` / `8` | Prodleva v ms, minimální délka dotazu a maximální počet návrhů. |
 | `upload.accept` | `''` | Výchozí typy souborů; neprázdný atribut `accept` pole má přednost. |
 | `upload.maxFiles` / `maxSize` | `Infinity` / `Infinity` | Počet a velikost v bajtech pro `createUpload()`. Jednoduchý input dovolí vždy nejvýše jeden soubor. |
-| `editor.features` | `{headings:false, images:false, fullscreen:true}` | Zapnutí funkcí editoru. |
+| `editor.features` | `{headings:false, images:false, fullscreen:true, lists:true}` | Zapnutí funkcí editoru. |
 | `editor.uploadImage` | `null` | Výchozí upload callback, stejný kontrakt jako u lokálního editoru. |
 | `editor.mediaLibrary` | `null` | Výchozí objekt s adaptéry knihovny; lokální objekt se slučuje. |
 | `mediaLibrary.pageSize` | `12` | Počet médií na stránku. |

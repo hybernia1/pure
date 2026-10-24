@@ -34,4 +34,6 @@
   <symbol id="align-center" viewBox="0 0 24 24"><path d="M12 2v3m0 14v3M4 6h16v12H4z"/></symbol>
   <symbol id="align-right" viewBox="0 0 24 24"><path d="M20 4v16M4 6h12v12H4z"/></symbol>
   <symbol id="resize" viewBox="0 0 24 24"><path d="M4 12h16m-4-4 4 4-4 4M8 8l-4 4 4 4"/></symbol>
+  <symbol id="list-bullet" viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></symbol>
+  <symbol id="list-ordered" viewBox="0 0 24 24"><path d="M10 6h11M10 12h11M10 18h11M3 3h1v5M2 8h4M2 12c0-2 4-2 4 0 0 1-4 3-4 5h4"/></symbol>
 </svg>

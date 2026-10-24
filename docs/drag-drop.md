@@ -6,6 +6,8 @@ Volitelný callback `translate(key, values)` překládá oznámení služby. Kl�
 
 `createDragDrop` je samostatná služba pro svislé řazení přímých potomků kontejneru. Nepotřebuje editor, ikony ani knihovnu. Podporuje myš, dotyk, pero a klávesnici. Souborový upload a přenos mezi seznamy nejsou součástí tohoto API.
 
+Volby `nested: true, reorder: false` dovolují položky uvnitř společného kontejneru i pod seskupujícími elementy. Služba v tomto režimu nepřesouvá DOM; předá `onMove({ from, to, item, items })` a aplikace aktualizuje model a vykreslení. `items` je původní pořadí. Obě volby použij společně; nested s automatickým DOM reorderem se odmítne. Jde o volitelný režim; editor používá přímé potomky, protože i celý seznam je jeden blok.
+
 ```html
 <ul id="tasks">
   <li data-drag-item data-id="a"><button type="button" data-drag-handle>První úloha</button></li>

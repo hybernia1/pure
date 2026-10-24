@@ -1,3 +1,9 @@
 [
-  { "id": "pure-landscape", "src": "/examples/editor-image.svg", "name": "Abstraktní krajina", "alt": "Abstraktní krajina" }
+  { "id": "pure-landscape", "src": "/examples/editor-image.svg", "name": "Abstraktní krajina", "alt": "Abstraktní krajina" },
+  {"id":"pure-lines","src":"/examples/media-lines.svg","name":"Rytmus linií","alt":"Rytmus linií"},
+  {"id":"pure-grid","src":"/examples/media-grid.svg","name":"Pravidelná mřížka","alt":"Pravidelná mřížka"},
+  {"id":"pure-arch","src":"/examples/media-arch.svg","name":"Oblouk","alt":"Oblouk"},
+  {"id":"pure-rings","src":"/examples/media-rings.svg","name":"Soustředné kruhy","alt":"Soustředné kruhy"},
+  {"id":"pure-hills","src":"/examples/media-hills.svg","name":"Horizont","alt":"Horizont"},
+  {"id":"pure-frame","src":"/examples/media-frame.svg","name":"Rám a plocha","alt":"Rám a plocha"}
 ]

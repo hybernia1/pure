@@ -2,11 +2,12 @@ import { editorI18n } from './editor-i18n.js';
 const instances = new WeakSet();
 
 /** Svislé řazení přímých potomků; transport ani datový model nejsou součástí služby. */
-export function createDragDrop(container, { items = '[data-drag-item]', handle = '[data-drag-handle]', onMove = () => {}, translate = editorI18n(container.ownerDocument).t } = {}) {
+export function createDragDrop(container, { items = '[data-drag-item]', handle = '[data-drag-handle]', nested = false, reorder = true, onMove = () => {}, translate = editorI18n(container.ownerDocument).t } = {}) {
+  if (nested && reorder) throw new TypeError('Nested items require reorder:false and application rendering.');
   if (instances.has(container)) throw new Error('Drag & drop už je inicializovaný.');
   const doc = container.ownerDocument; const win = doc.defaultView;
   const status = doc.createElement('span'); status.className = 'sr-only'; status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite'); container.after(status);
-  const all = () => [...container.children].filter(item => item.matches(items));
+  const all = () => nested ? [...container.querySelectorAll(items)] : [...container.children].filter(item => item.matches(items));
   const listeners = []; let gesture = null; let destroyed = false; let frame;
   const listen = (target, type, callback) => { target.addEventListener(type, callback); listeners.push(() => target.removeEventListener(type, callback)); };
   const markers = () => { for (const item of all()) { item.removeAttribute('data-drop-before'); item.removeAttribute('data-dragging'); } container.removeAttribute('data-drop-end'); };
@@ -29,14 +30,14 @@ export function createDragDrop(container, { items = '[data-drag-item]', handle =
     if (![from, to].every(index => Number.isInteger(index) && index >= 0 && index < list.length)) throw new RangeError('Neplatná pozice přesunu.');
     if (from === to) return false;
     const item = list[from]; const trigger = item.querySelector(handle); const others = list.filter(candidate => candidate !== item);
-    container.insertBefore(item, others[to] || null); trigger?.focus();
+    if (reorder) container.insertBefore(item, others[to] || null); trigger?.focus();
     status.textContent = translate ? translate('dragMoved', { index: to + 1, count: list.length }) : `Blok přesunut na pozici ${to + 1} z ${list.length}.`;
     onMove({ from, to, item, items: all() }); return true;
   };
   const finish = () => {
     if (!gesture) return;
     const previous = gesture; cancel();
-    if (previous.active && previous.to !== null && previous.item.parentElement === container && all()[previous.from] === previous.item) move(previous.from, previous.to);
+    if (previous.active && previous.to !== null && container.contains(previous.item) && all()[previous.from] === previous.item) move(previous.from, previous.to);
   };
   const locate = () => {
     if (!gesture?.active || gesture.keyboard) return;
@@ -56,7 +57,7 @@ export function createDragDrop(container, { items = '[data-drag-item]', handle =
   };
   const target = event => {
     const trigger = event.target.closest(handle); const item = trigger?.closest(items);
-    return trigger && item?.parentElement === container && !trigger.disabled ? { trigger, item } : null;
+    return trigger && item && all().includes(item) && !trigger.disabled ? { trigger, item } : null;
   };
   listen(container, 'pointerdown', event => {
     const found = target(event); if (!found || gesture || event.button !== 0 || event.isPrimary === false) return;

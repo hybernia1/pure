@@ -1,6 +1,6 @@
 import { getPureConfig, componentOptions } from './config.js';
 import { safeHref } from './url.js';
-import { emptyDocument, normalizeDocument, documentText, plainText, selectionMarks, replaceText, formatText, setHeading, blockAt } from './editor-model.js';
+import { emptyDocument, normalizeDocument, documentText, plainText, selectionMarks, replaceText, formatText, setHeading, setList, blockAt, blockText, textRows, rowAt, exitListItem } from './editor-model.js';
 import { createDragDrop } from './drag-drop.js';
 import { editorI18n } from './editor-i18n.js';
 import { editorStats } from './editor-stats.js';
@@ -25,7 +25,7 @@ export function createEditor(source, options = {}) {
   if (source.tagName !== 'TEXTAREA' || source.required || source.disabled || source.readOnly) throw new TypeError('Editor vyžaduje editovatelnou textarea bez required.');
   const parse = text => text.trim() ? normalizeDocument(JSON.parse(text)) : emptyDocument();
   let value = parse(source.value);
-  const enabled = { headings: false, images: false, fullscreen: true, ...features };
+  const enabled = { headings: false, images: false, fullscreen: true, lists: true, ...features };
   const doc = source.ownerDocument; const win = doc.defaultView;
   const node = (tag, className) => { const element = doc.createElement(tag); if (className) element.className = className; return element; };
   const shell = node('div', 'editor'); const toolbar = node('div', 'editor-toolbar');
@@ -59,11 +59,14 @@ export function createEditor(source, options = {}) {
   const active = () => selectionMarks(value, selected.from, selected.to);
   const updateToolbar = () => {
     const activeBlock = blockAt(value, selected.from).index;
-    [...content.children].forEach((block, index) => block.toggleAttribute('data-active', index === activeBlock));
+    [...content.querySelectorAll('[data-editor-block]')].forEach((block, index) => block.toggleAttribute('data-active', index === activeBlock));
     const marks = selected.from === selected.to ? pending : active();
     for (const name of ['bold', 'italic', 'link']) buttons.get(name)?.setAttribute('aria-pressed', String(Boolean(marks[name])));
+    const first = blockAt(value, selected.from).index; const last = blockAt(value, Math.max(selected.from, selected.to - 1)).index;
+    const selectedBlocks = value.blocks.slice(first, last + 1).filter(block => block.type !== 'image');
+    for (const style of ['bullet', 'ordered']) buttons.get(`${style}List`)?.setAttribute('aria-pressed', String(Boolean(selectedBlocks.length) && selectedBlocks.every(block => block.type === 'list' && block.style === style)));
     let offset = 0; let anyLink = false;
-    for (const block of value.blocks) {
+    for (const block of textRows(value)) {
       for (const run of block.children || []) {
         if (run.link && offset < selected.to && offset + run.text.length > selected.from) anyLink = true;
         offset += run.text.length;
@@ -130,9 +133,10 @@ export function createEditor(source, options = {}) {
         fragment.append(figure); return;
       }
       const wrapper = node('div', 'editor-block'); wrapper.dataset.editorBlock = block.type; wrapper.dataset.dragItem = ''; wrapper.dataset.blockIndex = index;
-      wrapper.append(blockHeader(index, block.type === 'heading' ? t('heading', { level: block.level }) : t('paragraph')));
-      const paragraph = node(block.type === 'heading' ? `h${block.level}` : 'p', 'editor-text-block'); paragraph.dataset.editorText = '';
-      for (const run of block.children) {
+      wrapper.append(blockHeader(index, block.type === 'heading' ? t('heading', { level: block.level }) : block.type === 'list' ? t(block.style === 'ordered' ? 'orderedList' : 'bulletList') : t('paragraph')));
+      const appendText = (paragraph, children) => {
+      paragraph.dataset.editorText = '';
+      for (const run of children) {
         let child = doc.createTextNode(run.text);
         for (const [mark, tag] of [['italic', 'em'], ['bold', 'strong'], ['link', 'a']]) {
           if (!run[mark]) continue;
@@ -142,7 +146,13 @@ export function createEditor(source, options = {}) {
         paragraph.append(child);
       }
       if (!paragraph.childNodes.length) paragraph.append(node('br'));
-      wrapper.append(paragraph); fragment.append(wrapper);
+      };
+      if (block.type === 'list') {
+        const list = node(block.style === 'ordered' ? 'ol' : 'ul', 'editor-list'); list.dataset.listStyle = block.style;
+        for (const item of block.items) { const li = node('li'); appendText(li, item.children); list.append(li); }
+        wrapper.append(list);
+      } else { const paragraph = node(block.type === 'heading' ? `h${block.level}` : 'p', 'editor-text-block'); appendText(paragraph, block.children); wrapper.append(paragraph); }
+      fragment.append(wrapper);
     });
     content.replaceChildren(fragment);
     attachResizers()?.catch(loadFailed);
@@ -170,6 +180,7 @@ export function createEditor(source, options = {}) {
     if (element.nodeType === 1 && element.hasAttribute('data-editor-ui')) return 0;
     if (element.nodeType === 1 && element.hasAttribute('data-editor-image')) return 1;
     if (element.nodeType === 3) return element.length;
+    if (['UL', 'OL'].includes(element.nodeName)) return [...element.childNodes].reduce((sum, child) => sum + length(child), 0) + Math.max(0, element.childNodes.length - 1);
     if (element.nodeName === 'BR') return element.nextSibling ? 1 : 0;
     return [...element.childNodes].reduce((sum, child) => sum + length(child), 0);
   };
@@ -177,6 +188,8 @@ export function createEditor(source, options = {}) {
     const result = []; let inline = [];
     const flush = () => { if (inline.length) { result.push(inline); inline = []; } };
     for (const child of content.childNodes) {
+      if (child.dataset?.editorBlock === 'list') { flush(); for (const item of child.querySelector('.editor-list').children) result.push([item]); continue; }
+      if (['UL', 'OL'].includes(child.nodeName)) { flush(); for (const item of child.children) result.push([item]); continue; }
       if (['P', 'DIV', 'H2', 'H3', 'H4', 'FIGURE'].includes(child.nodeName)) { flush(); result.push([child]); }
       else inline.push(child);
     }
@@ -185,19 +198,21 @@ export function createEditor(source, options = {}) {
   const offsetIn = (element, target, offset) => {
     if (element.nodeType === 1 && element.hasAttribute('data-editor-ui')) return 0;
     if (element.nodeType === 1 && element.hasAttribute('data-editor-image')) return 0;
-    if (element === target) return element.nodeType === 3 ? offset : [...element.childNodes].slice(0, offset).reduce((sum, child) => sum + length(child), 0);
+    if (element === target) return element.nodeType === 3 ? offset : [...element.childNodes].slice(0, offset).reduce((sum, child) => sum + length(child), 0) + (['UL', 'OL'].includes(element.nodeName) ? Math.min(offset, Math.max(0, element.childNodes.length - 1)) : 0);
     let count = 0;
     for (const child of element.childNodes) {
       if (child === target || child.contains?.(target)) return count + offsetIn(child, target, offset);
-      count += length(child);
+      count += length(child) + (['UL', 'OL'].includes(element.nodeName) && child.nextSibling ? 1 : 0);
     }
     return count;
   };
   const domOffset = (target, offset) => {
+    if (['UL', 'OL'].includes(target.nodeName) && content.contains(target) && target.firstElementChild) return domOffset(target.firstElementChild, 0) + offsetIn(target, target, offset);
+    if (target.dataset?.editorBlock === 'list') return value.blocks.slice(0, Number(target.dataset.blockIndex)).reduce((sum, block) => sum + blockText(block).length + 1, 0) + offsetIn(target, target, offset);
     if (target === content) {
       const before = [...content.childNodes].slice(0, offset);
       const total = Math.max(0, groups().reduce((sum, group) => sum + group.reduce((n, child) => n + length(child), 0) + 1, 0) - 1);
-      return Math.min(total, before.reduce((sum, child) => sum + length(child) + (['P', 'DIV', 'H2', 'H3', 'H4', 'FIGURE'].includes(child.nodeName) ? 1 : 0), 0));
+      return Math.min(total, before.reduce((sum, child) => sum + length(child) + (['P', 'DIV', 'H2', 'H3', 'H4', 'FIGURE', 'UL', 'OL'].includes(child.nodeName) ? 1 : 0), 0));
     }
     let count = 0;
     for (const group of groups()) {
@@ -216,7 +231,7 @@ export function createEditor(source, options = {}) {
     return { from: domOffset(range.startContainer, range.startOffset), to: domOffset(range.endContainer, range.endOffset) };
   };
   const point = index => {
-    for (const paragraph of content.childNodes) {
+    for (const [paragraph] of groups()) {
       const size = length(paragraph);
       if (index <= size) {
         if (paragraph.hasAttribute('data-editor-image')) return [content, [...content.childNodes].indexOf(paragraph) + (index > 0 ? 1 : 0)];
@@ -270,7 +285,7 @@ export function createEditor(source, options = {}) {
   };
   const currentLinkRange = () => {
     let offset = 0; const ranges = [];
-    for (const block of value.blocks) {
+    for (const block of textRows(value)) {
       let previous;
       for (const run of block.children || []) {
         if (run.link) {
@@ -296,13 +311,19 @@ export function createEditor(source, options = {}) {
       if (name === 'moveBlock') next.blocks.splice(to, 0, block);
       if (!next.blocks.length) next.blocks = emptyDocument().blocks;
       const at = name === 'moveBlock' ? to : Math.min(from, next.blocks.length - 1);
-      const offset = next.blocks.slice(0, at).reduce((sum, item) => sum + (item.type === 'image' ? 1 : item.children.reduce((n, run) => n + run.text.length, 0)) + 1, 0);
+      const offset = next.blocks.slice(0, at).reduce((sum, item) => sum + blockText(item).length + 1, 0);
       imageIndex = null; pending = {}; commit(next, { from: offset, to: offset }); win.getSelection()?.removeAllRanges();
-      content.children[at]?.querySelector('[data-drag-handle]')?.focus(); return true;
+      content.querySelectorAll('[data-editor-block]')[at]?.querySelector('[data-drag-handle]')?.focus(); return true;
     }
     if (name === 'heading') {
       if (!enabled.headings) throw new Error('Nadpisy nejsou zapnuté.');
       commit(setHeading(value, selected.from, selected.to, Number(setting))); return true;
+    }
+    if (['list', 'bulletList', 'orderedList'].includes(name)) {
+      if (!enabled.lists) return false;
+      let style = name === 'list' ? setting : name === 'bulletList' ? 'bullet' : 'ordered';
+      if (name !== 'list' && buttons.get(name)?.getAttribute('aria-pressed') === 'true') style = null;
+      commit(setList(value, selected.from, selected.to, style)); return true;
     }
     if (name === 'fullscreen') {
       if (!enabled.fullscreen) return false;
@@ -315,7 +336,7 @@ export function createEditor(source, options = {}) {
       const at = imageIndex === null ? blockAt(value, selected.to).index + 1 : imageIndex;
       if (imageIndex === null) next.blocks.splice(at, 0, block); else next.blocks[at] = block;
       if (!next.blocks[at + 1] || next.blocks[at + 1].type === 'image') next.blocks.splice(at + 1, 0, { type: 'paragraph', children: [] });
-      const after = next.blocks.slice(0, at + 1).reduce((sum, item) => sum + (item.type === 'image' ? 1 : item.children.reduce((n, run) => n + run.text.length, 0)) + 1, 0);
+      const after = next.blocks.slice(0, at + 1).reduce((sum, item) => sum + blockText(item).length + 1, 0);
       imageIndex = null; commit(next, { from: after, to: after }); return true;
     }
     if (name === 'removeImage') {
@@ -485,6 +506,7 @@ export function createEditor(source, options = {}) {
   };
   for (const [name, title, icon] of [
     ['bold', t('bold'), 'bold'], ['italic', t('italic'), 'italic'],
+    ...(enabled.lists ? [['bulletList', t('bulletList'), 'list-bullet'], ['orderedList', t('orderedList'), 'list-ordered']] : []),
     ['link', t('link'), 'link'], ['unlink', t('unlink'), 'unlink'],
     ['undo', t('undo'), 'undo'], ['redo', t('redo'), 'redo'],
     ...(enabled.images ? [['image', t('insertImage'), 'image']] : []),
@@ -522,11 +544,17 @@ export function createEditor(source, options = {}) {
       }
       const textBlock = group[0]?.querySelector?.('[data-editor-text]') || group[0];
       const level = /^H[234]$/.test(textBlock?.nodeName) ? Number(textBlock.nodeName[1]) : 0;
+      const style = group[0]?.nodeName === 'LI' ? group[0].parentElement.nodeName === 'OL' ? 'ordered' : 'bullet' : null;
       let next = { version: 1, blocks: [{ type: level ? 'heading' : 'paragraph', ...(level ? { level } : {}), children: [] }] };
       for (const run of group.flatMap(child => read(child))) next = replaceText(next, documentText(next).length, documentText(next).length, run.text, run);
-      blocks.push(...next.blocks);
+      if (style) {
+        const listRoot = group[0].closest('[data-editor-block]');
+        let list = blocks.at(-1);
+        if (list?.type !== 'list' || list._root !== listRoot) { list = { type: 'list', style, items: [], _root: listRoot }; blocks.push(list); }
+        for (const row of next.blocks) list.items.push({ children: row.children });
+      } else blocks.push(...next.blocks);
     }
-    return blocks.length ? normalizeDocument({ version: 1, blocks }) : emptyDocument();
+    return blocks.length ? normalizeDocument({ version: 1, blocks: blocks.map(({ _root, ...block }) => block) }) : emptyDocument();
   };
   const nativeInput = () => {
     if (composing) return;
@@ -554,7 +582,12 @@ export function createEditor(source, options = {}) {
     if (composing || event.isComposing) return;
     remember();
     if (event.inputType === 'insertText' && event.data !== null) { event.preventDefault(); insert(event.data); }
-    else if (['insertParagraph', 'insertLineBreak'].includes(event.inputType)) { event.preventDefault(); insert('\n'); }
+    else if (['insertParagraph', 'insertLineBreak'].includes(event.inputType)) {
+      event.preventDefault(); const at = rowAt(value, selected.from);
+      if (selected.from === selected.to && at.row.type === 'list-item' && at.size === 0) commit(exitListItem(value, selected.from));
+      else insert('\n');
+    }
+    else if (event.inputType === 'deleteContentBackward' && selected.from === selected.to && rowAt(value, selected.from).row.type === 'list-item' && rowAt(value, selected.from).start === selected.from) { event.preventDefault(); commit(exitListItem(value, selected.from)); }
     else if (['historyUndo', 'historyRedo', 'formatBold', 'formatItalic'].includes(event.inputType)) {
       event.preventDefault(); command({ historyUndo: 'undo', historyRedo: 'redo', formatBold: 'bold', formatItalic: 'italic' }[event.inputType]);
     }
@@ -567,7 +600,7 @@ export function createEditor(source, options = {}) {
     const range = readSelection(); if (!range || range.from === range.to || !event.clipboardData) return;
     let offset = 0; let text = '';
     value.blocks.forEach((block, index) => {
-      const body = block.type === 'image' ? '\uFFFC' : block.children.map(run => run.text).join('');
+      const body = blockText(block);
       if (block.type === 'image') { if (range.from <= offset && range.to > offset) text += block.alt; }
       else text += body.slice(Math.max(0, range.from - offset), Math.max(0, Math.min(body.length, range.to - offset)));
       offset += body.length;
@@ -584,7 +617,7 @@ export function createEditor(source, options = {}) {
     const figure = event.target.closest('[data-editor-image]'); if (!figure || !enabled.images) return;
     if (event.target.closest('[data-resize-handle], [data-editor-ui]')) return;
     event.preventDefault(); imageIndex = Number(figure.dataset.editorImage);
-    let start = 0; for (let at = 0; at < imageIndex; at++) start += (value.blocks[at].type === 'image' ? 1 : value.blocks[at].children.reduce((n, run) => n + run.text.length, 0)) + 1;
+    let start = 0; for (let at = 0; at < imageIndex; at++) start += blockText(value.blocks[at]).length + 1;
     selected = { from: start, to: start + 1 };
     const action = event.target.closest('[data-image-action]')?.dataset.imageAction;
     const index = imageIndex;

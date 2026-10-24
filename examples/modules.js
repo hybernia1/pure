@@ -43,10 +43,11 @@ document.querySelectorAll('[data-flash]').forEach((button) => {
 const editor = createEditor(document.querySelector('#article'), {
   features: { headings: true, images: true, fullscreen: true },
   mediaLibrary: {
+    pageSize: 6,
     async load({ query, page, pageSize, signal }) {
       const items = await request('./media.json', { type: 'json', signal });
       const filtered = items.filter(item => item.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
-      return { items: filtered.slice((page - 1) * pageSize, page * pageSize), hasMore: filtered.length > page * pageSize };
+      return { items: filtered.slice((page - 1) * pageSize, page * pageSize), total: filtered.length };
     },
   },
   async uploadImage(file, { signal }) {

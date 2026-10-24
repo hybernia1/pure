@@ -7,7 +7,7 @@ const dependencies = {
   data: ['components'],
   tokens: [], base: ['tokens'], components: ['base'], states: ['tokens'], forms: ['components'],
   controls: ['forms'], 'drag-drop': ['tokens'], resize: ['controls'], upload: ['forms', 'states'],
-  editor: ['controls', 'drag-drop'], modal: ['controls'], 'media-library': ['modal'],
+  editor: ['controls', 'drag-drop'], modal: ['controls'], 'media-library': ['modal', 'data'],
   search: ['controls'], flash: ['components', 'states'], activity: ['components'], progress: ['components', 'states'], utilities: ['tokens'],
 };
 

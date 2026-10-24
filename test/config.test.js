@@ -12,7 +12,7 @@ test('konfigurace slučuje vnořené volby a izoluje vstup, výstup i existujíc
   const patch = { editor: { features: { images: true } }, search: { delay: 50 } };
   configurePure(patch); patch.editor.features.images = false;
   const old = componentOptions('editor', { features: { headings: true } });
-  assert.deepEqual(old.features, { images: true, headings: true, fullscreen: true });
+  assert.deepEqual(old.features, { images: true, headings: true, fullscreen: true, lists: true });
   configurePure({ editor: { features: { images: false } } });
   assert.equal(old.features.images, true);
   const result = getPureConfig(); result.search.delay = 900;

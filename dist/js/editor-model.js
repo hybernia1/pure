@@ -15,7 +15,13 @@ const append = (runs, run) => {
 export function normalizeDocument(value) {
   keys(value, ['version', 'blocks']);
   if (value.version !== 1 || !Array.isArray(value.blocks) || !value.blocks.length) throw new TypeError('Dokument vyžaduje version: 1 a neprázdné blocks.');
-  return { version: 1, blocks: value.blocks.map(block => {
+  const blocks = value.blocks.map(block => {
+    if (block.type === 'list') {
+      keys(block, ['type', 'style', 'items']);
+      if (!['bullet', 'ordered'].includes(block.style) || !Array.isArray(block.items) || !block.items.length) throw new TypeError('Invalid list block.');
+      const items = block.items.map(item => { keys(item, ['children']); return { children: normalizeDocument({ version: 1, blocks: [{ type: 'paragraph', children: item.children }] }).blocks[0].children }; });
+      return { type: 'list', style: block.style, items };
+    }
     if (block.type === 'image') {
       keys(block, ['type', 'src', 'alt', 'caption', 'width', 'align', 'mediaId']);
       const mediaId = block.mediaId ?? null;
@@ -26,8 +32,8 @@ export function normalizeDocument(value) {
       if (![25, 50, 75, 100].includes(width) || !['left', 'center', 'right'].includes(align)) throw new TypeError('Neplatná velikost nebo zarovnání obrázku.');
       return { type: 'image', src: safeImageSource(block.src), mediaId, alt: block.alt, ...(block.caption ? { caption: block.caption } : {}), width, align };
     }
-    keys(block, ['type', 'level', 'children']);
-    if (!['paragraph', 'heading'].includes(block.type) || !Array.isArray(block.children) || (block.type === 'heading' && ![2, 3, 4].includes(block.level)) || (block.type === 'paragraph' && block.level !== undefined)) throw new TypeError('Neplatný textový blok.');
+    keys(block, ['type', 'level', 'style', 'children']);
+    if (!['paragraph', 'heading', 'list-item'].includes(block.type) || !Array.isArray(block.children) || (block.type === 'heading' ? ![2, 3, 4].includes(block.level) : block.level !== undefined) || (block.type === 'list-item' ? !['bullet', 'ordered'].includes(block.style) : block.style !== undefined)) throw new TypeError('Neplatný textový blok.');
     const children = [];
     for (const run of block.children) {
       keys(run, ['text', 'bold', 'italic', 'link']);
@@ -36,17 +42,37 @@ export function normalizeDocument(value) {
       if (run.link !== undefined && (typeof run.link !== 'string' || !safeHref(run.link))) throw new TypeError('Neplatný odkaz.');
       append(children, { text: run.text, ...(run.bold ? { bold: true } : {}), ...(run.italic ? { italic: true } : {}), ...(run.link !== undefined ? { link: safeHref(run.link) } : {}) });
     }
-    return { type: block.type, ...(block.type === 'heading' ? { level: block.level } : {}), children };
-  }) };
+    return { type: block.type, ...(block.type === 'heading' ? { level: block.level } : {}), ...(block.type === 'list-item' ? { style: block.style } : {}), children };
+  });
+  const result = []; let legacy;
+  for (const block of blocks) {
+    if (block.type === 'list-item') {
+      if (!legacy || legacy.style !== block.style) { legacy = { type: 'list', style: block.style, items: [] }; result.push(legacy); }
+      legacy.items.push({ children: block.children });
+    } else { legacy = null; result.push(block); }
+  }
+  return { version: 1, blocks: result };
 }
 
 export function safeImageSource(src) {
   const safe = safeHref(src); return safe && !/^mailto:/i.test(safe) ? safe : null;
 }
-export function documentText(value) { return value.blocks.map(block => block.type === 'image' ? '\ufffc' : block.children.map(run => run.text).join('')).join('\n'); }
-export function plainText(value) { return value.blocks.map(block => block.type === 'image' ? block.alt : block.children.map(run => run.text).join('')).join('\n'); }
-const meta = block => block.type === 'heading' ? { type: 'heading', level: block.level } : { type: 'paragraph' };
-const stream = value => value.blocks.flatMap((block, index) => [...(index ? [{ text: '\n', nextBlock: meta(block) }] : []), ...(block.type === 'image' ? [{ text: '\ufffc', image: { ...block } }] : block.children.map(run => ({ ...run })))]);
+export function textRows(value) { return value.blocks.flatMap((block, index) => block.type === 'list' ? block.items.map((item, itemIndex) => ({ type: 'list-item', style: block.style, children: item.children, group: index, blockIndex: index, itemIndex })) : [{ ...block, blockIndex: index }]); }
+export function blockText(block) { return block.type === 'image' ? '\ufffc' : block.type === 'list' ? block.items.map(item => item.children.map(run => run.text).join('')).join('\n') : block.children.map(run => run.text).join(''); }
+export function documentText(value) { return value.blocks.map(blockText).join('\n'); }
+export function plainText(value) { return value.blocks.map(block => block.type === 'image' ? block.alt : blockText(block)).join('\n'); }
+const meta = block => block.type === 'heading' ? { type: 'heading', level: block.level } : block.type === 'list-item' ? { type: 'list-item', style: block.style, group: block.group } : { type: 'paragraph' };
+const pack = rows => {
+  const blocks = []; let list; let group;
+  for (const row of rows) {
+    if (row.type === 'list-item') {
+      if (!list || list.style !== row.style || group !== row.group) { list = { type: 'list', style: row.style, items: [] }; group = row.group; blocks.push(list); }
+      list.items.push({ children: row.children });
+    } else { list = null; const { blockIndex, itemIndex, group, ...block } = row; blocks.push(block); }
+  }
+  return normalizeDocument({ version: 1, blocks });
+};
+const stream = value => textRows(value).flatMap((block, index) => [...(index ? [{ text: '\n', nextBlock: meta(block) }] : []), ...(block.type === 'image' ? [{ text: '\ufffc', image: { type: 'image', src: block.src, alt: block.alt, caption: block.caption, mediaId: block.mediaId, width: block.width, align: block.align } }] : block.children.map(run => ({ ...run })))]);
 const slice = (runs, from, to) => {
   const result = []; let offset = 0;
   for (const run of runs) {
@@ -70,7 +96,7 @@ const fromStream = (runs, firstBlock = { type: 'paragraph' }) => {
       if (text) { const { nextBlock, image, ...marks } = run; append(blocks.at(-1).children, { ...marks, text }); }
     });
   }
-  return normalizeDocument({ version: 1, blocks });
+  return pack(blocks);
 };
 const bounds = (value, from, to) => {
   const length = documentText(value).length;
@@ -92,7 +118,8 @@ export function selectionMarks(value, from, to = from) {
 export function replaceText(value, from, to, text, marks = {}) {
   bounds(value, from, to);
   const runs = stream(value);
-  return fromStream([...slice(runs, 0, from), { ...marks, text: String(text).replace(/\r\n?/g, '\n') }, ...slice(runs, to, Infinity)], value.blocks[0]);
+  const block = rowAt(value, from).row;
+  return fromStream([...slice(runs, 0, from), { ...marks, ...(block.type === 'list-item' ? { nextBlock: meta(block) } : {}), text: String(text).replace(/\r\n?/g, '\n') }, ...slice(runs, to, Infinity)], textRows(value)[0]);
 }
 
 export function formatText(value, from, to, mark, setting) {
@@ -107,20 +134,36 @@ export function formatText(value, from, to, mark, setting) {
     else next[mark] = mark === 'link' ? safeHref(setting) : setting;
     return next;
   });
-  return fromStream([...slice(runs, 0, from), ...selected, ...slice(runs, to, Infinity)], value.blocks[0]);
+  return fromStream([...slice(runs, 0, from), ...selected, ...slice(runs, to, Infinity)], textRows(value)[0]);
 }
 
 export function blockAt(value, offset) {
   let start = 0;
   for (let index = 0; index < value.blocks.length; index++) {
-    const size = value.blocks[index].type === 'image' ? 1 : value.blocks[index].children.reduce((n, run) => n + run.text.length, 0);
+    const size = blockText(value.blocks[index]).length;
     if (offset <= start + size || index === value.blocks.length - 1) return { index, start, size };
     start += size + 1;
   }
 }
 export function setHeading(value, from, to, level) {
+  bounds(value, from, to);
   if (![0, 2, 3, 4].includes(level)) throw new TypeError('Nadpis musí mít úroveň 2, 3 nebo 4; 0 značí odstavec.');
-  const result = normalizeDocument(value); const first = blockAt(value, from).index; const last = blockAt(value, Math.max(from, to - 1)).index;
-  for (let index = first; index <= last; index++) if (result.blocks[index].type !== 'image') result.blocks[index] = { type: level ? 'heading' : 'paragraph', ...(level ? { level } : {}), children: result.blocks[index].children };
-  return result;
+  const first = blockAt(value, from).index; const last = blockAt(value, Math.max(from, to - 1)).index;
+  return pack(textRows(normalizeDocument(value)).map(row => row.blockIndex >= first && row.blockIndex <= last && row.type !== 'image' ? { type: level ? 'heading' : 'paragraph', ...(level ? { level } : {}), children: row.children } : row));
+}
+
+export function setList(value, from, to, style) {
+  bounds(value, from, to);
+  if (style !== null && !['bullet', 'ordered'].includes(style)) throw new TypeError('Invalid list style.');
+  const first = blockAt(value, from).index; const last = blockAt(value, Math.max(from, to - 1)).index;
+  return pack(textRows(normalizeDocument(value)).map(row => row.blockIndex >= first && row.blockIndex <= last && row.type !== 'image' ? { type: style ? 'list-item' : 'paragraph', ...(style ? { style, group: 'selection' } : {}), children: row.children } : row));
+}
+
+export function rowAt(value, offset) {
+  let start = 0; const rows = textRows(value);
+  for (let index = 0; index < rows.length; index++) { const row = rows[index]; const size = row.type === 'image' ? 1 : row.children.reduce((sum, run) => sum + run.text.length, 0); if (offset <= start + size || index === rows.length - 1) return { row, index, start, size }; start += size + 1; }
+}
+export function exitListItem(value, offset) {
+  const at = rowAt(value, offset); if (at.row.type !== 'list-item') return normalizeDocument(value);
+  return pack(textRows(value).map((row, index) => index === at.index ? { type: 'paragraph', children: row.children } : row));
 }

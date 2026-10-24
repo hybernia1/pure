@@ -1,9 +1,42 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { emptyDocument, normalizeDocument, documentText, plainText, replaceText, formatText, selectionMarks, setHeading } from '../src/js/editor-model.js';
+import { emptyDocument, normalizeDocument, documentText, plainText, replaceText, formatText, selectionMarks, setHeading, setList, exitListItem } from '../src/js/editor-model.js';
 import { editorStats } from '../src/js/editor-stats.js';
 import { editorI18n, editorLocales } from '../src/js/editor-i18n.js';
 import { normalizeMedia } from '../src/js/media-library.js';
+
+test('seznamy zachovají formátování, řádky, sourozence a umí převod zpět na odstavce', () => {
+  const input = normalizeDocument({ version: 1, blocks: [{ type: 'paragraph', children: [{ text: 'One', bold: true }] }, { type: 'paragraph', children: [{ text: 'Two' }] }] });
+  const list = setList(input, 0, 7, 'ordered');
+  assert.equal(input.blocks[0].type, 'paragraph');
+  assert.deepEqual(list.blocks.map(block => [block.type, block.style]), [['list', 'ordered']]);
+  assert.equal(list.blocks[0].items[0].children[0].bold, true);
+  const split = replaceText(list, 1, 1, '\n');
+  assert.equal(split.blocks.length, 1); assert.equal(split.blocks[0].items.length, 3);
+  assert.equal(documentText(split), 'O\nne\nTwo');
+  const formatted = formatText(list, 2, 6, 'italic', true);
+  assert.equal(formatted.blocks[0].style, 'ordered'); assert.equal(formatted.blocks[0].items.length, 2);
+  assert.equal(setHeading(list, 0, 0, 2).blocks[0].type, 'heading');
+  assert.equal(setList(list, 0, 0, null).blocks[0].type, 'paragraph');
+  assert.deepEqual(editorStats(list), { blocks: 1, words: 2, images: 0 });
+  for (const bad of [{ type: 'list-item', children: [] }, { type: 'list-item', style: 'nested', children: [] }, { type: 'paragraph', style: 'bullet', children: [] }]) assert.throws(() => normalizeDocument({ version: 1, blocks: [bad] }));
+  assert.throws(() => setList(input, 0, 2, 'bad'));
+});
+
+test('skutečný list blok drží hranice, migraci a ukončení prostřední položky', () => {
+  const legacy = normalizeDocument({ version: 1, blocks: ['A', 'B', 'C'].map(text => ({ type: 'list-item', style: 'bullet', children: [{ text }] })) });
+  assert.equal(legacy.blocks.length, 1); assert.equal(legacy.blocks[0].items.length, 3);
+  const exited = exitListItem(legacy, 2);
+  assert.deepEqual(exited.blocks.map(block => block.type), ['list', 'paragraph', 'list']);
+  assert.equal(documentText(exited), 'A\nB\nC');
+  const pair = normalizeDocument({ version: 1, blocks: [legacy.blocks[0], legacy.blocks[0]] });
+  assert.equal(formatText(pair, 0, documentText(pair).length, 'italic', true).blocks.length, 2);
+  assert.equal(replaceText(pair, 1, 1, 'X').blocks.length, 2);
+  const merged = replaceText(legacy, 1, 2, '');
+  assert.equal(merged.blocks.length, 1); assert.equal(merged.blocks[0].items.length, 2);
+  assert.equal(documentText(merged), 'AB\nC');
+  for (const block of [{ type: 'list', style: 'bullet', items: [] }, { type: 'list', style: 'ordered', items: [{ children: [], html: '<li>' }] }, { type: 'list', style: 'bad', items: [{ children: [] }] }]) assert.throws(() => normalizeDocument({ version: 1, blocks: [block] }));
+});
 
 test('mediaId je kompatibilní, validované a přežije textové operace', () => {
   const value = normalizeDocument({ version: 1, blocks: [{ type: 'paragraph', children: [{ text: 'Text' }] }, { type: 'image', src: '/image.webp', alt: 'Obrázek', mediaId: 0 }] });
