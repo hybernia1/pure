@@ -38,7 +38,7 @@ document.querySelector('#resize-reset').addEventListener('click', () => resize.s
 const flash = createFlash(document.querySelector('#flashes'));
 const messages = { error: 'Chyba: změny se nepodařilo uložit.', success: 'Hotovo: změny jsou uložené.', info: 'Informace: pracuješ s lokálním konceptem.' };
 document.querySelectorAll('[data-flash]').forEach((button) => {
-  button.addEventListener('click', () => flash.show(messages[button.dataset.flash], { state: button.dataset.flash }));
+  button.addEventListener('click', () => flash.show(messages[button.dataset.flash], { state: button.dataset.flash, duration: button.dataset.flash === 'error' ? 0 : 5000 }));
 });
 const editor = createEditor(document.querySelector('#article'), {
   features: { headings: true, images: true, fullscreen: true },

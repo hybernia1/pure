@@ -3,6 +3,8 @@ export { configurePure, getPureConfig } from './config.js';
 import { ensureStyles } from './styles.js';
 
 const modules = {
+  chart: [() => import('./chart.js'), ['chart']],
+  renderer: [() => import('./renderer.js'), ['renderer']],
   image: [() => import('./image.js'), []],
   'tag-picker': [() => import('./tag-picker.js'), ['tag-picker']],
   navigation: [() => import('./navigation.js'), ['navigation']],

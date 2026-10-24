@@ -51,6 +51,8 @@ test('Hotový full bundle se použije bez jednotlivých CSS a vadný cizí link 
 
 test('Lazy JS lze načíst bez DOM se styles:false; neplatná jména se odmítají', async () => {
   const theme = await loadComponent('theme', { styles: false }); assert.equal(typeof theme.initTheme, 'function');
+  assert.equal(typeof (await loadComponent('chart', { styles: false })).createChart, 'function');
+  assert.equal(typeof (await loadComponent('renderer', { styles: false })).renderDocument, 'function');
   await assert.rejects(loadComponent('constructor', { styles: false }), TypeError);
   await assert.rejects(ensureStyles('constructor', { document: documentFixture().doc }), TypeError);
   for (const name of ['disclosure', 'ajax', 'forms', 'select', 'picker', 'modal', 'upload', 'resize', 'editor', 'media-library', 'search', 'flash', 'activity', 'progress', 'drag-drop', 'data', 'table', 'list', 'pagination', 'tabs', 'navigation']) assert.ok(Object.keys(await loadComponent(name, { styles: false })).length, name);

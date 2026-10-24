@@ -8,6 +8,7 @@ export function createFlash(region) {
   const doc = region.ownerDocument;
   const { t } = uiI18n(doc);
   const active = new Set();
+  const owners = new Map();
   let destroyed = false;
   const announcers = ['status', 'alert'].map((role) => {
     const node = doc.createElement('div');
@@ -29,10 +30,15 @@ export function createFlash(region) {
       item.append(text, close); region.append(item);
       let timer;
       const announcer = announcers[state === 'error' ? 1 : 0];
+      const owner = {}; let dismissed = false;
+      owners.set(announcer, owner);
       announcer.textContent = '';
-      const announce = setTimeout(() => { announcer.textContent = String(message); }, 0);
+      const announce = setTimeout(() => { if (owners.get(announcer) === owner) announcer.textContent = String(message); }, 0);
       const dismiss = () => {
+        if (dismissed) return;
+        dismissed = true;
         clearTimeout(timer); clearTimeout(announce);
+        if (owners.get(announcer) === owner) { announcer.textContent = ''; owners.delete(announcer); }
         if (item.contains(doc.activeElement)) {
           region.setAttribute('tabindex', '-1'); region.focus();
         }
@@ -42,6 +48,7 @@ export function createFlash(region) {
       active.add(dismiss);
       // Automatické odstranění neodebere právě ovládanou nebo čtenou zprávu.
       const expire = () => {
+        if (dismissed) return;
         if (item.matches(':hover, :focus-within')) timer = setTimeout(expire, 1000);
         else dismiss();
       };

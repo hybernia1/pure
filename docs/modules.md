@@ -30,6 +30,8 @@ const dismiss = flash.show('Done: saved.', { state: 'success' });
 
 `show(message, {state='info',duration=0})` inserts text and a close button, never HTML, and returns a dismissal function. duration is nonnegative milliseconds; zero waits for manual dismissal. Expiration waits while hovered/focused. Errors use a persistent alert announcer, other states status. Dismissing a focused message moves focus to the region. Auto-dismiss only nonessential information.
 
+For transient application feedback, set `configurePure({flash:{duration:5000}})` before creating the region. Each message has its own timer; a new message does not dismiss older messages. Override important errors with `{state:'error',duration:0}`. Hover/focus delays expiration, which is checked again every second. Dismissal also clears the message's live announcement without erasing a newer announcement. The returned dismissal function is safe to call more than once.
+
 clear removes all messages; destroy also removes announcement nodes. One instance per region; show cannot be used after destroy. UI stays in normal flow rather than a fixed toast overlay.
 
 ## Editor

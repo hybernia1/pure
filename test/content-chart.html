@@ -1,0 +1,17 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pure chart / renderer tests</title></head><body><h1>Chart / renderer browser tests</h1><pre id="result">Running…</pre><div id="target"></div><script type="module">
+const output=document.querySelector('#result');
+try {
+ const variant=new URLSearchParams(location.search).has('min')?'pure.min':'pure';
+ const {loadComponent}=await import(`../dist/${variant}/js/lazy.js`);
+ const [{createChart},{createRenderer}]=await Promise.all(['chart','renderer'].map(name=>loadComponent(name)));
+ const target=document.querySelector('#target');const assert=(condition,message)=>{if(!condition)throw Error(message)};
+ const chart=createChart(target,{labels:['One','Two'],series:[{name:'Visits',values:[-3,9]}]},{type:'bar',title:'Visits'});
+ assert(target.querySelectorAll('rect').length===2,'Bar count');assert(target.querySelectorAll('td').length===2,'Accessible values');
+ assert([...target.querySelectorAll('rect')].every(node=>Number(node.getAttribute('height'))>=0),'Negative bar geometry');
+ const renderer=createRenderer(target,{version:1,blocks:[{type:'paragraph',children:[{text:'<img src=x onerror=alert(1)>',bold:true}]},{type:'list',style:'bullet',items:[{children:[{text:'One'}]}]}]});
+ assert(renderer.element.querySelector('strong').textContent.startsWith('<img'),'Literal HTML');assert(!renderer.element.querySelector('img'),'No HTML parsing');assert(renderer.element.querySelectorAll('ul li').length===1,'List block');
+ let rejected=false;try{renderer.update({version:1,blocks:[{type:'paragraph',children:[{text:'Unsafe',link:'javascript:alert(1)'}]}]})}catch{rejected=true}assert(rejected&&renderer.element.querySelector('strong'),'Atomic rejection');
+ chart.destroy();renderer.destroy();assert(!target.children.length,'Cleanup');
+ output.textContent='PASS: SVG geometry, accessible table, safe DOM text, lists, unsafe URLs, atomic update, cleanup; '+variant;document.title='PASS — Pure chart / renderer';
+}catch(error){output.textContent='FAIL: '+error.stack;document.title='FAIL — Pure chart / renderer';console.error(error)}
+</script></body></html>

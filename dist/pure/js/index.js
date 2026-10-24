@@ -1,4 +1,6 @@
 export { configurePure, getPureConfig } from './config.js';
+export { createChart, normalizeChart } from './chart.js';
+export { renderDocument, createRenderer } from './renderer.js';
 export { prepareImage } from './image.js';
 export { createTagPicker } from './tag-picker.js';
 export { createNavigation, initNavigations } from './navigation.js';

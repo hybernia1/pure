@@ -53,6 +53,8 @@ Next development additions: [WordPress-style post tags](docs/tag-picker.md), [op
 
 ## Documentation
 
+New optional modules: [SVG charts](docs/chart.md) and the [JSON content renderer](docs/renderer.md). Try the [combined example](examples/content-chart.html) or [browser checks](test/content-chart.html); both support `?min`.
+
 | Topic | Guide |
 | --- | --- |
 | Structure and CSS | [Architecture](docs/architecture.md), [CSS API](docs/css.md), [icons](docs/icons.md) |
