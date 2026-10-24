@@ -280,6 +280,7 @@
 }
 
 @layer components {
+  .modal { overscroll-behavior:contain; }
   .modal { width: min(var(--p-modal-width), calc(100% - var(--p-gutter) * 2)); max-height: calc(100dvh - var(--p-gutter) * 2); padding: var(--p-panel-padding); border: 1px solid var(--p-border); border-radius: var(--p-radius); background: var(--p-surface); color: var(--p-text); overflow: auto; }
   .modal::backdrop { background: var(--p-backdrop); }
   .modal-header, .modal-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--p-space-2); }
@@ -518,6 +519,14 @@
     :where(.scrollbar, .scrollbars, .scrollbars *)::-webkit-scrollbar-track,
     :where(.scrollbar, .scrollbars, .scrollbars *)::-webkit-scrollbar-corner { background:Canvas; }
   }
+}
+
+@layer components {
+  .placeholder { min-block-size:var(--p-placeholder-height, 12rem); }
+  .skeleton { display:block; background:var(--p-muted); border-radius:var(--p-radius-sm); }
+  .skeleton-line { block-size:1em; }
+  .placeholder[hidden], .skeleton[hidden] { display:none; }
+  @media (forced-colors:active) { .skeleton { background:Canvas; outline:1px solid GrayText; } }
 }
 
 @layer utilities {

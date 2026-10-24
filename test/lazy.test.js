@@ -57,3 +57,15 @@ test('Lazy JS lze načíst bez DOM se styles:false; neplatná jména se odmítaj
   await assert.rejects(ensureStyles('constructor', { document: documentFixture().doc }), TypeError);
   for (const name of ['disclosure', 'ajax', 'forms', 'select', 'picker', 'modal', 'upload', 'resize', 'editor', 'media-library', 'search', 'flash', 'activity', 'progress', 'drag-drop', 'data', 'table', 'list', 'pagination', 'tabs', 'navigation']) assert.ok(Object.keys(await loadComponent(name, { styles: false })).length, name);
 });
+
+test('partial CSS bundles cover declared modules while missing styles remain lazy', async () => {
+  const fixture=documentFixture();const bundle=fixture.doc.createElement('link');bundle.href='https://example.test/shell.css';bundle.dataset.pureStyles='tokens base components controls forms';bundle.sheet={};bundle.isConnected=true;fixture.links.push(bundle);
+  await ensureStyles(['search','editor'],{document:fixture.doc});
+  assert.ok(fixture.requests.some(href=>href.endsWith('/search.css')));assert.ok(fixture.requests.some(href=>href.endsWith('/editor.css')));
+  assert.ok(!fixture.requests.some(href=>/\/(tokens|base|components|controls|forms)\.css$/.test(href)));
+  const loading=documentFixture();const pending=loading.doc.createElement('link');pending.href='https://example.test/pending.css';pending.dataset.pureStyles='tokens base';loading.doc.head.append(pending);
+  await ensureStyles('base',{document:loading.doc});assert.equal(loading.requests.length,1);
+  const failed=documentFixture('/shell.css');const broken=failed.doc.createElement('link');broken.href='https://example.test/shell.css';broken.dataset.pureStyles='tokens base';failed.doc.head.append(broken);
+  await assert.rejects(ensureStyles('base',{document:failed.doc}),/Could not load/);
+  await ensureStyles('base',{document:failed.doc});assert.ok(failed.requests.some(href=>href.endsWith('/base.css')));
+});

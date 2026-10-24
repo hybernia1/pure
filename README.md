@@ -4,7 +4,7 @@ A compact, modular CSS, JavaScript and SVG framework. Tailwind-style utilities, 
 
 ## Use in your project - no Node.js required
 
-Download the [v1.1.0 source archive](https://github.com/hybernia1/pure/archive/refs/tags/v1.1.0.zip) and copy `dist/pure.min/` (minified) or `dist/pure/` (readable) into your project. The files are already built: **no Node.js, npm, bundler or build step is required to use Pure**.
+Download the [v1.2.0 source archive](https://github.com/hybernia1/pure/archive/refs/tags/v1.2.0.zip) and copy `dist/pure.min/` (minified) or `dist/pure/` (readable) into your project. The files are already built: **no Node.js, npm, bundler or build step is required to use Pure**.
 
 Serve the files through your existing HTTP server (for example Apache, Nginx or your application's server). Pure's CSS and JavaScript run in the browser; ES modules and the external SVG sprite should be served over HTTP rather than opened through `file://`. The example paths below assume you copied the selected tree to `/assets/pure/`.
 
@@ -60,6 +60,8 @@ New optional modules: [SVG charts](docs/chart.md) and the [JSON content renderer
 [Scrollbars](docs/scrollbar.md) optionally style native scrolling areas with semantic theme colors.
 
 [Named colors](docs/colors.md) define shared color keys; templates supply their actual values.
+
+[Lazy placeholders](docs/placeholder.md) reserve layout space while optional components load.
 
 | Topic | Guide |
 | --- | --- |

@@ -131,6 +131,7 @@ export function createEditor(source, options = {}) {
       value.blocks.forEach((block, index) => {
         if (block.type === 'image') return;
         const old = previous.blocks[index];
+        if (JSON.stringify(block) === JSON.stringify(old)) return;
         const rows = block.type === 'list' ? block.items : [block];
         const oldRows = block.type === 'list' ? old.items : [old];
         const elements = content.children[index].querySelectorAll('[data-editor-text]');
@@ -305,8 +306,9 @@ export function createEditor(source, options = {}) {
   };
   const travel = delta => {
     if (position + delta < 0 || position + delta >= history.length) return false;
+    const previous = value;
     position += delta; const entry = history[position]; value = JSON.parse(entry.json); selected = { ...entry.selected }; imageIndex = null;
-    pending = active(); render(); restore(); sync(); updateToolbar(); return true;
+    pending = active(); render(previous); restore(); sync(); updateToolbar(); return true;
   };
   const remember = () => {
     if (restoring || composing) return;

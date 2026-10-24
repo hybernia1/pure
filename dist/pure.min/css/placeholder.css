@@ -1,0 +1,1 @@
+@layer components{.placeholder{min-block-size:var(--p-placeholder-height, 12rem)}.skeleton{display:block;background:var(--p-muted);border-radius:var(--p-radius-sm)}.skeleton-line{block-size:1em}.placeholder[hidden],.skeleton[hidden]{display:none}@media(forced-colors:active){.skeleton{background:Canvas;outline:1px solid GrayText}}}

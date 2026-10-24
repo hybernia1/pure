@@ -9,13 +9,15 @@ configurePure({
 
 const toggle = document.querySelector('#lazy-toggle'); const mount = document.querySelector('#lazy-editor');
 const status = document.querySelector('#lazy-status'); let editor;
+const slot=document.querySelector('#lazy-slot');const skeleton=document.querySelector('#lazy-skeleton');
 toggle.addEventListener('click', async () => {
   if (toggle.disabled) return;
   if (editor) {
-    editor.destroy(); editor = null; mount.hidden = true; toggle.textContent = 'Otevřít editor'; toggle.setAttribute('aria-expanded', 'false');
+    editor.destroy(); editor = null; mount.hidden = true; slot.hidden=true; toggle.textContent = 'Otevřít editor'; toggle.setAttribute('aria-expanded', 'false');
     status.textContent = 'Editor odpojený. Již načtené moduly a sdílené CSS zůstávají dostupné.'; return;
   }
   toggle.disabled = true; status.textContent = 'Načítání editoru a stylů…';
+  slot.hidden=false;slot.setAttribute('aria-busy','true');skeleton.hidden=false;
   try {
     const { createEditor } = await loadComponent('editor');
     editor = createEditor(document.querySelector('#lazy-source'), {
@@ -32,9 +34,9 @@ toggle.addEventListener('click', async () => {
         },
       },
     });
-    await editor.ready; mount.hidden = false; toggle.textContent = 'Odpojit editor'; toggle.setAttribute('aria-expanded', 'true');
+    await editor.ready; skeleton.hidden=true; mount.hidden = false; toggle.textContent = 'Odpojit editor'; toggle.setAttribute('aria-expanded', 'true');
     status.textContent = 'Editor připravený. Odkaz, obrázkový modal a knihovna zatím nejsou inicializované.';
   } catch {
     editor?.destroy(); editor = null; mount.hidden = true; status.textContent = 'Načítání se nezdařilo. Zkus otevření znovu.';
-  } finally { toggle.disabled = false; }
+  } finally { toggle.disabled = false; skeleton.hidden=true; slot.setAttribute('aria-busy','false'); }
 });

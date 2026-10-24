@@ -1,5 +1,16 @@
 # Distribution and on-demand loading
 
+## Partial application CSS bundles
+
+Applications may concatenate the styles required by their initial layout and declare their exact contents:
+
+```html
+<link rel="stylesheet" href="/assets/shell.css"
+      data-pure-styles="tokens base components navigation forms controls">
+```
+
+`ensureStyles` waits for that bundle and skips separate requests for the declared names. Missing components still load individually. Include every declared file and its dependencies in the actual bundle; the attribute is a contract, not CSS inspection. Preserve Pure's layer order, put layout-critical CSS in the head, and do not mark a partial bundle as `all`. Failed partial bundles can fall back to individual component files on retry. JavaScript module boundaries and lazy initialization remain unchanged. HTTP compression and appropriate production cache headers belong to the application's asset server.
+
 ## Readable and minified output
 
 Using either prebuilt tree requires no Node.js, npm or build tool. Copy it into your application and serve it over HTTP using your existing web server. The Node commands below apply only when developing Pure or rebuilding its files.

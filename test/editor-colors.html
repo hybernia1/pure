@@ -13,7 +13,8 @@ try{
  assert(editor.getJSON().blocks[0].children[0].color==='blue','Picker selection');assert(!document.querySelector('.editor-colors').open,'Picker closed');
  assert(document.querySelector('[data-text-color="blue"]'),'Colored DOM');
  const details=document.querySelector('.editor-colors');details.open=true;details.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert(!details.open,'Escape closes picker');
- editor.command('undo');assert(!editor.getJSON().blocks[0].children[0].color,'Undo');editor.command('redo');assert(editor.getJSON().blocks[0].children[0].color==='blue','Redo');
+ const retainedBlock=document.querySelector('[data-editor-block]');
+ editor.command('undo');assert(!editor.getJSON().blocks[0].children[0].color,'Undo');assert(document.querySelector('[data-editor-block]')===retainedBlock,'Undo retains block UI');editor.command('redo');assert(editor.getJSON().blocks[0].children[0].color==='blue','Redo');assert(document.querySelector('[data-editor-block]')===retainedBlock,'Redo retains block UI');
  assert(editor.command('color','green')===false,'Unconfigured color');
  editor.command('color',null);assert(editor.getJSON().blocks[0].children.every(run=>!run.color),'Default color');
  editor.setJSON(initial);document.querySelector('[contenteditable]').focus();select();

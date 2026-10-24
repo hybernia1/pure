@@ -2,6 +2,7 @@ import { getPureConfig } from './config.js';
 const documents = new WeakMap();
 const failedLinks = new WeakSet();
 const dependencies = {
+  placeholder: ['base'],
   scrollbar: ['base'],
   segmented: ['components'],
   chart: ['base'], renderer: ['base'],
@@ -28,9 +29,10 @@ export function ensureStyles(names, { document: doc = globalThis.document } = {}
   };
   try { requested.forEach(visit); } catch (error) { return Promise.reject(error); }
   let registry = documents.get(doc); if (!registry) { registry = new Map(); documents.set(doc, registry); }
+  const links = [...doc.querySelectorAll('link[rel="stylesheet"]')];
   const load = (href, existing) => {
     if (registry.has(href)) return registry.get(href);
-    const link = existing || [...doc.querySelectorAll('link[rel="stylesheet"]')].find(node => node.href === href && !failedLinks.has(node)) || doc.createElement('link');
+    const link = existing || links.find(node => node.href === href && !failedLinks.has(node)) || doc.createElement('link');
     if (link.sheet) return Promise.resolve();
     const owned = !link.isConnected;
     const promise = new Promise((resolve, reject) => {
@@ -43,7 +45,10 @@ export function ensureStyles(names, { document: doc = globalThis.document } = {}
     });
     registry.set(href, promise); return promise;
   };
-  const bundle = [...doc.querySelectorAll('link[rel="stylesheet"]')].find(link => link.href && !failedLinks.has(link) && (link.dataset.pureStyles === 'all' || new URL(link.href).pathname.endsWith('/pure.css')));
+  const bundle = links.find(link => link.href && !failedLinks.has(link) && (link.dataset.pureStyles === 'all' || new URL(link.href).pathname.endsWith('/pure.css')));
   if (bundle) return load(bundle.href, bundle);
-  return Promise.all([...ordered].map(name => load(new URL(`${name}.css`, baseUrl).href))).then(() => undefined);
+  return Promise.all([...ordered].map(name => {
+    const partial = links.find(link => link.href && !failedLinks.has(link) && link.dataset.pureStyles?.split(/\s+/).includes(name));
+    return partial ? load(partial.href, partial) : load(new URL(`${name}.css`, baseUrl).href);
+  })).then(() => undefined);
 }

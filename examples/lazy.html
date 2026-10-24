@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="../dist/pure/css/base.css">
   <link rel="stylesheet" href="../dist/pure/css/components.css">
   <link rel="stylesheet" href="../dist/pure/css/utilities.css">
+  <link rel="stylesheet" href="../dist/pure/css/placeholder.css">
+  <style>#lazy-slot{--p-placeholder-height:30rem}#lazy-skeleton{display:grid;gap:var(--p-space-3);padding:var(--p-space-3)}#lazy-skeleton[hidden]{display:none}#lazy-skeleton .skeleton:last-child{height:22rem}</style>
 </head>
 <body>
   <main class="container py-6">
@@ -17,10 +19,12 @@
     <p class="text-sm mb-3">Globální konfigurace zapíná nadpisy a obrázky, přebírá jazyk dokumentu a omezuje upload na 5 MiB. <a href="../docs/configuration.md">Dokumentace konfigurace</a>.</p>
     <button id="lazy-toggle" type="button" class="button" aria-controls="lazy-editor" aria-expanded="false">Otevřít editor</button>
     <p id="lazy-status" class="text-sm mt-2" role="status">Editor není načtený.</p>
-    <section id="lazy-editor" class="mt-3" hidden>
+    <div id="lazy-slot" class="placeholder mt-3" hidden aria-busy="false"><div id="lazy-skeleton" aria-hidden="true"><div class="skeleton skeleton-line"></div><div class="skeleton"></div></div>
+    <section id="lazy-editor" hidden>
       <label for="lazy-source" class="block text-sm mb-1">Obsah</label>
       <textarea id="lazy-source" hidden>{"version":1,"blocks":[{"type":"paragraph","children":[{"text":"Editor se načetl až po kliknutí."}]}]}</textarea>
     </section>
+    </div>
   </main>
   <script type="module" src="./lazy.js"></script>
 </body>

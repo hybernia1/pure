@@ -106,6 +106,8 @@ Native showModal provides top layer, contained focus and inert surroundings. Esc
 
 Tokens: --p-modal-width (32rem), --p-backdrop (neutral black, 50% opacity), --p-panel-padding, --p-gutter. No shadow. Destroy closes the dialog and removes listeners.
 
+Opening a Pure modal locks document scrolling and contains overscroll at the dialog boundary. Nested Pure modals share a per-document lock; closing one does not unlock the page beneath another. Closing, native Escape/form closure, failed opening and destroy release the lock; the last close restores previous inline overflow, overscroll and scrollbar-gutter values and priorities. Focus returns with preventScroll. Scrollable inner regions remain native. Prefer a stable scrollbar gutter in the application's initial layout if precise scrollbar geometry is required. See [scroll regression example](../test/modal-scroll.html).
+
 ## File upload and drop
 
 ```html
