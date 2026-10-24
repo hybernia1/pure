@@ -8,11 +8,11 @@
   <script>
     try { const theme = localStorage.getItem('pure-theme'); if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme; } catch {}
   </script>
-  <link rel="stylesheet" href="../dist/css/tokens.css">
-  <link rel="stylesheet" href="../dist/css/base.css">
-  <link rel="stylesheet" href="../dist/css/components.css">
-  <link rel="stylesheet" href="../dist/css/navigation.css">
-  <link rel="stylesheet" href="../dist/css/utilities.css">
+  <link rel="stylesheet" href="../dist/pure/css/tokens.css">
+  <link rel="stylesheet" href="../dist/pure/css/base.css">
+  <link rel="stylesheet" href="../dist/pure/css/components.css">
+  <link rel="stylesheet" href="../dist/pure/css/navigation.css">
+  <link rel="stylesheet" href="../dist/pure/css/utilities.css">
 </head>
 <body>
   <a class="sr-only" href="#main" id="skip">Přejít na obsah</a>
@@ -21,15 +21,15 @@
     <div class="container py-2">
       <nav class="navigation" data-navigation aria-label="Hlavní navigace">
         <a href="index.html" class="navigation-brand text-xl">pure<span class="text-subtle">.</span></a>
-        <button class="button button-outline navigation-toggle" type="button" data-nav-toggle aria-controls="main-navigation" hidden><svg class="icon" aria-hidden="true"><use href="../dist/icons.svg#menu"></use></svg></button>
+        <button class="button button-outline navigation-toggle" type="button" data-nav-toggle aria-controls="main-navigation" hidden><svg class="icon" aria-hidden="true"><use href="../dist/pure/icons.svg#menu"></use></svg></button>
         <div class="navigation-panel" data-nav-panel id="main-navigation">
           <ul class="navigation-list">
             <li><a href="#principles">Principy</a></li>
-            <li><details data-nav-dropdown><summary>Komponenty<svg class="icon" aria-hidden="true"><use href="../dist/icons.svg#chevron-down"></use></svg></summary>
+            <li><details data-nav-dropdown><summary>Komponenty<svg class="icon" aria-hidden="true"><use href="../dist/pure/icons.svg#chevron-down"></use></svg></summary>
               <ul class="navigation-submenu"><li><a href="#components">Přehled komponent</a></li><li><a href="forms.html">Formuláře</a></li><li><a href="modules.html">Editor a moduly</a></li><li><a href="data.html">Tabulky a seznamy</a></li><li><a href="tabs.html">Záložky</a></li><li><a href="navigation.html">Navigace</a></li></ul>
             </details></li>
             <li><a href="../docs/css.md">Dokumentace ↗</a></li>
-            <li><button class="button button-outline" data-theme-toggle type="button" aria-label="Přepnout světlý nebo tmavý režim"><svg class="icon" aria-hidden="true"><use href="../dist/icons.svg#sun"></use></svg></button></li>
+            <li><button class="button button-outline" data-theme-toggle type="button" aria-label="Přepnout světlý nebo tmavý režim"><svg class="icon" aria-hidden="true"><use href="../dist/pure/icons.svg#sun"></use></svg></button></li>
           </ul>
         </div>
       </nav>
@@ -37,20 +37,20 @@
   </header>
   <main id="main">
     <section class="container py-8 dt:py-12">
-      <div class="badge mb-4"><svg class="icon" aria-hidden="true"><use href="../dist/icons.svg#check"></use></svg>v0.1 / méně je více</div>
+      <div class="badge mb-4"><svg class="icon" aria-hidden="true"><use href="../dist/pure/icons.svg#check"></use></svg>v0.1 / méně je více</div>
       <div class="grid grid-cols-1 dt:grid-cols-2 gap-4 items-center">
         <div>
           <h1 class="text-3xl dt:text-4xl">Čistý základ.<br>Pro tvoje nápady.</h1>
           <p class="text-subtle text-lg mt-4">Malé utility, promyšlené moduly a prostor pro vlastní styl. CSS, JavaScript a SVG v jednom klidném systému.</p>
           <div class="flex flex-wrap gap-3 mt-4">
-            <a href="#components" class="button">Prozkoumat Pure <svg class="icon" aria-hidden="true"><use href="../dist/icons.svg#arrow-right"></use></svg></a>
+            <a href="#components" class="button">Prozkoumat Pure <svg class="icon" aria-hidden="true"><use href="../dist/pure/icons.svg#arrow-right"></use></svg></a>
             <a href="../docs/architecture.md" class="button button-outline">Jak to funguje</a>
           </div>
         </div>
         <div class="card">
           <div class="flex items-center justify-between mb-4"><span class="text-xs text-subtle">TVOJE DALŠÍ ROZHRANÍ</span><span class="badge">Pure UI</span></div>
-          <div class="bg-muted rounded p-4 mb-3"><svg class="icon text-2xl" aria-hidden="true"><use href="../dist/icons.svg#home"></use></svg><h2 class="text-xl mt-4">Všechno má své místo.</h2><p class="text-sm text-subtle mt-2">Konzistentní mezery. Srozumitelná hierarchie. Žádný vizuální hluk.</p></div>
-          <div class="flex items-center gap-3"><span class="badge p-3"><svg class="icon" aria-hidden="true"><use href="../dist/icons.svg#user"></use></svg></span><div class="flex-1"><p class="font-medium text-sm">Navrženo pro lidi</p><p class="text-xs text-subtle">Mobile i desktop. Light i dark.</p></div><svg class="icon" aria-hidden="true"><use href="../dist/icons.svg#check"></use></svg></div>
+          <div class="bg-muted rounded p-4 mb-3"><svg class="icon text-2xl" aria-hidden="true"><use href="../dist/pure/icons.svg#home"></use></svg><h2 class="text-xl mt-4">Všechno má své místo.</h2><p class="text-sm text-subtle mt-2">Konzistentní mezery. Srozumitelná hierarchie. Žádný vizuální hluk.</p></div>
+          <div class="flex items-center gap-3"><span class="badge p-3"><svg class="icon" aria-hidden="true"><use href="../dist/pure/icons.svg#user"></use></svg></span><div class="flex-1"><p class="font-medium text-sm">Navrženo pro lidi</p><p class="text-xs text-subtle">Mobile i desktop. Light i dark.</p></div><svg class="icon" aria-hidden="true"><use href="../dist/pure/icons.svg#check"></use></svg></div>
         </div>
       </div>
     </section>
@@ -74,21 +74,21 @@
         <article class="card"><h3 class="text-lg mb-3">Tlačítka a štítky</h3><div class="flex flex-wrap items-center gap-3"><button type="button" class="button" data-disclosure aria-controls="button-demo" aria-expanded="false">Zobrazit detail</button><button type="button" class="button button-outline" data-theme-toggle>Přepnout téma</button><button type="button" class="button" disabled>Neaktivní</button><span class="badge">Bez závislostí</span></div><p id="button-demo" class="mt-4 text-sm text-subtle" hidden>Stejný disclosure modul může ovládat navigaci i jednoduchý detail.</p></article>
         <article class="card"><h3 class="text-lg mb-3">Formulářové pole</h3><label for="name" class="block text-sm font-medium mb-2">Jméno projektu</label><input id="name" class="input" placeholder="Například: Nový začátek" aria-describedby="name-help"><p id="name-help" class="text-xs text-subtle mt-2">Nativní HTML, viditelný focus a vlastní tokeny.</p></article>
         <article class="card"><h3 class="text-lg mb-3">Vlastní ikonková mapa</h3><div id="icon-gallery" class="flex flex-wrap gap-4" aria-label="Dostupné ikony"></div></article>
-        <article class="card"><h3 class="text-lg mb-4">Obsah na vyžádání</h3><button class="button button-outline w-full justify-between" type="button" data-disclosure aria-expanded="false" aria-controls="details">Jak fungují viewporty?<svg class="icon" aria-hidden="true"><use href="../dist/icons.svg#arrow-right"></use></svg></button><div id="details" hidden class="mt-4 text-subtle text-sm">Mobile je výchozí. Od 960 px se aktivují utility s prefixem <code>dt:</code>. Zkus změnit šířku okna. Escape uvnitř panelu jej zavře. <a href="../docs/css.md">CSS dokumentace</a></div></article>
+        <article class="card"><h3 class="text-lg mb-4">Obsah na vyžádání</h3><button class="button button-outline w-full justify-between" type="button" data-disclosure aria-expanded="false" aria-controls="details">Jak fungují viewporty?<svg class="icon" aria-hidden="true"><use href="../dist/pure/icons.svg#arrow-right"></use></svg></button><div id="details" hidden class="mt-4 text-subtle text-sm">Mobile je výchozí. Od 960 px se aktivují utility s prefixem <code>dt:</code>. Zkus změnit šířku okna. Escape uvnitř panelu jej zavře. <a href="../docs/css.md">CSS dokumentace</a></div></article>
       </div>
       <div class="bg-muted rounded p-4 mt-4"><p class="text-xs text-subtle mb-3">RESPONZIVNÍ GRID</p><code>grid grid-cols-1 dt:grid-cols-3 gap-4</code><div class="grid grid-cols-1 dt:grid-cols-3 gap-4 mt-4"><div class="bg-surface rounded p-4">01</div><div class="bg-surface rounded p-4">02</div><div class="bg-surface rounded p-4">03</div></div></div>
     </section>
   </main>
   <footer class="border-b"><div class="container py-8 flex flex-col dt:flex-row justify-between gap-3 text-sm text-subtle"><p>pure. / Základ, který nechá vyniknout obsah.</p><a href="../README.md">Dokumentace a zdrojové soubory ↗</a></div></footer>
   <script type="module">
-    import { initTheme } from '../dist/js/theme.js';
-    import { initNavigations } from '../dist/js/navigation.js';
-    import { initDisclosures } from '../dist/js/disclosure.js';
+    import { initTheme } from '../dist/pure/js/theme.js';
+    import { initNavigations } from '../dist/pure/js/navigation.js';
+    import { initDisclosures } from '../dist/pure/js/disclosure.js';
     initTheme();
     initNavigations();
     initDisclosures();
     const names = ['home', 'user', 'menu', 'close', 'sun', 'moon', 'arrow-right', 'check', 'search', 'settings', 'bold', 'italic', 'link', 'unlink', 'undo', 'redo', 'mail', 'lock', 'eye', 'eye-off', 'calendar', 'clock', 'chevron-down', 'chevron-left', 'chevron-right', 'list', 'image', 'expand', 'shrink'];
-    document.querySelector('#icon-gallery').innerHTML = names.map(name => `<span class="flex flex-col items-center gap-2"><svg class="icon text-xl" aria-hidden="true"><use href="../dist/icons.svg#${name}"></use></svg><span class="text-xs text-subtle">${name}</span></span>`).join('');
+    document.querySelector('#icon-gallery').innerHTML = names.map(name => `<span class="flex flex-col items-center gap-2"><svg class="icon text-xl" aria-hidden="true"><use href="../dist/pure/icons.svg#${name}"></use></svg><span class="text-xs text-subtle">${name}</span></span>`).join('');
   </script>
 </body>
 </html>

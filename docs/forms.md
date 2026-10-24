@@ -1,116 +1,114 @@
-# Formuláře, datum a čas, modal, upload
+# Forms, date/time, modals and uploads
 
-Spustitelná ukázka: [examples/forms.html](../examples/forms.html). CSS moduly `forms.css`, `controls.css`, `modal.css`, `upload.css` jsou volitelné, komplet `pure.css` je obsahuje. Importuj je po základních komponentách a před utilities.css.
+[Runnable example](../examples/forms.html). Optional forms.css, controls.css, modal.css and upload.css go after base components and before utilities; full pure.css includes them.
 
-## Pole a výběry
+## Fields and selects
 
-Pure používá inputy, textarea a select jako nositele dat. Jejich vzhled a nabídky spravují malé volitelné moduly. `.input` sdílí výšku, padding a radius. `.field` definuje malou mezeru mezi labelem, polem a popisem. `.field-label`, `.field-help`, `.field-error` sjednocují typografii. `.control` je obal pro vnitřní ikony a akce. `.choice` slouží pro checkbox a radio.
+Original input, textarea and select elements own data. Optional modules provide appearance/interaction. .input shares height, padding and radius; .field spaces labels, controls and descriptions; .field-label, .field-help and .field-error share typography. .control wraps internal icons/actions; .choice is for checkbox/radio.
 
 ```html
 <div class="field" data-field>
-  <label class="field-label" for="email">E-mail</label>
+  <label class="field-label" for="email">Email</label>
   <input class="input" data-input-icon="mail" id="email" name="email" type="email" autocomplete="email" required>
   <p class="field-error" data-field-error hidden></p>
 </div>
 ```
 
-Username je běžný text input s `autocomplete="username"`. Omezení vyjadřuje konkrétní aplikace pomocí `pattern`, `minlength`, `maxlength` a `required`. Ukázka používá `[a-zA-Z0-9_]{3,24}`; nejde o povinné pravidlo frameworku. E-mail používá `type="email"`. Ověření dostupnosti jména ani vlastnictví adresy není součástí klientské validace.
+Username is a text input with autocomplete=username. The application chooses pattern, minlength, maxlength and required. The demo's `[a-zA-Z0-9_]{3,24}` is not a framework rule. Email uses type=email. Client validation does not verify name availability or email ownership.
 
 ```html
 <label for="role">Role</label>
 <select class="input" data-select id="role" name="role" required>
-  <option value="">Vyber roli</option>
-  <optgroup label="Tým"><option value="author">Autor</option></optgroup>
-  <option value="admin" disabled>Správce</option>
+  <option value="">Choose a role</option>
+  <optgroup label="Team"><option value="author">Author</option></optgroup>
+  <option value="admin" disabled>Administrator</option>
 </select>
 ```
 
-`initInputs(scope = document)` obalí inputy s `data-input-icon="id-symbolu"`, vloží dekorativní ikonu vlevo a u hesla také oko vpravo. Email typicky používá `mail`, username `user`, password `lock`. Input zůstává původní, včetně labelu, autocomplete a validity. Heslo musí mít id. Inicializátor vrací cleanup, který obnoví původní DOM. Volej jednou na scope.
+`initInputs(scope = document)` wraps inputs marked data-input-icon="symbol-id", adds a decorative left icon and a right password toggle where applicable. Typical icons: mail, user, lock. Original labels, autocomplete and validity remain intact. Password fields need IDs. Returned cleanup restores original DOM; initialize once per scope.
 
-`initSelects(scope = document)` vylepší `select[data-select]` a vrátí cleanup. `createSelect(source, { placeholder = 'Vyber možnost' })` je individuální varianta s metodami `open()`, `close()`, `refresh()`, `destroy()`. Nekombinuj obě na stejném selectu. Vlastní nabídka zobrazuje všechny optiony, skupiny a disabled položky, bez systémového select popupu. Multiple přepíná položky kliknutím či mezerníkem a zůstává otevřený. Single výběr se po potvrzení zavře. Šipky, Home/End a hledání psaním mění focus, Enter/Space potvrzuje. Escape vrátí focus na pole; Tab nabídku zavře a pokračuje formulářem.
+`initSelects(scope = document)` enhances select[data-select] and returns cleanup. Alternatively, `createSelect(source, { placeholder })` returns open(), close(), refresh(), destroy(). Do not initialize both on one field. The custom list displays options, groups and disabled items rather than a system popup. Multiple selection toggles with click/Space and stays open; single selection closes after confirmation. Arrows/Home/End/type-ahead move focus; Enter/Space confirms. Escape restores field focus; Tab closes and continues through the form.
 
-Původní select je skrytý a stále nese hodnotu pro `new FormData(form).getAll('role')`, required i disabled. Každý výběr vyvolá input a change. `size` už neřídí výšku vlastního popupu. Při programové změně selectedIndex/value zavolej refresh() nebo vyvolej change; změny atributů a option uzlů se sledují automaticky. Reset obnoví výchozí výběr. Destroy odstraní vlastní UI a zviditelní select s aktuální hodnotou.
+The hidden original select retains value, required and disabled, including FormData.getAll(). Selection emits input/change. size no longer controls popup height. After programmatic selectedIndex/value changes, call refresh() or dispatch change; attribute/option mutations are observed automatically. Reset restores defaults. Destroy removes custom UI and reveals the source with its current value.
 
-## Datum a čas
+## Date and time
 
 ```html
-<label for="date">Datum</label>
+<label for="date">Date</label>
 <input class="input" data-picker id="date" name="date" type="date" min="2026-01-01" max="2027-12-31">
-<label for="time">Čas</label>
+<label for="time">Time</label>
 <input class="input" data-picker id="time" name="time" type="time" step="900">
-<label for="meeting">Datum a čas</label>
+<label for="meeting">Date and time</label>
 <input class="input" data-picker id="meeting" name="meeting" type="datetime-local">
 ```
 
-`initPickers(scope = document)` vylepší `input[data-picker]` a vrací cleanup. `createPicker(source, { locale })` nabízí individuální `open()`, `close()`, `refresh()`, `destroy()`. Jazyk přebírá z [globální konfigurace](configuration.md), ve výchozím stavu z `html lang`. Typ musí být date, time nebo datetime-local. Po inicializaci se systémový picker nepoužívá: Pure vykreslí vlastní kalendář a sloupce času. Data nadále nese původní input.
+`initPickers(scope = document)` returns cleanup. Alternatively, `createPicker(source, { locale })` returns open(), close(), refresh(), destroy(). Locale follows [configuration](configuration.md), normally html lang. Supported types: date, time, datetime-local. Pure replaces system picker UI with its own calendar/time columns while the source input owns data.
 
-Vedle ikony zůstává editovatelné textové pole. Datum můžeš zadat jako 23.10.2026, 23. 10. 2026 nebo 2026-10-23; přijímá se také číselný formát locale. Čas jako 14:30 nebo 14:30:15, datum s časem jako 23.10.2026 14:30 nebo 2026-10-23T14:30. Po opuštění pole se platná hodnota sjednotí. Alt+šipka dolů otevře picker, samotné psaní jej neotevírá.
+The visible field remains editable. Accepted dates include 23.10.2026, 23. 10. 2026, 2026-10-23 and numeric locale formats. Times accept 14:30 or 14:30:15; combined values include 23.10.2026 14:30 or 2026-10-23T14:30. Valid input normalizes on blur. Alt+Down opens the picker; typing alone does not.
 
-Chybný nebo neúplný zápis zůstává viditelný, původní hodnota se vyprázdní a customValidity zabrání odeslání. Platný zápis dál podléhá min/max/step a required. Není zde tichá oprava neexistujícího data. Výběr v panelu, správný zápis nebo reset vlastní chybu odstraní. Viditelný textový input nemá name; FormData obsahuje pouze původní kanonickou hodnotu. createForm() proxy vynechává a chybový focus přesune na editovatelné pole.
+Invalid/incomplete text remains visible, clears the source value and sets customValidity to prevent submission. Valid input still obeys min/max/step/required. Nonexistent dates are not silently corrected. Panel selection, valid text or reset clears the custom error. The visible proxy has no name: FormData contains only the original canonical field. createForm skips proxies and directs invalid focus to the editable control.
 
-Kalendář začíná pondělím. Šipky pohybují focusem po dnech/týdnech, Home/End po týdnu a PageUp/PageDown po měsících (se Shift po letech). Kliknutí či Enter vybere datum; samotný pohyb focusem hodnotu nemění. Date se potvrdí ihned. Time a datetime mají tlačítko Použít, které je aktivní jen pro platnou kombinaci. Čas vybíráš ve sloupcích hodin, minut a případně sekund; šipky a Home/End pohybují focusem, Enter/Space vybírá. Pro minutové kroky se nabízejí jen platné časy, například při step=900 minuty 00/15/30/45. Min/max/step vyhodnocuje validita původního typu; nedostupné dny jsou disabled, neplatná sekundová kombinace má vysvětlení a nelze ji potvrdit. Vymazat uloží prázdnou hodnotu, kterou required následně označí jako chybu.
+The calendar starts Monday. Arrows move days/weeks; Home/End move within the week; PageUp/PageDown move months, with Shift for years. Click/Enter selects; focus movement alone does not change value. Date confirms immediately. Time/datetime have an Apply button enabled only for valid combinations. Hour/minute/optional-second columns support arrows/Home/End and Enter/Space. Minute-based steps show valid choices (step=900 gives 00/15/30/45). Source validity evaluates min/max/step; unavailable days are disabled and invalid second combinations cannot be confirmed. Clear writes an empty value, which required may reject.
 
-Datum se ukládá jako YYYY-MM-DD, čas HH:mm (případně HH:mm:ss) a datetime-local YYYY-MM-DDTHH:mm. Formát data ve viditelném poli řídí locale. Datetime-local neobsahuje časové pásmo; pro plánované události pošli zamýšlené pásmo zvlášť. Modul podporuje celé sekundy, nikoli zlomky sekund. Po programové změně value zavolej refresh() nebo change. Po resetu se popup zavře; destroy vrátí původní input. Podrobnosti datových typů: [date](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/date), [datetime-local](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/datetime-local).
+Canonical values: YYYY-MM-DD, HH:mm (optionally HH:mm:ss), YYYY-MM-DDTHH:mm. Visible date formatting uses locale. datetime-local has no time zone; submit the intended zone separately for scheduled events. Whole seconds are supported, fractions are not. Call refresh() or dispatch change after programmatic value changes. Reset closes the popup; destroy restores the source.
 
-Vlastní popupy používají Popover API pro top layer a kliknutí mimo nabídku. Nejsou modální: Tab pokračuje obsahem, Escape zavře jen nabídku. Vyžadují prohlížeč s Popover API. Bez JS zůstávají vstupní HTML prvky použitelné nativně. Na required formuláři je inicializuj společně s createForm(), který přesměruje chybový focus na viditelné pole a kopíruje ARIA popisy. Panely sdílejí controls.css, stejné tokeny a žádné stíny; `--p-picker-width` určuje minimální šířku, `--p-time-list-height` výšku časových sloupců.
+Popups use Popover API/top layer and outside dismissal. They are nonmodal: Tab continues normally; Escape closes only the popup. A browser with Popover API is required. Without JavaScript, native fields still work. Use createForm with enhanced required fields to redirect error focus and copy ARIA descriptions. Shared controls.css uses --p-picker-width and --p-time-list-height, without shadows.
 
 ```js
-import { initInputs, initPickers, initSelects, createForm } from '/dist/js/index.js';
+import { initInputs, initPickers, initSelects, createForm } from '/dist/pure/js/index.js';
 const stopInputs = initInputs();
 const stopPickers = initPickers();
 const stopSelects = initSelects();
 const form = createForm(document.querySelector('form'));
-// Při odpojení: form.destroy(); stopSelects(); stopPickers(); stopInputs();
+// Cleanup: form.destroy(); stopSelects(); stopPickers(); stopInputs();
 ```
 
-Klávesnice vychází z doporučení [WAI pro kalendáře](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/) a [listboxy](https://www.w3.org/WAI/ARIA/apg/patterns/listbox/); vlastní popup kalendáře je nemodální, proto neuzamyká Tab.
-
-## Validace
+## Validation
 
 ```js
-import { createForm } from '/dist/js/forms.js';
+import { createForm } from '/dist/pure/js/forms.js';
 const controller = createForm(document.querySelector('form'));
 const valid = controller.validate({ focus: true });
 // controller.destroy();
 ```
 
-Inicializuj jednou na form. Modul dočasně nastaví noValidate a místo nativních popupů zobrazí textové chyby v `[data-field-error]` uvnitř wrapperu `[data-field]` pro jednotlivá pole. Pravidla dál vyhodnocuje nativní `validity`. První kontrola proběhne při opuštění pole nebo submitu; poté se chyba aktualizuje při input/change. Zprávy přebírá z lokalizovaného `validationMessage`; `data-error-message` na inputu může text přepsat. Bez chybového uzlu pole stále dostane aria-invalid.
+One instance per form. It temporarily sets noValidate and displays errors in [data-field-error] inside each [data-field], using native validity rules. First validation runs on blur/submit, then input/change updates errors. Messages use localized validationMessage, overridden by data-error-message on the input. Fields without an error node still receive aria-invalid.
 
-Neplatný submit se zastaví a focus přejde na první chybu. Platný submit modul neposílá ani nezastavuje. Při vlastním AJAX handleru nejprve zkontroluj `event.defaultPrevented`; handler registruj až po createForm. Potom preventDefault a vlastní request. `validate({ focus = true })` vrací boolean. Reset vyčistí chyby. Destroy obnoví původní noValidate a ARIA atributy a odpojí listenery. Existující `aria-describedby` se zachovává a doplní o ID chyby. Každé pole má mít vlastní data-field; checkboxy a radio skupiny lze dále pojmenovat přes fieldset/legend. Server validuje znovu.
+Invalid submission is stopped and focuses the first error. Valid submission is neither sent nor prevented by this module. Register custom AJAX handlers after createForm, check event.defaultPrevented, then preventDefault and send your request. validate({focus=true}) returns boolean. Reset clears errors. Destroy restores original noValidate/ARIA and removes listeners. Existing aria-describedby is retained and extended with the error ID. Give each field a wrapper; fieldset/legend can name radio/checkbox groups. Validate again on the server.
 
-## Heslo
+## Passwords
 
 ```html
-<label for="password">Heslo</label>
+<label for="password">Password</label>
 <input class="input" data-input-icon="lock" id="password" name="password" type="password" autocomplete="new-password">
 ```
 
-`initInputs()` přidá ikonový přepínač uvnitř pole automaticky. Má ikony eye / eye-off, dynamický aria-label, title a aria-pressed. Pro vlastní markup lze dál použít initPasswords(scope = document) s button[data-password-toggle][aria-controls="id-hesla"]; inicializátor nyní obsah tlačítka nahradí ikonou a cleanup jej obnoví. Nekombinuj obě inicializace na stejném přepínači. Reset i cleanup heslo skryjí. Pro přihlášení použij autocomplete="current-password". Modul neblokuje schránku ani správce hesel a neodesílá hodnotu.
+initInputs adds eye/eye-off icons with dynamic aria-label, title and aria-pressed. For custom markup, `initPasswords(scope = document)` connects button[data-password-toggle][aria-controls="password-id"], replacing its content with an icon and restoring it on cleanup. Do not initialize the same toggle twice. Reset/cleanup hides the password. Use autocomplete=current-password for login. Clipboard/password managers are not blocked and the module never sends the value.
 
 ## Modal
 
 ```html
-<button type="button" data-modal-open="details">Otevřít</button>
+<button type="button" data-modal-open="details">Open</button>
 <dialog class="modal" id="details" data-modal aria-labelledby="details-title">
-  <div class="modal-header"><h2 id="details-title">Podrobnosti</h2></div>
-  <div class="modal-body">Obsah</div>
-  <div class="modal-actions"><button type="button" class="icon-button" data-modal-close aria-label="Zavřít dialog" autofocus><svg class="icon" aria-hidden="true"><use href="/dist/icons.svg#close"></use></svg></button></div>
+  <div class="modal-header"><h2 id="details-title">Details</h2></div>
+  <div class="modal-body">Content</div>
+  <div class="modal-actions"><button type="button" data-modal-close aria-label="Close dialog" autofocus></button></div>
 </dialog>
 ```
 
-`initModals(scope = document)` spojí `[data-modal-open="id"]` s `dialog[data-modal]` ve scope a vrátí cleanup. `data-modal-close="hodnota"` zavře dialog a nastaví jeho returnValue. Pro programové ovládání importuj `createModal(dialog, { closeOnBackdrop = true })`, který vrací `open(trigger = document.activeElement)`, `close(value = '')`, `destroy()`. Vyber jednu z těchto inicializací, nekombinuj obě na stejném dialogu.
+`initModals(scope = document)` connects [data-modal-open="id"] to dialog[data-modal] and returns cleanup. data-modal-close="value" closes with returnValue. Alternatively, `createModal(dialog, {closeOnBackdrop=true})` returns open(trigger=document.activeElement), close(value=''), destroy(). Choose one initializer per dialog.
 
-Prázdné data-modal-close se automaticky převede na ikonové zavření s close ze sprite a přístupným názvem. Tlačítko s explicitní návratovou hodnotou (např. data-modal-close="done") zůstane obsahovou akcí. Destroy vrátí původní obsah i atributy zavíracího tlačítka.
+An empty data-modal-close becomes an icon close button with an accessible name. Explicit return-value actions retain their content. Destroy restores original button content/attributes.
 
-Nativní [showModal()](https://developer.mozilla.org/en-US/docs/Web/API/HTMLDialogElement/showModal) zajistí top layer, focus uvnitř a inertní okolí. Escape funguje nativně; close listener vrací focus na opener, pokud je stále v dokumentu. Kliknutí na pozadí zavře dialog jen tehdy, pokud tam začal i pointerdown; kliknutí do paddingu dialog nezavře. Volba closeOnBackdrop=false tuto možnost vypne. Používej přístupný nadpis a vhodné autofocus. Nativní form method="dialog" je také podporovaný. Dialog neotevírej atributem open, pokud má být modální.
+Native showModal provides top layer, contained focus and inert surroundings. Escape works natively. Close restores opener focus if it remains connected. Backdrop dismissal requires pointerdown to have started there; clicking dialog padding does not close it. closeOnBackdrop:false disables dismissal. Provide a named heading and suitable autofocus. Native form method=dialog is supported. Do not set open directly when a modal is intended.
 
-Tokeny: `--p-modal-width` (32rem), `--p-backdrop` (neutrální černá s 50% opacity), `--p-panel-padding`, `--p-gutter`. Bez stínu. Destroy zavře otevřený dialog a odpojí listenery.
+Tokens: --p-modal-width (32rem), --p-backdrop (neutral black, 50% opacity), --p-panel-padding, --p-gutter. No shadow. Destroy closes the dialog and removes listeners.
 
-## Upload a drag & drop
+## File upload and drop
 
 ```html
 <div class="upload" data-upload>
-  <label for="files">Přílohy</label>
+  <label for="files">Attachments</label>
   <input class="input" id="files" name="files" type="file" accept=".pdf,.txt" multiple aria-describedby="files-status">
   <p id="files-status" class="state-text text-xs" role="status" aria-atomic="true" data-upload-status></p>
   <ul class="upload-list" data-upload-list></ul>
@@ -118,26 +116,25 @@ Tokeny: `--p-modal-width` (32rem), `--p-backdrop` (neutrální černá s 50% opa
 ```
 
 ```js
-import { createUpload } from '/dist/js/upload.js';
+import { createUpload } from '/dist/pure/js/upload.js';
 const upload = createUpload(document.querySelector('#files'), {
-  maxFiles: 3,
-  maxSize: 5 * 1024 * 1024,
-  onChange(files) { /* aktuální File[] */ },
+  maxFiles: 3, maxSize: 5 * 1024 * 1024,
+  onChange(files) { /* Current File[] */ },
 });
-// upload.getFiles(); upload.setFiles(fileArray); upload.clear(); upload.destroy();
+// upload.getFiles(); upload.setFiles(files); upload.clear(); upload.destroy();
 ```
 
-Jeden modul na file input. Z DOM odvodí dropzone, list a status; stejnojmenné options je mohou předat explicitně. List a status jsou určeny pouze pro obsah modulu. `maxFiles` je kladné celé číslo nebo Infinity (výchozí pro multiple), pro single input je limit vždy nejvýše 1. `maxSize` je kladný limit v bajtech na soubor, výchozí Infinity. `accept` přebírá přímo z inputu a podporuje přípony, MIME i wildcard (`image/*`). Omezení platí pro picker, drop i setFiles.
+One instance per file input. dropzone/list/status are inferred from DOM or supplied as options. List/status belong exclusively to this module. maxFiles is a positive integer or Infinity (default for multiple); single inputs allow at most one. maxSize is a positive per-file byte limit, default Infinity. accept reads extensions, MIME types and wildcards from the source. Limits apply to picker, drop and setFiles.
 
-Nový výběr nahrazuje starý; odmítnutý výběr ho nezmění a oznámí chybu. `setFiles(files)` vrací boolean, případně přijme `{ emit: false }`. Úspěch synchronizuje FileList, seznam a při výchozím emit vyvolá bublající change a onChange(File[]). `getFiles()` vrací kopii pole. Odebrání položky a clear také synchronizují input. Nativní reset vyprázdní seznam. Disabled input nepřijímá nový výběr ani drop.
+A new selection replaces the old; rejected files retain the old selection and announce an error. `setFiles(files, {emit=true})` returns boolean. Success synchronizes FileList/list and normally emits bubbling change and onChange(File[]). getFiles returns an array copy. Removal/clear also synchronize the input. Reset clears the list. Disabled inputs reject new selections and drops.
 
-Náhledy se vytvářejí pouze pro PNG, JPEG, GIF, WebP a AVIF přes lokální object URL; SVG náhled se nevytváří. `--p-upload-preview` určuje jejich rozměr. URL se uvolní při změně výběru i destroy. Destroy ponechá soubory v nativním inputu a odstraní generovaný seznam a listenery. Bez JS stále funguje běžný file picker. Drop je alternativou, nikdy jedinou cestou. Pro stav dropu modul používá `data-drag-active`.
+Local object URL previews support PNG, JPEG, GIF, WebP and AVIF, not SVG. --p-upload-preview sets their dimensions. URLs are revoked on selection changes/destroy. Destroy retains files in the native input while removing generated UI/listeners. The native picker remains the non-JS fallback; drop is never the only route. Drop state uses data-drag-active.
 
-Modul **neodesílá soubory automaticky**. Odešli je explicitně:
+Files are never uploaded automatically:
 
 ```js
-import { request } from '/dist/js/ajax.js';
+import { request } from '/dist/pure/js/ajax.js';
 await request('/api/upload', { method: 'POST', body: new FormData(form), type: 'json' });
 ```
 
-Content-Type pro FormData nenastavuj ručně — boundary doplní prohlížeč. Endpoint a jeho autorizaci řeší aplikace. Kontrola MIME, názvu a velikosti v prohlížeči je pouze pomocná; server musí ověřit skutečný obsah. `validateFiles(files, { accept = '', maxFiles = Infinity, maxSize = Infinity })` lze importovat samostatně; vrací pole chybových textů a při neplatném limitu vyhodí TypeError.
+Do not set Content-Type for FormData: the browser supplies its boundary. The application owns the endpoint/authorization. Client checks are advisory; validate actual content on the server. Pure `validateFiles(files, {accept='',maxFiles=Infinity,maxSize=Infinity})` returns error strings and throws TypeError for invalid limits.

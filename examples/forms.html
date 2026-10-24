@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pure — formuláře, modal a upload</title>
   <script>try { const theme = localStorage.getItem('pure-theme'); if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme; } catch {}</script>
-  <link rel="stylesheet" href="../dist/css/tokens.css">
-  <link rel="stylesheet" href="../dist/css/base.css">
-  <link rel="stylesheet" href="../dist/css/components.css">
-  <link rel="stylesheet" href="../dist/css/utilities.css">
+  <link rel="stylesheet" href="../dist/pure/css/tokens.css">
+  <link rel="stylesheet" href="../dist/pure/css/base.css">
+  <link rel="stylesheet" href="../dist/pure/css/components.css">
+  <link rel="stylesheet" href="../dist/pure/css/utilities.css">
 </head>
 <body>
   <header class="border-b"><div class="container flex flex-wrap items-center justify-between gap-2 py-3"><a href="index.html" class="font-semibold no-underline">pure. / formuláře</a><div class="flex gap-2"><a href="modules.html" class="button button-outline">Další moduly</a><button class="button button-outline" type="button" data-theme-toggle>Light / dark</button></div></div></header>
@@ -68,7 +68,7 @@
       <p id="form-status" class="state-text text-sm mt-2" role="status"></p>
     </form>
     <dialog class="modal" id="example-modal" data-modal aria-labelledby="modal-title" aria-describedby="modal-description">
-      <div class="modal-header"><h2 id="modal-title" class="text-xl">Malý modal</h2><button class="icon-button" type="button" data-modal-close aria-label="Zavřít dialog" title="Zavřít dialog" autofocus><svg class="icon" aria-hidden="true"><use href="../dist/icons.svg#close"></use></svg></button></div>
+      <div class="modal-header"><h2 id="modal-title" class="text-xl">Malý modal</h2><button class="icon-button" type="button" data-modal-close aria-label="Zavřít dialog" title="Zavřít dialog" autofocus><svg class="icon" aria-hidden="true"><use href="../dist/pure/icons.svg#close"></use></svg></button></div>
       <div class="modal-body"><p id="modal-description">Focus zůstává uvnitř dialogu. Escape nebo kliknutí na pozadí ho zavře a vrátí tě k původnímu tlačítku.</p><label class="field-label block mt-3" for="modal-note">Poznámka</label><input id="modal-note" class="input" placeholder="Vyzkoušej pohyb tabulátorem"></div>
       <div class="modal-actions"><button class="button" type="button" data-modal-close="done">Hotovo</button></div>
     </dialog>

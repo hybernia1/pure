@@ -1,17 +1,17 @@
-# SVG ikony
+# SVG icons
 
-Sprite `dist/icons.svg` obsahuje symboly `home`, `user`, `menu`, `close`, `sun`, `moon`, `arrow-right`, `check`, `search`, `settings`, `bold`, `italic`, `link`, `unlink`, `undo`, `redo`, `mail`, `lock`, `eye`, `eye-off`, `calendar`, `clock`, `chevron-down`, `chevron-left`, `chevron-right`, `list`, `image`, `expand`, `shrink`.
+The sprite is `dist/pure/icons.svg` (or `dist/pure.min/icons.svg`). Symbol IDs include home, user, menu, close, sun, moon, arrow-right, check, search, settings, bold, italic, link, unlink, undo, redo, mail, lock, eye, eye-off, calendar, clock, chevron-down, chevron-left, chevron-right, list, list-bullet, list-ordered, image, expand, shrink and resize. `src/icons.svg` is the complete source of available IDs.
 
 ```html
-<svg class="icon" aria-hidden="true"><use href="/dist/icons.svg#home"></use></svg>
+<svg class="icon" aria-hidden="true"><use href="/dist/pure/icons.svg#home"></use></svg>
 ```
 
-Ikony přebírají barvu textu. Velikost je 1.25em; změň ji pomocí vlastního CSS. Externí sprite servíruj ze stejného originu přes HTTP. Ikona u textu je dekorativní (`aria-hidden="true"`). Tlačítku pouze s ikonou dej přístupný název:
+Icons inherit text color and default to 1.25em. Customize size with CSS. Serve the external sprite from the same origin over HTTP. An icon next to text is decorative (`aria-hidden="true"`). Give icon-only buttons an accessible name:
 
 ```html
-<button class="button" type="button" aria-label="Uživatelský účet">
-  <svg class="icon" aria-hidden="true"><use href="/dist/icons.svg#user"></use></svg>
+<button class="button" type="button" aria-label="User account">
+  <svg class="icon" aria-hidden="true"><use href="/dist/pure/icons.svg#user"></use></svg>
 </button>
 ```
 
-Nový symbol přidej do `src/icons.svg`. ID musí být jedinečné, viewBox 0 0 24 24, geometrie bez pevných barev. `fill`, `stroke` a zakončení čar dědí `.icon`. Potom doplň tento seznam, ukázku a spusť build.
+Add new symbols to `src/icons.svg`: unique ID, `viewBox="0 0 24 24"`, no fixed colors. Fill, stroke and line endings inherit from `.icon`. Update documentation and examples, then rebuild.

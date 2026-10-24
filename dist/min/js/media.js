@@ -1,2 +1,0 @@
-var d=Object.defineProperty;var a=(r,n)=>d(r,"name",{value:n,configurable:!0});import{safeImageSource as o}from"./editor-model.js";function i(r){if(!r||!(typeof r.id=="string"&&r.id.trim()||typeof r.id=="number"&&Number.isFinite(r.id))||typeof r.src!="string"||!o(r.src))throw new TypeError("Invalid media: expected id and a safe src.");const n=typeof r.alt=="string"?r.alt:"";return{id:r.id,src:o(r.src),alt:n,name:typeof r.name=="string"?r.name:n||String(r.id)}}a(i,"normalizeMedia");export{i as normalizeMedia};
-//# sourceMappingURL=media.js.map

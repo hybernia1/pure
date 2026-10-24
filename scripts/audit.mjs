@@ -24,8 +24,10 @@ const closure = async entry => {
 };
 const entries = {};
 for (const entry of ['pure.css', 'icons.svg', 'js/lazy.js', 'js/index.js', 'js/editor.js', 'js/search.js', 'js/theme.js', 'js/activity.js']) {
-  entries[entry] = await size(entry.endsWith('.js') ? await closure(entry) : [resolve(root, entry)]);
-  entries[`min/${entry}`] = await size(entry.endsWith('.js') ? await closure(`min/${entry}`) : [resolve(root, `min/${entry}`)]);
+  for (const variant of ['pure', 'pure.min']) {
+    const path = `${variant}/${entry}`;
+    entries[path] = await size(entry.endsWith('.js') ? await closure(path) : [resolve(root, path)]);
+  }
 }
 const document = { version: 1, blocks: Array.from({ length: 1000 }, () => ({ type: 'paragraph', children: [{ text: 'Alpha beta gamma delta epsilon' }] })) };
 for (let index = 0; index < 3; index++) editorStats(document, 'en');

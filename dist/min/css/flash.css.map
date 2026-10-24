@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../css/flash.css"],
-  "sourcesContent": ["@layer components {\n  .flash-region { display: grid; gap: var(--p-space-2); }\n  .flash { display: flex; align-items: start; gap: var(--p-space-3); padding: var(--p-control-py) var(--p-control-px); border: 1px solid var(--p-state-border, var(--p-border)); border-radius: var(--p-radius-sm); color: var(--p-state, var(--p-text)); background: var(--p-state-bg, var(--p-surface)); }\n  .flash-message { flex: 1; min-width: 0; overflow-wrap: anywhere; }\n  .flash-close { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; min-width: var(--p-control-height); min-height: var(--p-control-height); margin-block: calc(-1 * var(--p-control-py)); border: 0; background: transparent; color: inherit; border-radius: var(--p-radius-sm); }\n}\n"],
-  "mappings": "AAAA,kBACE,CAAC,aAAe,QAAS,KAAM,IAAK,IAAI,YAAc,CACtD,CAAC,MAAQ,QAAS,KAAM,YAAa,MAAO,IAAK,IAAI,aAAc,QAAS,IAAI,gBAAgB,IAAI,gBAAiB,OAAQ,IAAI,MAAM,IAAI,gBAAgB,EAAE,IAAI,aAAc,cAAe,IAAI,eAAgB,MAAO,IAAI,SAAS,EAAE,IAAI,WAAY,WAAY,IAAI,YAAY,EAAE,IAAI,aAAe,CACzS,CAAC,cAAgB,KAAM,EAAG,UAAW,EAAG,cAAe,QAAU,CACjE,CAAC,YAAc,YAAa,EAAG,QAAS,YAAa,YAAa,OAAQ,gBAAiB,OAAQ,UAAW,IAAI,oBAAqB,WAAY,IAAI,oBAAqB,aAAc,KAAK,GAAG,EAAE,IAAI,iBAAkB,OAAQ,EAAG,WAAY,YAAa,MAAO,QAAS,cAAe,IAAI,cAAgB,CACnT",
-  "names": []
-}

@@ -1,11 +1,11 @@
-# Navigace
+# Navigation
 
-Jedna sada odkazů pro mobile i desktop. Nativní `nav`, seznamy, odkazy a `details/summary` podnabídky. Bez JavaScriptu jsou odkazy viditelné a podnabídky fungují nativně; JS přidává mobilní sbalení, řízení focusu a aktivní URL. Žádná role `menu` ani vlastní router.
+One set of native nav/list/link elements serves mobile and desktop, with details/summary submenus. Without JavaScript links remain visible and submenus work natively. JS adds mobile collapse, focus handling and active URL state. No menu role or router.
 
-[Živá ukázka](../examples/navigation.html) · [Testy](../test/navigation.html)
+[Example](../examples/navigation.html) - [Tests](../test/navigation.html)
 
 ```html
-<nav class="navigation" data-navigation aria-label="Hlavní navigace">
+<nav class="navigation" data-navigation aria-label="Main navigation">
   <a class="navigation-brand" href="/">Pure</a>
   <button type="button" class="button button-outline navigation-toggle"
     data-nav-toggle aria-controls="main-links" hidden>
@@ -13,16 +13,14 @@ Jedna sada odkazů pro mobile i desktop. Nativní `nav`, seznamy, odkazy a `deta
   </button>
   <div class="navigation-panel" data-nav-panel id="main-links">
     <ul class="navigation-list">
-      <li><a href="/">Přehled</a></li>
-      <li>
-        <details data-nav-dropdown>
-          <summary>Projekt <svg class="icon" aria-hidden="true"><use href="/assets/pure/icons.svg#chevron-down"></use></svg></summary>
-          <ul class="navigation-submenu">
-            <li><a href="/members">Členové</a></li>
-            <li><a href="/settings">Nastavení</a></li>
-          </ul>
-        </details>
-      </li>
+      <li><a href="/">Overview</a></li>
+      <li><details data-nav-dropdown>
+        <summary>Project</summary>
+        <ul class="navigation-submenu">
+          <li><a href="/members">Members</a></li>
+          <li><a href="/settings">Settings</a></li>
+        </ul>
+      </details></li>
     </ul>
   </div>
 </nav>
@@ -34,57 +32,52 @@ const { createNavigation } = await loadComponent('navigation');
 const navigation = createNavigation(document.querySelector('[data-navigation]'));
 ```
 
-Při přímém importu `@pure-ui/core/js/navigation.js` připoj `css/navigation.css` se závislostmi tokens → base → components, nebo celý `pure.css`. Lazy loader nenačítá modal, formulářové widgety ani editor. SVG markup je součástí HTML aplikace; cestu k ikonám může sestavit z `getPureConfig().iconsUrl`.
+Direct imports require navigation.css with tokens/base/components, or pure.css. Lazy loading does not load modal/form/editor modules. SVG markup belongs to the application; its URL can come from getPureConfig().iconsUrl.
 
-## Struktura a chování
+## Structure and behavior
 
-Kořen musí být `nav[data-navigation]`. Vyžaduje právě jedno vlastní tlačítko `data-nav-toggle` a jeden panel `data-nav-panel`. Panel musí mít unikátní ID a tlačítko odpovídající `aria-controls`. Tlačítko leží mimo panel. Jednotlivé instance mají samostatný stav; jejich selektory ignorují případné další kořeny navigace.
+Root must be nav[data-navigation] with exactly one owned data-nav-toggle button and data-nav-panel. The panel needs a unique ID matching aria-controls. The button is outside the panel. Instances are independent and ignore nested navigation roots.
 
-Tlačítko má v HTML `hidden`, panel žádný `hidden`. Bez JS tak není nefunkční mobilní přepínač a odkazy zůstávají dosažitelné. Vlastní skrývací utility na panel nedávej — viditelnost řídí modul.
+Initially hide the toggle, not the panel: non-JS links remain accessible. Do not apply hiding utilities to the panel; the module owns visibility. A submenu is details[data-nav-dropdown] within the panel with summary as first element and .navigation-submenu content. JS opens at most one sibling submenu, preserving open ancestors, and does not open on hover. Desktop positioning corrects viewport overflow and recalculates after resizing.
 
-Podnabídka je `details[data-nav-dropdown]` uvnitř panelu, jehož první element je `summary`. Obsah používá `.navigation-submenu`. JS otevře nejvýše jednu sousední podnabídku, zachová případné otevřené předky. Neotevírá podnabídky při hoveru. Na desktopu koriguje přesah jejich obalu proti okrajům viewportu, při změně šířky pozici přepočítá.
+Below 960px the toggle expands the panel below the brand. From 960px the panel is always visible and toggle hidden. Crossing the breakpoint closes mobile/submenu state, moving focus only if its current element would become hidden.
 
-Pod 960 px tlačítko rozbaluje panel pod značkou. Od 960 px je panel vždy viditelný a tlačítko skryté. Při přechodu přes breakpoint se stav mobilního menu i podnabídek zavře; focus se přesune pouze tehdy, pokud by se aktuální prvek skryl.
+Navigation is nonmodal: no scroll lock/focus trap. Tab follows links; Enter/Space natively toggles summary. Escape closes the nearest submenu and returns summary focus; another Escape closes mobile navigation and focuses the toggle. Outside click/focus departure closes it without stealing focus from the destination.
 
-Navigace není modální: neblokuje scroll stránky a nepoužívá focus trap. Tab prochází odkazy, Enter/mezerník nativně přepíná summary. Escape zavře nejbližší otevřenou podnabídku a vrátí focus na summary. Další Escape zavře mobilní panel a vrátí focus na přepínač. Klik mimo nebo odchod focusu mimo navigaci ji zavře. Odchod focusu nekrade focus cílovému prvku.
+## Options and methods
 
-## Volby a metody
-
-`createNavigation(root, options = {})` vrací controller:
-
-| Volba | Výchozí hodnota | Význam |
+| Option | Default | Meaning |
 | --- | --- | --- |
-| `active` | Aktuální URL dokumentu | Počáteční URL pro označení odkazu; `null` označení vymaže. |
-| `match` | `'path'` | Shoda podle origin + pathname, s rozlišením hash sekcí; nebo `'exact'` pro úplnou URL včetně query a hashe. |
-| `closeOnSelect` | `true` | Po běžném kliknutí na odkaz zavře podnabídky i mobilní panel. |
-| `locale`, `messages` | Globální nastavení | Překlady přepínače: `openNavigation`, `closeNavigation`. Vlastní `aria-label` tlačítka má přednost. |
+| active | Document URL | Initial active URL; null clears it. |
+| match | path | origin/pathname with hash-section handling, or exact including query/hash. |
+| closeOnSelect | true | Regular link clicks close submenus/mobile panel. |
+| locale/messages | Global defaults | openNavigation/closeNavigation translations; explicit toggle aria-label wins. |
 
-Aktivní je nejvýše jeden odkaz uvnitř panelu. Značka mimo panel se neoznačuje. Pokud odpovídá odkaz na stránku i konkrétní sekci, sekce má přednost. Stránka dostává `aria-current="page"`, sekce `aria-current="location"`; rodič podnabídky `data-nav-active`. Query se při režimu path ignoruje, trailing slash se nenormalizuje. Externí odkazy a download odkazy se neoznačují.
+At most one panel link is active; a brand outside it is excluded. Section matches beat page matches. aria-current is page for pages and location for sections; ancestors get data-nav-active. path ignores query but does not normalize trailing slash. External/download links are not marked.
 
-| Metoda | Chování |
+| Method | Behavior |
 | --- | --- |
-| `open()` | Rozbalí mobilní panel; na desktopu zůstává panel standardně viditelný. Vrací mobilní stav boolean. |
-| `close({ focus = false } = {})` | Sbalí mobilní panel a zavře podnabídky. Focus uvnitř skrývaného panelu přesune na přepínač. |
-| `toggle()` | Přepne mobilní stav. |
-| `isOpen()` | Vrací, zda je mobilní panel rozbalený; na desktopu `false`. |
-| `setActive(url = document.location.href)` | Nastaví aktivní URL; vrací nalezený odkaz nebo `null`. |
-| `refresh()` | Obnoví viditelnost a přepočítá označení podle poslední nastavené URL. |
-| `destroy()` | Odpojí listenery a obnoví původní atributy, viditelnost a otevření details. Opakované volání je bezpečné. |
+| open() | Expand mobile panel; return mobile open boolean. Desktop stays visible. |
+| close({focus=false}={}) | Collapse mobile/submenus; move hidden panel focus to the toggle. |
+| toggle() | Toggle mobile state. |
+| isOpen() | Mobile expanded state; false on desktop. |
+| setActive(url=document.location.href) | Set active URL; return matching link or null. |
+| refresh() | Reconcile visibility and re-evaluate the last active URL. |
+| destroy() | Restore original attributes/visibility/details state and remove listeners; repeat-safe. |
 
-`initNavigations(scope = document, options = {})` explicitně inicializuje kořeny ve scope, případně samotný scope, a vrací cleanup funkci. Při chybě uklidí instance vytvořené během tohoto volání. Duplicitní inicializace stejného kořene se odmítne. Strukturu navigace měň až po destroy a následné nové inicializaci; změnu href stávajícího odkazu lze převzít přes refresh.
+initNavigations(scope=document,options={}) explicitly initializes roots including scope itself, returning cleanup. Failure cleans instances created during that call. Duplicate initialization is rejected. Change structure after destroy/reinitialize; existing href changes can be picked up by refresh.
 
-## Router a události
+## Router and events
 
-Navigace nikdy nevolá `preventDefault()` na odkazech. Ctrl/Cmd/Shift/Alt klik, download a odkazy s jiným cílovým oknem ponechává otevřené. Běžné odkazy mohou fungovat bez routeru nebo být obsloužené aplikací.
+Navigation never prevents link defaults. Modifier clicks, downloads and other-window targets stay open normally. Regular links work without a router or can be handled by the application.
 
-`hashchange` a `popstate` automaticky aktualizují aktivní položku. `history.pushState()` samo událost nevyvolává; router po změně adresy zavolá `navigation.setActive()`.
+hashchange/popstate update active state automatically. pushState emits no event itself: call navigation.setActive() after SPA navigation.
 
-Na kořeni bublá `pure:navigation-change` s `{ open }` při programovém nebo uživatelském rozbalení/sbalení mobilního panelu. Přepnutí viewportu pouze obnovuje layout. U vnořených navigací filtruj `event.target`.
+`pure:navigation-change` bubbles with `{open}` on mobile open/close changes. Viewport changes only restore layout. Filter event.target for nested instances.
 
 ```js
 configurePure({ navigation: { match: 'path', closeOnSelect: true } });
-// Po navigaci SPA:
 navigation.setActive(window.location.href);
 ```
 
-Rozestupy používají společné control/space tokeny. `--p-navigation-width` určuje požadovanou šířku podnabídky (14rem), `--p-navigation-z` její vrstvu (20). Žádné stíny, jen neutrální povrch a ohraničení. UI podporuje light/dark přes stejné tokeny.
+Uses shared control/space tokens, --p-navigation-width (14rem) and --p-navigation-z (20), neutral borders/surfaces and light/dark tokens without shadows.

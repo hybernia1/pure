@@ -1,12 +1,12 @@
-# Barvy, režimy a vlastní schémata
+# Colors, modes and custom schemes
 
-Pure odděluje **režim** (`light`, `dark`, `system`) od **barevného schématu** (`default` nebo vlastní název). Každé schéma může definovat svou světlou i tmavou paletu. Všechny komponenty dál čtou stejné sémantické proměnné; barvy se neukládají podruhé do JS konfigurace.
+Pure separates **mode** (light, dark, system) from **scheme** (default or an application name). Each scheme can define light and dark palettes. Components read the same semantic variables; colors are not duplicated in JavaScript configuration.
 
-[Živá ukázka](../examples/themes.html) · [CSS ukázkových schémat](../examples/themes.css) · [Testy skutečných barev](../test/themes.html)
+[Example](../examples/themes.html) - [Scheme CSS](../examples/themes.css) - [Computed-color tests](../test/themes.html)
 
-## Přepsání výchozích light/dark barev
+## Override default palettes
 
-Za Pure připoj vlastní CSS. Nepřepisuj distribuční soubory:
+Load your own CSS after Pure instead of editing distribution files:
 
 ```css
 :root {
@@ -19,9 +19,9 @@ Za Pure připoj vlastní CSS. Nepřepisuj distribuční soubory:
 }
 ```
 
-Pure podle režimu připojí paletu na `--p-bg`, `--p-surface`, `--p-text` a ostatní sémantické tokeny. `data-theme="light"` vynutí světlou variantu, `data-theme="dark"` tmavou; bez atributu rozhoduje `prefers-color-scheme`. Nativní inputy a scrollbary mají odpovídající CSS `color-scheme`.
+Pure maps the active palette to --p-bg, --p-surface, --p-text and other semantic tokens. data-theme="light" or "dark" forces a mode; without the attribute, prefers-color-scheme controls it. Native inputs and scrollbars use the corresponding CSS color-scheme.
 
-## Pojmenované schéma
+## Named schemes
 
 ```css
 :root[data-scheme="stone"] {
@@ -30,7 +30,6 @@ Pure podle režimu připojí paletu na `--p-bg`, `--p-surface`, `--p-text` a ost
   --p-light-text: #302b25;
   --p-light-action: #504537;
   --p-light-on-action: #fffdf8;
-
   --p-dark-bg: #201d18;
   --p-dark-surface: #29251f;
   --p-dark-text: #f1e9dd;
@@ -43,67 +42,58 @@ Pure podle režimu připojí paletu na `--p-bg`, `--p-surface`, `--p-text` a ost
 <html data-scheme="stone" data-theme="dark">
 ```
 
-Není potřeba kopírovat definice komponent, media query ani všechny tokeny. Neuvedené barvy zdědí výchozí paletu. Schémata jsou určená pro kořen dokumentu, nikoli vnořené barevné ostrůvky. Přímé přepsání sémantického `--p-bg` apod. zůstává možné; pro samostatné light/dark hodnoty používej paletové tokeny.
+Do not duplicate component definitions, media queries or every token. Omitted colors inherit defaults. Schemes apply to the document root, not nested themed islands. Direct semantic overrides remain possible; use palette tokens for separate light/dark values.
 
-## Paletové tokeny
+Every name below exists with both --p-light- and --p-dark- prefixes:
 
-Každý název existuje s prefixem `--p-light-` i `--p-dark-`:
-
-| Název | Význam |
+| Names | Meaning |
 | --- | --- |
-| `bg`, `surface`, `muted` | Pozadí stránky, hlavní a doplňkový povrch. |
-| `text`, `subtle`, `border` | Hlavní text, vedlejší text a ohraničení. |
-| `action`, `on-action`, `focus` | Akční plocha, její text a viditelný focus. |
-| `backdrop` | Pozadí modalů. |
-| `error`, `error-bg`, `error-border` | Chybový stav. |
-| `success`, `success-bg`, `success-border` | Úspěch. |
-| `info`, `info-bg`, `info-border` | Informace. |
+| bg, surface, muted | Page, primary and secondary surfaces |
+| text, subtle, border | Primary text, secondary text and borders |
+| action, on-action, focus | Action surface, its text and visible focus |
+| backdrop | Modal backdrop |
+| error, error-bg, error-border | Error state |
+| success, success-bg, success-border | Success state |
+| info, info-bg, info-border | Information state |
 
-Rozestupy, fonty, rozměry a rádiusy zůstávají samostatné původní tokeny. Při vlastní paletě slaď text a povrchy i `action`/`on-action`; všechny tři stavy mají vedle barvy i text.
+Spacing, fonts, dimensions and radii keep their existing independent tokens. Match text/surface and action/on-action contrast. States must include text as well as color.
 
-## JS API a ukládání
+## JavaScript and persistence
 
 ```js
 import { initTheme, setTheme, setScheme } from '@pure-ui/core/js/theme.js';
-// Nebo const { initTheme, setTheme, setScheme } = await loadComponent('theme');
-
 const cleanup = initTheme();
 setScheme('stone');
 setTheme('dark');
-setTheme('system'); // Schéma zůstává stone, režim sleduje systém.
-setScheme('default'); // Odstraní data-scheme, zachová režim.
+setTheme('system'); // Keep stone, follow the system mode.
+setScheme('default'); // Remove data-scheme, keep the mode.
 ```
 
-`setScheme(name, options = {})` mění pouze atribut a uložený název. Název musí odpovídat `[a-z][a-z0-9-]{0,63}`. `default` je rezervovaný návrat k základní paletě a odstraní atribut. Neexistuje JS registr: aplikace dodává CSS a může v něm mít libovolný počet schémat. Pokud CSS pro jméno chybí, prohlížeč použije výchozí paletu; API existenci stylového souboru neověřuje ani ho automaticky nestahuje.
+`setScheme(name, options = {})` updates only the attribute and stored name. Names match `[a-z][a-z0-9-]{0,63}`. Reserved default removes the attribute. There is no JS registry: applications provide CSS for any number of schemes. Missing scheme CSS falls back to defaults; the API neither validates stylesheet existence nor downloads it.
 
-`setTheme` i `setScheme` přijímají `root`, `storage`, `persist` a klíče úložiště, stejně jako globální theme konfigurace. `initTheme` obnoví obě volby a připojí delegovaná tlačítka; vrací cleanup listenerů. Nevrací původní vzhled. Změna systémové preference se provádí čistě přes CSS, bez dalšího JS listeneru.
+Both setters accept root, storage, persist and storage keys, like global theme defaults. initTheme restores both choices, attaches delegated buttons and returns listener cleanup; cleanup does not restore original appearance. System preference changes are handled by CSS without another JS listener.
 
 ```js
-configurePure({
-  theme: {
-    default: 'system',
-    scheme: 'stone',
-    persist: true,
-    storageKey: 'app-mode',
-    schemeStorageKey: 'app-scheme',
-  },
-});
+configurePure({ theme: {
+  default: 'system', scheme: 'stone', persist: true,
+  storageKey: 'app-mode', schemeStorageKey: 'app-scheme',
+} });
 ```
 
-Globální nastavení samo nepřipojuje CSS ani neinicializuje UI. `initTheme` použije uloženou platnou volbu, jinak nakonfigurovaný výchozí režim a schéma. `persist:false` vypne čtení i zápis obou klíčů; blokované úložiště UI nezastaví. Klíče mají být rozdílné. Při lokálním `root` předávej stejné options i samostatným setterům.
+Configuration itself does not load CSS or initialize UI. Valid stored values win over defaults. persist:false disables both reads and writes; blocked storage does not break UI. Keep keys distinct. Pass consistent options to standalone setters when using a local root.
 
 ```html
-<button type="button" data-theme-toggle>Přepnout light/dark</button>
-<button type="button" data-theme-set="system">Podle systému</button>
+<button type="button" data-theme-toggle>Toggle light/dark</button>
+<button type="button" data-theme-set="system">System</button>
 <button type="button" data-scheme-set="stone">Stone</button>
 <button type="button" data-scheme-set="default">Pure</button>
 ```
 
-Přepínač light/dark zachovává schéma. Přímé volby nevytvářejí vlastní ovládací komponentu; aplikace může zobrazit aktuální stav podle atributů, jako v ukázce. Import modulu nemá DOM efekty.
+The light/dark toggle preserves the scheme. These attributes attach behavior to existing buttons; the application can display current state from root attributes. Importing the module has no DOM effects.
 
-## První vykreslení
+## First paint
 
-Pro serverově vybraný vzhled stačí oba atributy v HTML před připojením CSS. Pokud následně voláš initTheme, předej stejné výchozí hodnoty i v konfiguraci. Pokud používáš localStorage a chceš předejít bliknutí, obnov názvy před styly malým skriptem s odpovídajícími klíči a CSP nonce dle aplikace:
+For server-selected appearance, put both attributes in HTML before CSS loads and configure matching defaults if calling initTheme afterward. To restore localStorage before styles and avoid flashing, use a small application script with your storage keys and an appropriate CSP nonce:
 
 ```html
 <script>
@@ -119,4 +109,4 @@ Pro serverově vybraný vzhled stačí oba atributy v HTML před připojením CS
 </script>
 ```
 
-Stejná definice palet funguje bez JS, se samostatnými moduly i s celým `pure.css`.
+The same palette definitions work without JavaScript, with individual styles or with full pure.css.

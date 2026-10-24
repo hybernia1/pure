@@ -520,7 +520,7 @@ await test('Upload přebírá globální limit a dovolí lokální přepsání',
 await test('Globální konfigurace se projeví v UI; lokální volby a staré instance zůstávají nezávislé', async () => {
   const original = getPureConfig(); let editor; let select;
   try {
-    configurePure({ locale: 'en', iconsUrl: '/dist/icons.svg', editor: { features: { headings: true, fullscreen: false } }, messages: { selectPlaceholder: 'Pick one' } });
+    configurePure({ locale: 'en', iconsUrl: '/dist/pure/icons.svg', editor: { features: { headings: true, fullscreen: false } }, messages: { selectPlaceholder: 'Pick one' } });
     const source = document.createElement('textarea'); fixture.append(source);
     editor = createEditor(source, { features: { headings: false } }); await editor.ready;
     assert(!fixture.querySelector('.editor-toolbar select'), 'Lokální headings:false má přednost');
@@ -529,7 +529,7 @@ await test('Globální konfigurace se projeví v UI; lokální volby a staré in
     const field = document.createElement('select'); const option = document.createElement('option'); option.value = ''; field.append(option); fixture.append(field);
     select = createSelect(field);
     assert(fixture.textContent.includes('Pick one'), 'Vlastní globální text');
-    assert(fixture.querySelector('use').getAttribute('href').startsWith(location.origin + '/dist/icons.svg#'), 'Globální sprite');
+    assert(fixture.querySelector('use').getAttribute('href').startsWith(location.origin + '/dist/pure/icons.svg#'), 'Globální sprite');
     configurePure({ locale: 'cs', messages: { selectPlaceholder: 'Nový výběr' } });
     select.refresh();
     assert(fixture.textContent.includes('Pick one'), 'Existující select drží svůj text');

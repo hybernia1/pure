@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../css/drag-drop.css"],
-  "sourcesContent": ["@layer components {\n  [data-drag-item] { position: relative; }\n  [data-drag-handle] { cursor: grab; touch-action: none; user-select: none; }\n  .sort-handle { border: 0; padding: var(--p-space-1) 0; background: transparent; color: inherit; font: inherit; text-align: start; }\n  [data-dragging] { opacity: .5; }\n  [data-dragging] [data-drag-handle] { cursor: grabbing; }\n  [data-drop-before]::before { content: ''; position: absolute; inset-inline: 0; inset-block-start: calc(-1 * var(--p-space-1)); border-top: 2px solid var(--p-focus); pointer-events: none; }\n  [data-drop-end] { border-bottom: 2px solid var(--p-focus); }\n}\n"],
-  "mappings": "AAAA,kBACE,CAAC,gBAAkB,SAAU,QAAU,CACvC,CAAC,kBAAoB,OAAQ,KAAM,aAAc,KAAM,YAAa,IAAM,CAC1E,CAAC,YAAc,OAAQ,EAAG,QAAS,IAAI,aAAa,EAAG,WAAY,YAAa,MAAO,QAAS,KAAM,QAAS,WAAY,KAAO,CAClI,CAAC,eAAiB,QAAS,EAAI,CAC/B,CAAC,eAAe,CAAC,kBAAoB,OAAQ,QAAU,CACvD,CAAC,iBAAiB,QAAW,QAAS,GAAI,SAAU,SAAU,aAAc,EAAG,kBAAmB,KAAK,GAAG,EAAE,IAAI,cAAe,WAAY,IAAI,MAAM,IAAI,WAAY,eAAgB,IAAM,CAC3L,CAAC,eAAiB,cAAe,IAAI,MAAM,IAAI,UAAY,CAC7D",
-  "names": []
-}

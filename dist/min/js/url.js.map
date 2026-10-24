@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../js/url.js"],
-  "sourcesContent": ["export function safeHref(value) {\n  const href = String(value ?? '').trim();\n  if (!href || /[\\u0000-\\u0020\\u007f]/.test(href) || href.startsWith('//') || href.includes('\\\\')) return null;\n  if (/^(https?:|mailto:)/i.test(href)) return href;\n  if (/^[^:/?#]*:/.test(href)) return null;\n  return href;\n}\n"],
-  "mappings": "+EAAO,SAASA,EAASC,EAAO,CAC9B,MAAMC,EAAO,OAAOD,GAAS,EAAE,EAAE,KAAK,EACtC,MAAI,CAACC,GAAQ,wBAAwB,KAAKA,CAAI,GAAKA,EAAK,WAAW,IAAI,GAAKA,EAAK,SAAS,IAAI,EAAU,KACpG,sBAAsB,KAAKA,CAAI,EAAUA,EACzC,aAAa,KAAKA,CAAI,EAAU,KAC7BA,CACT,CANgBC,EAAAH,EAAA",
-  "names": ["safeHref", "value", "href", "__name"]
-}

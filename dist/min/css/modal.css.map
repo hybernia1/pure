@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../css/modal.css"],
-  "sourcesContent": ["@layer components {\n  .modal { width: min(var(--p-modal-width), calc(100% - var(--p-gutter) * 2)); max-height: calc(100dvh - var(--p-gutter) * 2); padding: var(--p-panel-padding); border: 1px solid var(--p-border); border-radius: var(--p-radius); background: var(--p-surface); color: var(--p-text); overflow: auto; }\n  .modal::backdrop { background: var(--p-backdrop); }\n  .modal-header, .modal-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--p-space-2); }\n  .modal-body { margin-block: var(--p-space-4); }\n  .modal-actions { justify-content: flex-end; }\n}\n"],
-  "mappings": "AAAA,kBACE,CAAC,MAAQ,MAAO,IAAI,IAAI,gBAAgB,CAAE,KAAK,KAAK,EAAE,IAAI,YAAY,EAAE,IAAK,WAAY,KAAK,OAAO,EAAE,IAAI,YAAY,EAAE,GAAI,QAAS,IAAI,mBAAoB,OAAQ,IAAI,MAAM,IAAI,YAAa,cAAe,IAAI,YAAa,WAAY,IAAI,aAAc,MAAO,IAAI,UAAW,SAAU,IAAM,CACrS,CADC,KACK,WAAa,WAAY,IAAI,aAAe,CAClD,CAAC,aAAc,CAAC,cAAgB,QAAS,KAAM,UAAW,KAAM,YAAa,OAAQ,gBAAiB,cAAe,IAAK,IAAI,YAAc,CAC5I,CAAC,WAAa,aAAc,IAAI,YAAc,CAC9C,CAFgB,cAEC,gBAAiB,QAAU,CAC9C",
-  "names": []
-}

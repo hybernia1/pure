@@ -1,0 +1,1 @@
+var n=Object.defineProperty;var r=(e,t)=>n(e,"name",{value:t,configurable:!0});const o=Object.freeze(["error","success","info"]);function c(e){if(!o.includes(e))throw new TypeError(`Neznámý stav: ${e}`);return e}r(c,"assertState");export{c as assertState,o as states};

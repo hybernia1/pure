@@ -1,66 +1,91 @@
 # Pure
 
-Produkční [minifikovaná distribuce](docs/distribution.md) vzniká při `npm run build` v `dist/min/`, včetně modulárního lazy načítání a source map. [Naměřený přínos](docs/minification.md) · [ukázka](examples/minified.html).
+A compact, modular CSS, JavaScript and SVG framework. Tailwind-style utilities, neutral colors, explicit initialization and no runtime dependencies.
 
-Před vydáním 1.0.0: [výkon, optimalizace a zbývající release body](docs/release-1.0-audit.md). Reprodukovatelné měření modelu: `npm run bench`; prohlížeče: `/test/performance.html` po buildu a spuštění dev serveru.
+## Quick start
 
-[Vlastní light/dark barvy a schémata](docs/themes.md): palety zůstávají v CSS, režim a pojmenované schéma se přepínají nezávisle. [Živá ukázka](examples/themes.html).
-
-Editor má [odrážkové a číslované seznamy](docs/editor-lists.md). [Knihovna médií](docs/editor-media-i18n.md) používá číslovanou paginaci přes `{ items, total }`, přehledné karty a opakování při chybě.
-
-[Navigace](docs/navigation.md) používá stejné odkazy na mobilu i desktopu, nativní podnabídky a označení aktivní URL. [Ukázka](examples/navigation.html).
-
-[Záložkový obsah](docs/tabs.md) funguje na stránce i v modalu, s klávesnicí, ruční/automatickou aktivací a vnořením. [Ukázka](examples/tabs.html).
-
-[Tabulky, seznamy a stránkování](docs/data.md) sdílejí datový controller, AJAX, řazení a filtr. Responzivní tabulka podporuje mobilní bloky nebo vodorovný posun; [živá ukázka](examples/data.html).
-
-[Globální konfigurace](docs/configuration.md): jazyk a překlady, ikony, načítání CSS, téma a výchozí volby komponent přes lehké `configurePure()`. Lokální nastavení instance má přednost.
-
-[Načítání podle potřeby](docs/distribution.md): lehký `@pure-ui/core/lazy` načte komponentu i CSS. Editor své modaly, upload a knihovnu načítá až při použití. [Ukázka po kliknutí](examples/lazy.html), [síťové testy](test/lazy.html). JSON API zůstává synchronní; pro připravenost UI použij `await editor.ready`, pro dialog `await editor.openDialog('image')` a pro fullscreen `await editor.command('fullscreen')`.
-
-[Audit před prvním vydáním](docs/release-audit.md) obsahuje opravy, měření a otevřené kroky. `npm run check:dist` ověří distribuci, `npm run audit:size` změří velikosti a statistiky. `prepack` sestaví a zkontroluje balíček; zůstává private.
-
-Pro lehké stránky importuj konkrétní modul, například `import { initTheme } from './dist/js/theme.js'`. Společný `index.js` načítá v prohlížeči celý graf. V npm jsou dostupné exporty `@pure-ui/core/js/theme.js`, `@pure-ui/core/css/tokens.css`, `@pure-ui/core/pure.css` a `@pure-ui/core/icons.svg`; JS je bez automatických DOM efektů, CSS se zachovává jako side effect.
-
-Editor má [statistiky, i18n a napojitelnou knihovnu médií](docs/editor-media-i18n.md). Přímý upload funguje samostatně přes vlastní API; obrázky zachovávají `mediaId`.
-
-[Drag & drop služba](docs/drag-drop.md) řadí bloky editoru i samostatné seznamy. Textové úchyty a mazání, klávesnice, dotyk a undo/redo v editoru.
-
-Editor má kompaktní blokové UI. [Search input s AJAX napovídáním](docs/search.md) podporuje vlastní API, debounce, rušení požadavků a klávesnici.
-
-Globální i lokální loader libovolné činnosti a klasický progress bar: [API a použití](docs/activity.md), [ukázka](examples/modules.html#activity-title).
-
-Obrázky v editoru mají přímé akce pro velikost a zarovnání. Samostatný [resize modul](docs/resize.md) funguje i mimo editor; [živá ukázka](examples/modules.html#resize-title).
-
-Čistý, modulární CSS / JS / SVG framework. Utility ve stylu Tailwindu, neutrální vzhled, žádné runtime závislosti.
+Requires Node.js 22 or newer for development. Serve examples over HTTP: ES modules and the external SVG sprite require it.
 
 ```sh
+git clone https://github.com/hybernia1/pure.git
+cd pure
+npm ci
 npm run build
 npm run dev
 ```
 
-Otevři http://localhost:3000. Vyžaduje Node.js 22+. Ukázka funguje přes HTTP, protože používá ES moduly a externí SVG sprite.
+Open http://localhost:3000. Build output is committed, so applications can also copy an existing distribution without running Node.
 
 ```html
-<link rel="stylesheet" href="/dist/pure.css">
-<section class="container py-8 dt:py-16">
-  <div class="grid grid-cols-1 dt:grid-cols-3 gap-6">
-    <article class="card">Vlastní obsah</article>
+<link rel="stylesheet" href="/dist/pure.min/pure.css">
+<section class="container py-4 dt:py-8">
+  <div class="grid grid-cols-1 dt:grid-cols-3 gap-4">
+    <article class="card">Your content</article>
   </div>
 </section>
 ```
 
-- **Dva viewporty:** mobile pod 960 px, desktop od 960 px (`dt:`).
-- **Dvě témata:** light / dark, standardně podle systému.
-- **Moduly:** tokeny, reset, komponenty, utility; JS se inicializuje explicitně.
-- **Ikony:** vlastní `icons.svg`, bez fontu a knihovny.
+## Distributions
 
-Dokumentace: [základy a architektura](docs/architecture.md), [CSS API](docs/css.md), [JavaScript](docs/javascript.md), [ikony](docs/icons.md), [stavy, flash, editor a AJAX](docs/modules.md), [formuláře, modal a upload](docs/forms.md). Funkční ukázky: [základ](examples/index.html), [moduly](examples/modules.html), [formuláře](examples/forms.html). Pravidla příspěvků: [AGENTS.md](AGENTS.md).
+```text
+dist/
+  pure/       readable CSS, ES modules and icons.svg
+  pure.min/   minified CSS, ES modules and icons.svg
+```
 
-Editor ukládá pouze verzovaný JSON a používá ikonovou lištu. Jeho API: `getJSON()`, `setJSON(object)`, `getText()`. HTML import ani export nemá; schéma a migrace z v0.3 jsou v [dokumentaci editoru](docs/modules.md#editor).
+Both directories are self-contained. Production output has no source maps. Keep the selected directory structure when deploying; lazy imports, styles and icons resolve relative to it.
 
-Editor má fullscreen a volitelné nadpisy a obrázky přes features. Odkazy a obrázky se upravují v Pure modalech. Obrázkový modal používá file upload s náhledem a drag & drop; ukázka soubory ukládá lokálně do .pure/uploads přes npm run dev. [Nastavení, JSON schéma a upload callback](docs/editor.md).
+```js
+import { loadComponent } from './dist/pure.min/js/lazy.js';
+const { createEditor } = await loadComponent('editor');
+const editor = createEditor(document.querySelector('#content'));
+await editor.ready;
+```
 
-Formuláře mají ikony uvnitř polí, ruční zápis data a času, vlastní kalendář, časové sloupce a select nabídky. Aktivace: `initInputs()`, `initPickers()`, `initSelects()`; hodnoty zůstávají v původních formulářových prvcích. Modal zavírá ikonový křížek.
+Use a textarea as the editor source. Importing a module never initializes UI automatically. The lazy entry loads only requested components and their CSS; editor dialogs, uploads and the media library load when used. Direct module imports are also available. The shared `js/index.js` entry loads the complete static graph in a browser.
 
-`npm test` ověřuje generátor, témata, disclosure, JSON model editoru, ruční zápis data a času, kalendář, AJAX, bezpečné adresy, pravidla souborů a lokální upload endpoint. Po buildu a spuštění serveru otevři [integrační testy prohlížeče](http://localhost:3000/test/browser.html), které ověří editor včetně obrázků, fullscreen a modalů, HTML allowlist AJAXu, flash, načítání, vlastní pole, formuláře a upload. `npm run build` obnoví distribuční soubory. Verze 0.6.1 je výchozí základ; balíček zatím není určený k publikaci do npm.
+Package exports such as `@pure-ui/core/lazy`, `@pure-ui/core/min/lazy` and `@pure-ui/core/css/tokens.css` work when the package is installed locally or from Git. The package is currently private to prevent accidental npm publication; this GitHub repository is the distribution source.
+
+## Features
+
+- Two layout viewports: mobile by default, desktop at 960px with `dt:` utilities.
+- CSS tokens for compact spacing, dimensions, colors and custom light/dark schemes; no box shadows.
+- Shared `error`, `success` and `info` states, flash messages, activity indicators and progress bars.
+- Forms with internal icons, password visibility, custom date/time pickers, select controls, search suggestions and file uploads.
+- Accessible modals, tabs, navigation, responsive tables, lists and pagination.
+- JSON-only block editor with headings, lists, images, links, fullscreen, statistics, undo/redo and media adapters.
+- Reusable drag-and-drop and resize services, independent of the editor.
+- English and Czech UI dictionaries, with locale selected from the document or configuration.
+
+## Documentation
+
+| Topic | Guide |
+| --- | --- |
+| Structure and CSS | [Architecture](docs/architecture.md), [CSS API](docs/css.md), [icons](docs/icons.md) |
+| Loading and defaults | [Distribution](docs/distribution.md), [configuration](docs/configuration.md), [JavaScript](docs/javascript.md) |
+| Appearance | [Light/dark modes and custom schemes](docs/themes.md) |
+| Components | [States, flash and AJAX](docs/modules.md), [forms and modals](docs/forms.md), [activity and progress](docs/activity.md), [search](docs/search.md) |
+| Editor | [Editor](docs/editor.md), [list blocks](docs/editor-lists.md), [media and localization](docs/editor-media-i18n.md) |
+| Data and navigation | [Tables, lists and pagination](docs/data.md), [tabs](docs/tabs.md), [navigation](docs/navigation.md) |
+| Shared interactions | [Drag and drop](docs/drag-drop.md), [resize](docs/resize.md) |
+| Measurements | [Performance audit](docs/release-1.0-audit.md), [minification](docs/minification.md), [earlier audit](docs/release-audit.md) |
+
+Runnable examples: [basic UI](examples/index.html), [modules and editor](examples/modules.html), [forms](examples/forms.html), [lazy loading](examples/lazy.html), [minified distribution](examples/minified.html), [themes](examples/themes.html), [data](examples/data.html), [tabs](examples/tabs.html), [navigation](examples/navigation.html). Existing demos use Czech sample content to exercise localization; API documentation is English.
+
+## Development and checks
+
+```sh
+npm test
+npm run build
+npm run check:dist
+npm run audit:size
+npm run bench
+```
+
+After starting the server, open `/test/browser.html` and `/test/lazy.html`. Add `?min` to test the minified distribution. Other browser suites cover data views, tabs, navigation, editor lists and themes. `/test/performance.html` displays a reproducible local benchmark. Timing results are measurements, not performance guarantees.
+
+The local upload endpoint stores demo files in ignored `.pure/uploads`. Production applications must provide storage, authentication, authorization and server-side validation. See [contributor rules](AGENTS.md) and the [release checklist](docs/releasing.md).
+
+## License
+
+[MIT](LICENSE). Copyright (c) 2026 hybernia1.

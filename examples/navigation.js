@@ -1,4 +1,4 @@
-import { loadComponent } from '../dist/js/lazy.js';
+import { loadComponent } from '../dist/pure/js/lazy.js';
 const status = document.querySelector('#navigation-status');
 try {
   const { createNavigation } = await loadComponent('navigation');

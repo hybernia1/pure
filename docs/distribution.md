@@ -1,35 +1,42 @@
-# Distribuce a načítání podle potřeby
+# Distribution and on-demand loading
 
-## Čitelná a minifikovaná varianta
+## Readable and minified output
 
-`npm ci` nainstaluje build nástroj a `npm run build` vytvoří obě varianty: čitelnou v `dist/` a minifikovanou v `dist/min/`. Minifikace používá pouze transform API esbuild (přesná verze v lockfile), bez bundlování. Framework dál nemá runtime závislosti. JS zachovává ESM exporty, názvy funkcí, vlastnosti objektů, dynamické importy i `import.meta.url`; syntax target je ES2022, bez polyfillů. SVG se kopíruje beze změny, včetně symbol ID.
+`npm ci` installs build tooling. `npm run build` generates two self-contained variants using esbuild transform API without bundling. There are no runtime dependencies. Minification preserves ESM exports, function names, object properties, dynamic imports and import.meta.url. JavaScript syntax targets ES2022 without polyfills; the SVG sprite is copied with symbol IDs intact.
 
-Pro přímé produkční použití lze vybrat minifikovaný lazy vstup:
+```text
+dist/
+  pure/         readable distribution
+    css/
+    js/
+    icons.svg
+    pure.css
+  pure.min/     same structure, minified, no source maps
+```
+
+The root contains only these two trees. Package imports stay stable through package.json exports. Deploy the selected complete tree.
 
 ```js
-import { loadComponent } from '/dist/min/js/lazy.js';
-// V npm: import { loadComponent } from '@pure-ui/core/min/lazy';
+import { loadComponent } from '/dist/pure.min/js/lazy.js';
+// Package: import { loadComponent } from '@pure-ui/core/min/lazy';
 const { createEditor } = await loadComponent('editor');
 const editor = createEditor(document.querySelector('#content'));
 await editor.ready;
 ```
 
-CSS a sprite se automaticky řeší uvnitř stejné `dist/min/` struktury. Samostatné cesty jsou `/dist/min/pure.css`, `/dist/min/css/forms.css`, `/dist/min/icons.svg`; npm exporty například `@pure-ui/core/min/pure.css`, `@pure-ui/core/min/js/editor.js`. Společný statický vstup je `@pure-ui/core/min`. Funkční [ukázka](../examples/minified.html) načítá editor až po kliknutí.
+CSS and icons resolve inside the same variant. Direct production paths include `/dist/pure.min/pure.css`, `/dist/pure.min/css/forms.css` and `/dist/pure.min/icons.svg`. Package equivalents include `@pure-ui/core/min/pure.css` and `@pure-ui/core/min/js/editor.js`; the static main entry is `@pure-ui/core/min`. [Example](../examples/minified.html).
 
-Pro jednu aplikaci vyber jednu variantu. Smíchání čitelného a minifikovaného JS vytváří dvě ESM instance konfigurace a CSS registru. Používá-li frontend vlastní bundler, může zůstat u čitelných exportů a minifikovat výsledné chunky sám.
+Choose one JS variant per application: mixing readable/minified graphs creates separate configuration instances and CSS registries. Applications with their own bundler can use readable exports and minify their final chunks.
 
-Vedle každého minifikovaného JS/CSS je externí `.map` se zdrojovým obsahem pro debugging; mapy nejsou součástí měřené JS/CSS velikosti a běžný runtime je nepotřebuje. Publikovaný balíček obsahuje oba stromy i mapy, takže zabere více místa na disku. Na serveru stačí nasadit vybraný kompletní strom a podle potřeby mapy. Minifikace nenahrazuje gzip/Brotli, HTTP cache ani načítání komponent podle potřeby.
+Production dist has no .map files or sourceMappingURL comments. Build does not generate them and check:dist rejects them. Debug using dist/pure or src. Minification complements gzip/Brotli, caching and lazy loading rather than replacing them. [Measured sizes](minification.md).
 
-[Měření přínosu](minification.md) obsahuje raw i gzip velikosti. Regresní browserové stránky podporují `?min` (například `/test/lazy.html?min`), bez parametru testují čitelný strom.
+## Loading components
 
-## Načítání komponent
-
-Pure poskytuje lehký vstup `lazy.js`. Frontend určuje okamžik použití komponenty; Pure načte její JS, závislosti a CSS. Inicializace zůstává explicitní, žádný automatický průchod DOM se neprovádí.
+The frontend chooses when a component is needed. Pure's lightweight lazy.js loads its JavaScript, dependencies and CSS. Initialization remains explicit, without automatic DOM scanning.
 
 ```js
-import { loadComponent } from './dist/js/lazy.js';
-// V npm: import { loadComponent } from '@pure-ui/core/lazy';
-
+import { loadComponent } from './dist/pure/js/lazy.js';
+// Package: @pure-ui/core/lazy
 button.addEventListener('click', async () => {
   const { createEditor } = await loadComponent('editor');
   const editor = createEditor(textarea, { features: { images: true } });
@@ -37,75 +44,63 @@ button.addEventListener('click', async () => {
 });
 ```
 
-`loadComponent(name, { document, styles = true })` vrací Promise s původním ESM modulem. Při výchozím nastavení je CSS před resolve připravené. Současné/opakované požadavky sdílejí nativní ESM cache a CSS linky; neprovádí se nová inicializace komponenty. Jména jsou explicitní, nejde o loader libovolných cest.
+`loadComponent(name, { document, styles = true })` resolves to the original ESM module after required CSS is ready. Concurrent/repeated loads share native module caching and CSS links; they do not initialize another instance. Names are explicit, not arbitrary paths.
 
-Podporované komponenty: `theme`, `disclosure`, `ajax`, `forms`, `select`, `picker`, `modal`, `upload`, `resize`, `editor`, `media-library`, `search`, `flash`, `activity`, `progress`, `drag-drop`, `data`, `table`, `list`, `pagination`, `tabs`, `navigation`. [Datové pohledy](data.md) sdílejí `data.css`; samotný controller `data` nevyžaduje CSS ani DOM.
+Supported names: theme, disclosure, ajax, forms, select, picker, modal, upload, resize, editor, media-library, search, flash, activity, progress, drag-drop, data, table, list, pagination, tabs, navigation. Data needs no DOM/CSS. Table/list/pagination share data.css.
 
-AJAX načte HTML sanitizer až při `loader.load(url, { format: 'html' })`. Obyčejný request pro JSON/text jej nepotřebuje. Po asynchronním importu znovu kontroluje aktuálnost požadavku; pozdní výsledek nepřepíše novější obsah. Validace souborů je oddělená od upload UI, knihovna médií proto nemusí kvůli validaci načítat createUpload.
+AJAX imports its HTML sanitizer only for explicit HTML loads; JSON/text requests do not need it. It rechecks request freshness after import. File validation is separate from upload UI, so libraries need not load createUpload just to validate files. Search does not load the editor.
 
-```js
-const { createSearch } = await loadComponent('search');
-const search = createSearch(input, { url: '/api/search' });
-// Editor se kvůli search nenačítá.
-search.destroy();
-```
+`ensureStyles('search', { document })` also accepts an array of CSS module names, including utilities. It adds dependencies and layers automatically and rejects unknown names.
 
-Pro přímé načtení konkrétních stylů je `ensureStyles('search', { document })` nebo pole názvů CSS modulů. Názvy odpovídají souborům v dist/css, včetně `utilities`; závislosti a vrstvy Pure doplní sám. Neznámé názvy se odmítají.
+## CSS and bundlers
 
-## CSS a bundlery
+CSS resolves from the selected tree's js/ to css/; preserve the sibling icons.svg. Each document has a separate CSS cache. Shared styles remain after component destroy. Removing UI does not unload browser ES modules.
 
-CSS se hledá relativně k distribuovanému JS (`dist/js` → `dist/css`); při nasazení zachovej tuto strukturu a související `dist/icons.svg`. Používej sestavenou distribuci. Každý dokument má samostatnou cache. Po destroy komponenty sdílené styly zůstávají, aby je další instance nemusela znovu načítat. Odebírání komponenty neodinstaluje ES moduly z prohlížeče.
+A linked pure.css suppresses duplicate component CSS. Mark a custom complete bundle with `<link rel="stylesheet" href="app.css" data-pure-styles="all">` only if it includes all Pure styles. Individual links are recognized by absolute URL. Pending CSS waits for load; errors or a 15s timeout reject. Failed links owned by Pure are removed so a later call can retry; foreign links are retained.
 
-Pokud je už připojený `pure.css`, nové komponentové CSS se neduplikuje. U vlastního kompletního bundlu přidej `<link rel="stylesheet" href="app.css" data-pure-styles="all">`; značka znamená, že obsahuje všechny styly Pure. Existující komponentové linky se poznají podle stejné absolutní URL. Pending stylesheet čeká na load, chyba/15s timeout odmítne Promise; neúspěšný link vytvořený Pure se odstraní a další volání umožní retry. Cizí link se nemaže.
-
-Když styly řeší bundler aplikace:
+When the application bundles CSS itself:
 
 ```js
 const { createEditor } = await loadComponent('editor', { styles: false });
 const editor = createEditor(textarea, { styles: false });
 ```
 
-Volby patří dvěma samostatným krokům: loaderu a komponentě. `styles: false` u editoru a knihovny vypne i jejich interní CSS požadavky. Aplikace pak musí dodat veškeré styly včetně modalů, uploadu a knihovny. Přímý import `js/editor.js` je dál možný; při inicializaci editor standardně zajistí své základní CSS. Ostatní přímé importy používej s ručně připojenými styly nebo přes `loadComponent`.
+These are separate loader and component options. Editor/library styles:false also disables their internal CSS requests. Supply all addon styles yourself, including modal, upload and library CSS. Direct editor imports still ensure base CSS by default; other direct modules require manually linked styles or loadComponent.
 
-Společný `index.js` zůstává kompatibilní vstup se všemi statickými exporty. Browser z něj načte celý statický graf, i když použiješ jen jednu funkci. Pro úspornou distribuci importuj lazy.js přímo; import loadComponent přes index.js tento efekt nezruší. Deklarace sideEffects pomáhá bundlerům, sama v prohlížeči neprovádí tree shaking. `pure.css` nadále nabízí kompletní CSS v jednom souboru.
+The shared index.js exposes every static export. Browsers load its entire static graph even if only one function is used. Importing loadComponent through index.js does not avoid that. sideEffects metadata helps bundlers but does not tree-shake browser modules. Full pure.css remains available as one file.
 
-## Co si editor načítá sám
+## Editor addon boundaries
 
-| Část | Okamžik |
+| Part | First loaded |
 | --- | --- |
-| Model, text, statistiky, překlady, přesun bloků | Základ editor.js |
-| Select stylu textu | Inicializace se zapnutými headings |
-| Resize | První vykreslený obrázek se zapnutými images |
-| Modal odkazu | První otevření odkazu, bez upload modulu |
-| Obrázkový modal, selecty a upload | První otevření obrázkového modalu |
-| Media library | Kliknutí na Knihovna médií; také její CSS |
-| Fullscreen modal | První přepnutí fullscreen |
+| Model, text, statistics, translations, block dragging | Core editor.js |
+| Heading style select | Initialization with headings enabled |
+| Resize | First rendered image with images enabled |
+| Link modal | First link opening, without upload UI |
+| Image modal, selects, upload | First image modal opening |
+| Media library and its CSS | Library button activation |
+| Fullscreen modal | First fullscreen activation |
 
-Samotné `features.images: true` u prázdného editoru nenačítá obrázkový modal ani resize. Knihovna není inicializovaná ani při otevření obrázkového modalu. Doplňky se sdílejí přes ESM cache, DOM a stav modalů zůstávají samostatné pro každou instanci editoru.
+images:true on an empty editor does not load the image modal or resize. Opening an image modal does not initialize the library. Module code is shared via ESM cache; each editor owns its DOM and dialog state.
 
-## Asynchronní připravenost a kompatibilita
+## Asynchronous readiness
 
-`createEditor()` stále vrací instanci synchronně. JSON a textové příkazy fungují hned. `await editor.ready` čeká na základní CSS a právě požadované select/resize doplňky; po `setJSON()` s novým obrázkem můžeš čekat znovu. Nejde o přednačtení všech budoucích dialogů. Patička a JSON nejsou závislé na otevření modalu.
-
-Otevření UI nyní může čekat na síť:
+createEditor returns synchronously. JSON/text commands work immediately. `await editor.ready` waits for base CSS and currently requested select/resize addons; it can be awaited again after setJSON adds an image. It does not preload future dialogs. Footer statistics and JSON do not depend on opening a modal.
 
 ```js
 await editor.openDialog('link');
-await editor.openDialog('image'); // vložení nového obrázku
+await editor.openDialog('image');
 await editor.command('fullscreen');
 ```
 
-`openDialog` vrací true po otevření, false pro vypnutou funkci nebo zrušenou/starou operaci. Metody práce s JSON, heading, bold, italic, image, moveBlock, removeBlock, undo a redo zůstávají synchronní. Pro přímé programové fullscreen volání nově čekej na Promise. Kliknutí a klávesové zkratky čekání řeší uvnitř Pure; po UI kliknutí nečti modal synchronně ve stejném JS průchodu.
+openDialog returns true when opened, false for disabled features or canceled/stale operations. JSON, heading, bold, italic, image, moveBlock, removeBlock, undo and redo stay synchronous. Await programmatic fullscreen. Pure handles waiting for clicks/shortcuts internally; do not inspect a dialog synchronously in the same turn as a UI click.
 
-Opakované kliknutí sdílí požadavek a otevře jen aktuální operaci. Změna JSON/reset/destroy zneplatní čekající otevření; po destroy se neobnoví DOM. Sdílené stahování se kvůli destroy jedné instance neruší. Chyba UI načítání se oznámí přeloženým stavem a událostí `pure:load-error` na textarea s původní chybou v detail. Promise z přímého API může odmítnout; frontend ji zachytí stejně jako `loadComponent` a může umožnit opakování.
+Repeated clicks share loading and open only the latest operation. setJSON/reset/destroy invalidate pending openings; destroyed UI cannot reappear. Destroying one instance does not cancel shared module downloads. UI loading failure emits a translated status and `pure:load-error` on the textarea with the original error in detail. Direct API Promises may reject; catch them and offer retry as with loadComponent.
 
-Samostatná knihovna médií má `styles` a její `await library.open()` čeká na CSS a načtení položek. Zavření/destroy během čekání zabrání opožděnému otevření. Upload/load adaptéry zůstávají stejné.
+Standalone libraries accept styles, and `await library.open()` waits for CSS and items. Closing/destroying during loading prevents late opening. Upload/load adapter contracts are unchanged.
 
-## Ověření
+## Verification
 
-- [Ukázka až po kliknutí](../examples/lazy.html): základní stránka nenačítá editor, jeho modaly ani jeho CSS.
-- [Regresní testy UI](../test/browser.html): běžné funkce včetně async otevření.
-- [Samostatné testy sítě](../test/lazy.html): bez index.js a full CSS, kontrolují reálně načtené zdroje přes Resource Timing a hotové stylesheets.
-- Node testy ověřují sdílení CSS, oddělení dokumentů, chybu/retry, existující bundle a import bez DOM při styles:false.
+[Lazy example](../examples/lazy.html), [UI tests](../test/browser.html), [network tests](../test/lazy.html). Add ?min to browser suite URLs to test the minified graph. Resource Timing checks actual loaded assets and ready stylesheets. Node tests cover CSS deduplication, document isolation, failure/retry, existing bundles and DOM-free imports with styles:false.
 
-Při měření této změny klesl počáteční statický graf editor.js z 13 souborů / 32 181 B gzip na 8 souborů / přibližně 20,5 kB gzip. Lazy vstup se styles loaderem má dva soubory / přibližně 1,7 kB gzip. Jde o součet samostatně komprimovaných statických závislostí, nikoli o velikost všech doplňků nebo HTTP overhead. Zapnutí funkcí si vyžádá další soubory; `npm run audit:size` umožní aktuální měření.
+Historical loading measurements are in the release audits. Run npm run audit:size for current static-graph sizes; these are sums of individually compressed files, not all addons or HTTP overhead. check:dist verifies both trees, exports and the absence of source maps.

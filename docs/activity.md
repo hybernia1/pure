@@ -1,49 +1,44 @@
-# Loader a progress bar
+# Activity indicator and progress bar
 
-Ukázka: [moduly](../examples/modules.html#activity-title). Oba moduly jsou nezávislé na AJAXu a editoru. Nemají automatickou inicializaci ani runtime závislosti.
+[Example](../examples/modules.html#activity-title). These modules are independent of AJAX and the editor, have no runtime dependencies and require explicit initialization.
 
-## Indikátor činnosti
+## Activity indicator
 
 ```js
-import { createActivity } from './dist/js/index.js';
-const activity = createActivity(); // globálně, vpravo nahoře
-const finish = activity.start('Ukládám…');
+import { createActivity } from './dist/pure/js/activity.js';
+const activity = createActivity();
+const finish = activity.start('Saving...');
 try { await save(); } finally { finish(); }
-
-// Stejné chování s automatickým úklidem i při chybě:
-const result = await activity.run(() => save(), 'Ukládám…');
+const result = await activity.run(() => save(), 'Saving...');
 activity.isActive();
 activity.destroy();
 ```
 
-Volby `createActivity({ target, global, label })`: výchozí `target` je `document.body`, `global` je true pro body a jinak false, výchozí text „Probíhá zpracování…“. Pro lokální použití předej kontejner. Indikátor se vloží jako nový prvek a zachová existující obsah. Globální varianta je neblokující pevný indikátor; nekrade focus ani nezakazuje ovládání stránky. Nad nativním dialogem použij lokální indikátor uvnitř dialogu.
+`createActivity({ target, global, label })` defaults to `document.body`; global mode defaults to true for body and false elsewhere. The default label is localized. A local target keeps its existing content. The global indicator is fixed, nonblocking and does not steal focus or disable the page. For native dialogs, put a local indicator inside the dialog.
 
-Každé `start(text)` vrací vlastní idempotentní funkci pro ukončení. Souběžné činnosti se počítají samostatně; indikátor zůstane viditelný do dokončení poslední. Zobrazuje text poslední aktivní činnosti. `run(fn, text)` vrací výsledek funkce, chyby předává volajícímu a v `finally` ukončí pouze svou činnost. Operaci neruší; případný AbortController spravuje aplikace. `destroy()` odstraní UI; pozdější ukončovací callbacky bezpečně ignoruje.
+Each `start(text)` returns its own idempotent finish callback. Concurrent activities are counted separately; the indicator stays visible until all finish, showing the most recent active label. `run(fn, text)` returns the operation's result, propagates errors and finishes only its own activity in finally. It does not cancel the operation; the application owns cancellation. `destroy()` removes UI and safely ignores late finish callbacks.
 
-CSS `activity.css`, tokeny `--p-spinner-size`, `--p-activity-z` a sdílené rozestupy. Pro samostatný statický spinner lze použít `<span class="spinner" aria-hidden="true"></span>` uvnitř kontejneru s `role="status"` a textem činnosti. Animace respektuje reduced motion.
+Use `activity.css`, `--p-spinner-size` and `--p-activity-z`. A static spinner is `<span class="spinner" aria-hidden="true"></span>` inside a `role="status"` container with activity text. Animation respects reduced motion.
 
 ## Progress bar
 
 ```js
-import { createProgress } from './dist/js/index.js';
+import { createProgress } from './dist/pure/js/progress.js';
 const progress = createProgress(document.querySelector('#progress'), {
-  max: 100, value: 0, label: 'Nahrávání',
+  max: 100, value: 0, label: 'Uploading',
 });
 progress.set(45);
-progress.set(null); // neurčitý průběh, bez aria-valuenow
-progress.setState('info', 'Zpracování');
+progress.set(null); // Indeterminate: no aria-valuenow.
+progress.setState('info', 'Processing');
 progress.set(100);
-progress.setState('success', 'Hotovo');
-// Při chybě: progress.setState('error', 'Soubor se nepodařilo nahrát');
-progress.getValue(); // 100; nebo null při neurčitém průběhu
-progress.setState(null); // obnoví neutrální stav a původní label
+progress.setState('success', 'Done');
+progress.getValue(); // 100, or null when indeterminate.
+progress.setState(null); // Neutral state and original label.
 progress.destroy();
 ```
 
-Výchozí hodnoty: `max: 100`, `value: 0`, `label: 'Průběh'`. Maximum musí být kladné konečné číslo. `set(value)` omezuje konečné číselné hodnoty na 0…max; `null` aktivuje neurčitý průběh. Hodnoty předává aplikace podle skutečného průběhu, modul je neodhaduje. Dosažení maxima automaticky nemění stav. `setState(state, message)` přijímá společné `error`, `success`, `info` nebo `null`; stav je vyjádřen i textem. Bez vlastní zprávy se použije „Chyba“, „Hotovo“ nebo „Probíhá zpracování“, pro `null` původní label.
+Defaults are max 100, value 0 and a localized progress label. Maximum must be finite and positive. `set(value)` clamps finite numbers to 0..max; null selects indeterminate progress. The application supplies actual values: Pure does not estimate them or change state automatically at maximum.
 
-UI má `role="progressbar"`, přístupný název a meze. Změna stavové zprávy se oznamuje přes `role="status"`. `destroy()` odstraní jen vytvořené UI a umožní opětovnou inicializaci. Na jeden kontejner patří jedna instance.
+`setState(state, message)` accepts error, success, info or null and includes text as well as color. Omitted messages use localized defaults; null restores the original label. UI has role progressbar, an accessible name and bounds. State messages use role status. Destroy removes only generated UI; one instance per container.
 
-CSS `progress.css`, pro stavové barvy také `states.css`; výška používá `--p-progress-height`. Oba moduly jsou součástí `pure.css` a exportů `dist/js/index.js`. Light/dark dědí z tokenů, bez stínů.
-
-`createLoader(target)` z AJAX modulu zůstává API pro načtení obsahu. Vizuální loader libovolné činnosti vytváří `createActivity()`.
+Use `progress.css` and `states.css`, or full `pure.css`. Height uses `--p-progress-height`; colors inherit light/dark tokens. `createLoader(target)` remains the AJAX content API; `createActivity()` is the visual indicator for arbitrary work.

@@ -1,61 +1,56 @@
-# Audit před prvním vydáním — 23. 10. 2026
+# First release audit - October 23, 2026
 
-Aktualizace 24. 10.: [distribuce podle potřeby](distribution.md) přidává lazy vstup a odložené doplňky editoru. Níže uvedené velikosti a hash jsou historický snímek před touto změnou; aktuální hodnoty vrátí audit:size a check:dist.
+Historical record based on commit ad2638c. Later [lazy loading](distribution.md), [performance work](release-1.0-audit.md), [minification](minification.md), MIT licensing and layout changes supersede parts of it. Run current checks for current sizes/hashes. Nothing was tagged or published during this audit.
 
-Výchozí stav: commit `ad2638c`. Audit zahrnuje zdroje CSS/JS/SVG, distribuci, npm obsah, lifecycle a zátěž vybraných funkcí. Níže uvedené opravy jsou implementované a ověřené. Veřejné vydání zatím není dokončené: zůstávají rozhodnutí o licenci, vydávané verzi a podporovaných prohlížečích. Nic se nepublikovalo ani netagovalo.
+The audit covered CSS/JS/SVG sources, distribution, package contents, lifecycle and selected workloads. Fixes below were implemented and verified; release decisions were open at the time.
 
-## Otevřené nálezy podle priority
+## Findings at the time
 
-| Priorita | Nález | Další krok |
+| Priority | Finding | Next step at the time |
 | --- | --- | --- |
-| P1 před veřejným vydáním | Chybí LICENSE i údaj license v package.json. | Vlastník zvolí licenci a doplní soubor a metadata. Audit licenci nevybírá. |
-| P1 před veřejným vydáním | Balíček zůstává private: true a verze 0.6.1 je dosavadní pracovní označení. Oprávnění k npm scope nejsou ověřená. | Potvrdit cílové vydání, způsob distribuce a případně npm scope; až pak upravit private/verzi a vytvořit tag. |
-| P1 pro deklarovanou podporu | UI bylo ověřené v dostupném Chrome. Chybí ověření Firefox/Safari a deklarace minimálních verzí. | Stanovit podporu a ověřit cílové prohlížeče. Dialog/Popover API, pointer capture a CSS vrstvy jsou požadavky implementace; polyfill se nedodává. |
-| P2 pro velké dokumenty | Editor při vstupu normalizuje a vykreslí celý dokument, poté drží až 100 plných JSON snapshotů historie. Limit počtu snapshotů není limit bajtů. | Změřit latenci a paměť na cílovém zařízení a maximálním dokumentu. Při potřebě zavést limit historie v bajtech a postupné vykreslování; undo API se nyní neměnilo. |
-| P2 pro lehké stránky | Browser import z index.js načítá celý graf 27 modulů. Samotná deklarace sideEffects to v prohlížeči neodstraní. | Používat přímé importy modulů. Root export je pohodlný pro celé aplikace; bundler aplikace může provést tree shaking. |
+| P1 before publication | No LICENSE or package license field | Owner selects license/metadata. Subsequently resolved with MIT. |
+| P1 before publication | private:true, working version 0.6.1; npm scope access unverified | Confirm release/distribution/scope before changing npm settings or tagging. |
+| P1 for declared support | Chrome verified; no Firefox/Safari or minimum-version matrix | Verify supported browsers. Dialog, Popover, pointer capture and CSS layers are required; no polyfills. |
+| P2 large documents | Whole-document normalization/rendering; up to 100 full JSON snapshots, without a byte limit | Measure target workloads; consider incremental rendering/history byte limits. |
+| P2 lightweight pages | Browser index.js loads 27 modules; sideEffects does not remove them | Prefer direct modules; application bundlers may tree-shake. |
 
-## Opraveno
+## Implemented fixes
 
-| Oblast | Změna | Ověření |
+| Area | Change | Verification |
 | --- | --- | --- |
-| Statistiky | Cache nejvýše 8 Intl.Segmenter instancí, průchod segmenty bez pole a filtru, jeden průchod bloky pro text a obrázky. | Node testy počtů, jazyků a fallbacku, mikrobenchmark. |
-| Drag & drop | Jeden geometrický odečet na položku místo dvou, žádné přepisování markerů při nezměněném cíli; scrollovací předek jednou za gesto. | Testy pointeru, klávesnice, Escape, cancel a editorové historie. |
-| Resize | Čtyři globální listenery až během gesta, odpojení při konci/cancel/destroy. | Test měří 0 listenerů v klidu, 4 během gesta a opět 0 po ukončení. |
-| Reset | Validace a upload respektují preventDefault na resetu, obnovují UI po nativní změně hodnot a ruší časovače při destroy. | Nový test zrušeného a následně platného resetu; stávající reset/upload testy. |
-| Build | Po kontrole cílové cesty se odstraní pouze dist. Zaniklé moduly se nepřenášejí do nové distribuce. | Zkušební zastaralý soubor odstraněn, přesná kontrola 46 souborů a shody se zdroji. |
-| npm | Whitelist dist/docs/README, root i dílčí ESM/CSS/SVG exporty, CSS side effects. prepack sestaví a ověří dist. | Self-import root i theme subpath, npm pack --dry-run; zdroje, testy, dev server a .pure se nebalí. |
-| Reprodukovatelnost | .gitattributes drží LF pro text a binární PNG. | Dva buildy stejného stromu daly totožný SHA-256 manifestu dist. |
+| Statistics | Cache at most 8 Intl.Segmenter instances, no segment arrays/filters, one text/image pass | Count, locale, fallback tests and microbenchmark |
+| Drag/drop | One geometry read per item, skip unchanged marker writes, find scroll ancestor once per gesture | Pointer, keyboard, Escape, cancel, editor history |
+| Resize | Four global listeners only during gestures, removed on end/cancel/destroy | 0 idle, 4 during drag, 0 afterward |
+| Reset | Validation/upload respect prevented reset, wait for native value restoration, cancel timers on destroy | Canceled then valid reset regression and upload tests |
+| Build | Validate target path, clear only dist, prevent stale modules | Stale-file removal, exact 46-file/source checks |
+| Package | dist/docs/README allowlist, root/module/CSS/SVG exports, CSS side effects, prepack checks | Self-imports, dry-run packing; no sources/tests/dev server/.pure in package |
+| Reproducibility | LF text and binary PNG attributes | Two builds produced the same manifest |
 
-## Velikosti
+## Historical sizes
 
-Neminifikovaná distribuce. Gzip JS je součet samostatně komprimovaných souborů všech statických závislostí vstupu. Nejde o HTTP měření ani bundle; neobsahuje režii požadavků a cache aplikace může výsledek změnit. Jednotky jsou bajty.
+Readable output, bytes. JS gzip sums individually compressed static dependencies, not a bundle/HTTP transfer. Request overhead/cache effects are excluded.
 
-| Vstup | Soubory | Zdrojové bajty | Gzip bajty |
+| Entry | Files | Raw | Gzip |
 | --- | ---: | ---: | ---: |
-| pure.css | 1 | 37 908 | 6 547 |
-| icons.svg | 1 | 3 987 | 1 124 |
-| js/index.js včetně závislostí | 27 | 146 735 | 48 979 |
-| js/editor.js včetně závislostí | 13 | 100 534 | 32 181 |
-| js/search.js včetně závislostí | 5 | 20 822 | 7 418 |
-| js/theme.js | 1 | 1 539 | 707 |
-| js/activity.js | 1 | 1 563 | 742 |
+| pure.css | 1 | 37,908 | 6,547 |
+| icons.svg | 1 | 3,987 | 1,124 |
+| js/index.js with dependencies | 27 | 146,735 | 48,979 |
+| js/editor.js with dependencies | 13 | 100,534 | 32,181 |
+| js/search.js with dependencies | 5 | 20,822 | 7,418 |
+| js/theme.js | 1 | 1,539 | 707 |
+| js/activity.js | 1 | 1,563 | 742 |
 
-Výchozí JS root měl 145 589 B / 48 630 B gzip. Opravy přidaly 349 B gzip do součtu modulů a snížily práci za běhu. CSS se velikostí nezměnilo. Minifikátor ani bundler se nepřidávaly.
+Initial JS root was 145,589 raw / 48,630 gzip bytes. Fixes added 349 gzip bytes while reducing runtime work; CSS size did not change. No minifier/bundler was added during this audit.
 
-## Zátěž a rozsah důkazů
+## Workload and evidence
 
-Node v24.15.0, jeden lokální stroj: 1 000 odstavců, 5 000 slov, 3 zahřívací průchody, medián z 15 měření editorStats. Před změnou 1,704 ms, po změně 1,228 ms; další měření po změně 1,102 ms. Orientační pokles přibližně 28 % v porovnaných bězích. Není to odezva celého editoru, profil paměti ani garance na mobilu. Časování není součástí pass/fail testů.
+Node v24.15.0, one local machine: 1,000 paragraphs, 5,000 words, 3 warmups, median of 15 editorStats runs. Before 1.704ms, after 1.228ms; another post-change run was 1.102ms. About 28% reduction in compared runs, not whole-editor latency, heap profiling or a mobile guarantee. Timing is not pass/fail.
 
-- 23 Node testů prošlo.
-- 30 integračních testů v Chrome prošlo, včetně dvou nových regresí auditu.
-- npm run prepack prošel (build a check:dist).
-- npm pack --dry-run --json --ignore-scripts ověřil whitelist po samostatně provedeném prepack; tarball ani publish se nevytvářely.
-- check:dist ověřil kopie zdrojů, vygenerované utility, obsah společného CSS, chybějící/přebývající soubory a exporty.
-- Dva buildy daly manifest SHA-256 `74a70c5df011c6be0566f5b21c8668a7445dbccc1c946221ab40f7d5cb16ec5b`.
+23 Node and 30 Chrome integration tests passed, including two new regressions. prepack passed. Dry-run packing verified the allowlist without creating/publishing a tarball. check:dist verified source copies, generated utilities, combined CSS, exact files and exports. Two builds produced SHA-256 `74a70c5df011c6be0566f5b21c8668a7445dbccc1c946221ab40f7d5cb16ec5b`.
 
-Audit nezahrnoval DevTools profil paměti, end-to-end zátěž velkého editoru, cross-browser CI ani CDN nasazení. Vývojový upload server je lokální příklad; autentizace, autorizace mediaId, úplné ověření obrázků a produkční ukládání zůstávají smlouvou hostitelské aplikace podle dokumentace médií.
+No DevTools heap profile, large-editor end-to-end workload, cross-browser CI or CDN deployment was included. The upload server is a local example; applications own authentication, mediaId authorization, complete image validation and production storage.
 
-## Opakování kontroly
+## Reproduce current checks
 
 ```sh
 npm test
@@ -65,4 +60,4 @@ npm run audit:size
 npm pack --dry-run --json --ignore-scripts
 ```
 
-Otevři `/test/browser.html` přes `npm run dev` pro integrační testy. Velikosti a benchmark lze přeměřit; tabulka je snímek tohoto auditu.
+Start npm run dev and open /test/browser.html. Tables above remain historical snapshots.

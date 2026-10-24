@@ -1,0 +1,1 @@
+var n=Object.defineProperty;var e=(r,t)=>n(r,"name",{value:t,configurable:!0});function i(r){const t=String(r??"").trim();return!t||/[\u0000-\u0020\u007f]/.test(t)||t.startsWith("//")||t.includes("\\")?null:/^(https?:|mailto:)/i.test(t)?t:/^[^:/?#]*:/.test(t)?null:t}e(i,"safeHref");export{i as safeHref};

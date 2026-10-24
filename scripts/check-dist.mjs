@@ -14,19 +14,19 @@ const files = async (directory, prefix = '') => {
 };
 const sourceFiles = await files('src');
 const readable = [...sourceFiles, 'pure.css', 'css/utilities.css'].sort();
-const expected = [...readable, ...readable.flatMap(path => [`min/${path}`, ...(/\.(js|css)$/.test(path) ? [`min/${path}.map`] : [])])].sort();
+const expected = ['pure', 'pure.min'].flatMap(variant => readable.map(path => `${variant}/${path}`)).sort();
 assert.deepEqual(await files('dist'), expected, 'Missing or stale dist files');
-const combined = await readFile('dist/pure.css', 'utf8');
+const combined = await readFile('dist/pure/pure.css', 'utf8');
 for (const path of sourceFiles) {
-  const source = await readFile(`src/${path}`); assert.deepEqual(await readFile(`dist/${path}`), source, `Stale dist/${path}`);
+  const source = await readFile(`src/${path}`); assert.deepEqual(await readFile(`dist/pure/${path}`), source, `Stale dist/pure/${path}`);
   if (path.endsWith('.css')) assert.ok(combined.includes(source.toString()), `Missing ${path} in pure.css`);
 }
-assert.equal(await readFile('dist/css/utilities.css', 'utf8'), utilities());
+assert.equal(await readFile('dist/pure/css/utilities.css', 'utf8'), utilities());
 assert.ok(combined.endsWith(utilities()));
 for (const path of readable) {
-  const result = await minifiedFile(path, await readFile(`dist/${path}`));
-  assert.deepEqual(await readFile(`dist/min/${path}`), Buffer.from(result.code), `Stale min/${path}`);
-  if (result.map) assert.equal(await readFile(`dist/min/${path}.map`, 'utf8'), result.map, `Stale map ${path}`);
+  const result = await minifiedFile(path, await readFile(`dist/pure/${path}`));
+  assert.deepEqual(await readFile(`dist/pure.min/${path}`), Buffer.from(result.code), `Stale pure.min/${path}`);
+  if (/\.(js|css)$/.test(path)) assert.ok(!result.code.includes('sourceMappingURL='), `Unexpected source map reference in ${path}`);
 }
 const manifest = JSON.parse(await readFile('package.json', 'utf8'));
 for (const [name, path] of Object.entries(manifest.exports)) if (!name.includes('*')) await readFile(path);

@@ -1,4 +1,4 @@
-import { loadComponent } from '../dist/js/lazy.js';
+import { loadComponent } from '../dist/pure/js/lazy.js';
 const [{ createEditor }, { createTable }, { createList }] = await Promise.all(['editor', 'table', 'list'].map(name => loadComponent(name)));
 const fixture = document.querySelector('#fixture');
 const summarize = values => { values.sort((a, b) => a - b); return { medianMs: +values[Math.floor(values.length / 2)].toFixed(3), p95Ms: +values[Math.ceil(values.length * .95) - 1].toFixed(3) }; };

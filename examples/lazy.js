@@ -1,4 +1,4 @@
-import { loadComponent, configurePure } from '../dist/js/lazy.js';
+import { loadComponent, configurePure } from '../dist/pure/js/lazy.js';
 
 // Výchozí nastavení celé aplikace; instance může každou volbu přepsat.
 configurePure({

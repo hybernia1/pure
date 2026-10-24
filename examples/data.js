@@ -1,4 +1,4 @@
-import { loadComponent, configurePure } from '../dist/js/lazy.js';
+import { loadComponent, configurePure } from '../dist/pure/js/lazy.js';
 
 configurePure({ data: { pageSize: 10 } });
 const initial = document.querySelector('#data-init');

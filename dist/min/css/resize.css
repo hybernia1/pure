@@ -1,2 +1,0 @@
-@layer components{.resizable{position:relative;max-width:100%;min-width:0}.resizable>img{display:block;width:100%;height:auto}.resize-handle{display:flex;align-items:center;justify-content:center;width:var(--p-control-height);height:var(--p-control-height);margin-inline-start:auto;color:var(--p-text);background:var(--p-surface);border:1px solid var(--p-border);border-radius:var(--p-radius-sm);cursor:ew-resize;touch-action:none;user-select:none}.resize-handle:hover,[data-resizing]>.resize-handle{background:var(--p-muted)}}
-/*# sourceMappingURL=resize.css.map */

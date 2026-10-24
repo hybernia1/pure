@@ -1,34 +1,32 @@
-# Architektura
+# Architecture
 
-## Princip
+Pure combines small utilities with optional components. It does not scan HTML to compile classes, generate runtime CSS or initialize JavaScript automatically. The complete utility set is generated at build time and can be used in dynamically created HTML.
 
-Pure kombinuje malé utility a několik volitelných komponent. Nepoužívá kompilaci tříd z HTML, pluginy, runtime CSS ani automatickou inicializaci JS. Kompletní sada utilit se generuje při buildu. Třídy lze použít i v dynamicky tvořeném HTML.
+## Files
 
-## Soubory
-
-| Cesta | Účel |
+| Path | Purpose |
 | --- | --- |
-| `src/css/tokens.css` | Sémantické proměnné a témata |
-| `src/css/base.css` | Reset, typografie, focus, reduced motion |
-| `src/css/components.css` | Volitelné komponenty |
-| `scripts/utilities.mjs` | Jediný zdroj utility API a breakpointu |
-| `src/js/` | Nezávislé ES moduly |
-| `src/js/editor-model.js` | Čistý JSON model, schéma a textové operace bez DOM |
-| `src/js/editor.js` | Interaktivní editor a ikonová lišta nad JSON modelem |
-| `src/js/editor-dialog.js` | Odkazy a obrázky v Pure modalech |
-| `src/icons.svg` | SVG symboly |
-| `src/css/states.css`, `flash.css`, `editor.css` | Volitelné komponentové moduly |
-| `dist/` | Distribuce vytvořená buildem |
-| `examples/` | Spustitelná dokumentace |
+| `src/css/tokens.css` | Semantic variables, palettes and layer order |
+| `src/css/base.css` | Reset, typography, focus and reduced motion |
+| `src/css/components.css` | Optional base components |
+| `scripts/utilities.mjs` | Single source for utility classes and the layout breakpoint |
+| `src/js/` | Independent ES modules |
+| `src/js/editor-model.js` | DOM-independent JSON schema and text operations |
+| `src/js/editor.js` | Editor UI over the JSON model |
+| `src/js/editor-dialog.js` | Link and image modals |
+| `src/icons.svg` | SVG symbols |
+| `dist/pure/` | Generated readable distribution |
+| `dist/pure.min/` | Generated minified distribution, without source maps |
+| `examples/` | Runnable documentation |
 
-## Vrstvy a úpravy
+## Layers and customization
 
-Pořadí `tokens, base, components, utilities` je deklarováno v tokens.css. Utility tedy mohou přepsat komponentu. Vlastní vzhled měň přes `--p-*` tokeny; vlastní CSS vlož do samostatné pozdější vrstvy. Nepřidávej `!important` mimo skryté prvky a omezení pohybu.
+`tokens.css` declares `tokens, base, components, utilities` in that order. Utilities can override components. Customize appearance through `--p-*` tokens or a later application layer. Avoid `!important` except for hidden elements and reduced-motion rules.
 
-Mobile je základ. Jediná media query pro rozvržení je `min-width: 960px`. Prefix `dt:` přepíše základní utility od tohoto bodu, například `flex-col dt:flex-row`. Dotazy na systémové téma a omezený pohyb nejsou další viewporty.
+Mobile is the default. The only layout breakpoint is `min-width: 960px`; `dt:` utilities apply from that width, for example `flex-col dt:flex-row`. System theme and reduced-motion queries do not introduce extra layout viewports.
 
-Každý JS inicializátor zavolej jednou pro daný scope; před opětovným připojením zavolej vrácený cleanup, u objektových modulů metodu destroy(). Žádná komponenta nevyžaduje JS, pokud není interaktivní.
+Initialize a JavaScript module once per scope. Before reattaching it, call the returned cleanup function or the instance's `destroy()` method. Static components do not require JavaScript.
 
-## Aktuální rozsah
+## Scope
 
-Pure obsahuje layout, spacing, typografii, tlačítka, formulářová pole, karty, badge, téma a disclosure. Navíc obsahuje sdílené stavy, flash zprávy, malý WYSIWYG editor, AJAX loader, validaci formulářů, modal a upload s drag & drop. Datum, čas a select mají vlastní UI nad původními poli, sdílený obal controls.js a top-layer popupy. Kalendářové výpočty jsou oddělené v calendar.js. Tooltipy zatím součástí nejsou. Viz [moduly](modules.md) a [formuláře](forms.md).
+Pure includes layout, spacing, typography, buttons, inputs, cards, badges, themes, disclosure, shared states, flash, a JSON editor, AJAX, forms, modals and uploads. Date/time and select controls use custom top-layer UI over original form fields; calendar calculations live in `calendar.js`. Data controllers, tables, lists, pagination, tabs, navigation, search, activity, progress, drag-and-drop and resize are separate modules. Tooltips are not included. See [modules](modules.md) and [forms](forms.md).

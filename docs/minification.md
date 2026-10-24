@@ -1,36 +1,40 @@
-# Minifikace distribuce
+# Distribution minification
 
-Měřeno 24. 10. 2026 na kódu po commitu `ea751fb`. Build používá esbuild 0.28.2 pouze jako vývojovou závislost a transformuje každý JS/CSS soubor samostatně. Nepřidává bundler ani runtime knihovnu. Postup a importy: [distribuce](distribution.md).
+Current directories are dist/pure and dist/pure.min; package imports stay stable. Production build generates no .map files or sourceMappingURL comments. check:dist verifies both trees and rejects maps (124 files). Use the readable distribution for debugging.
 
-## Velikosti
+## Historical measurement with source maps
 
-Bajty; JS zahrnuje celý statický importní graf daného vstupu, dynamické importy nezahrnuje. Gzip je součet komprese jednotlivých souborů přes Node zlib s výchozím nastavením. Source mapy nejsou zahrnuté, komentáře odkazující na mapy ano. Nejde o HTTP benchmark ani měření doby vykonávání.
+The report below predates directory renaming and map removal. Current JS/CSS files are additionally smaller by the removed map-reference comments. Run npm run audit:size for current values.
 
-| Vstup | Raw čitelný → min | Gzip čitelný → min | Úspora gzip |
+Measured October 24, 2026 after commit ea751fb with esbuild 0.28.2 as a development-only dependency. Each JS/CSS file is transformed separately, without bundling/runtime libraries. [Loading instructions](distribution.md).
+
+Bytes; JS includes static dependencies, not dynamic imports. Gzip sums individually compressed files with default Node zlib settings. Map files are excluded but reference comments were included. This measures size, not HTTP/execution latency.
+
+| Entry | Readable raw -> minified | Readable gzip -> minified | Gzip reduction |
 | --- | ---: | ---: | ---: |
-| lazy.js | 9 527 → 7 363 | 3 597 → 3 271 | 9,1 % |
-| index.js | 208 292 → 137 934 | 68 358 → 60 412 | 11,6 % |
-| editor.js | 82 587 → 53 030 | 24 665 → 21 535 | 12,7 % |
-| search.js | 27 785 → 19 558 | 9 860 → 8 791 | 10,8 % |
-| theme.js | 8 255 → 5 853 | 2 897 → 2 484 | 14,3 % |
-| pure.css | 49 141 → 42 379 | 8 098 → 7 742 | 4,4 % |
-| icons.svg | 4 309 → 4 309 | 1 205 → 1 205 | 0 % |
+| lazy.js | 9,527 -> 7,363 | 3,597 -> 3,271 | 9.1% |
+| index.js | 208,292 -> 137,934 | 68,358 -> 60,412 | 11.6% |
+| editor.js | 82,587 -> 53,030 | 24,665 -> 21,535 | 12.7% |
+| search.js | 27,785 -> 19,558 | 9,860 -> 8,791 | 10.8% |
+| theme.js | 8,255 -> 5,853 | 2,897 -> 2,484 | 14.3% |
+| pure.css | 49,141 -> 42,379 | 8,098 -> 7,742 | 4.4% |
+| icons.svg | 4,309 -> 4,309 | 1,205 -> 1,205 | 0% |
 
-Minifikace pomáhá zejména JS: celý graf je bez komprese menší o 33,8 %, gzip uspoří přibližně 7,9 kB. U CSS už gzip většinu opakování odstranil, dodatečný přínos je pouze 356 B. SVG nyní neupravujeme; zůstávají bezpečně zachované veřejné symbol ID a currentColor.
+The complete JS graph shrank 33.8% raw, saving about 7.9kB gzip. CSS gzip already removes most repetition; additional savings were 356 bytes. SVG stays unchanged to preserve public symbol IDs/currentColor.
 
-Zachování názvů funkcí a samostatných modulů stojí část možné úspory, ale ponechává veřejné API a lazy hranice. Neprovádí se property mangling. Přínos pro síť a parsing je možný, tento audit však dokládá pouze velikosti a funkční shodu; neprokazuje rychlejší editaci ani INP.
+Preserving function names/module boundaries trades some savings for API/lazy stability. No property mangling. Network/parsing benefits are possible, but this audit proves only size reduction and functional checks, not faster editing or INP.
 
-## Opakování a kontrola
+## Reproduction
 
 ```sh
 npm ci
 npm test
 npm run build
 npm run check:dist
-npm run audit:size -- --output docs/benchmarks/minification.json
+npm run audit:size -- --output docs/benchmarks/local-minification.json
 npm run dev
 ```
 
-Surový [report velikostí](benchmarks/minification.json). Check:dist kontroluje přesný obsah obou stromů, mapy, veřejné exporty a zachování názvu exportované funkce. Browserové sady se spouštějí proti stejným testům s parametrem `?min`: browser, lazy, data, tabs, navigation, editor-lists a themes. Lazy sada navíc kontroluje, že skutečné JS/CSS/sprite požadavky neopouštějí zvolenou distribuci. Při změně zdrojů se vždy znovu sestavují oba stromy.
+[Historical raw report](benchmarks/minification.json). Current check:dist verifies exact content/exports/function names and absence of maps. The same browser assertions run with ?min for browser, lazy, data, tabs, navigation, editor-lists and themes. Lazy tests ensure JS/CSS/sprite requests stay in the selected graph. Rebuild both trees after changes.
 
-Ověřeno: 42 Node testů a 68 browserových testů pro každou variantu (136 celkem v Chrome 156). Build a check:dist prošly; dva buildy daly stejný manifest 185 souborů `43f96102b8cc65e657c7a981cda8518e04e880bee7474e1d615f3029aee903ea`. `npm pack --dry-run --json --ignore-scripts` ověřil obsah balíčku včetně map; nic nebylo publikováno. Oba stromy s mapami zabírají v balíčku přibližně 1,26 MB před kompresí, 344 kB tarball. Tato velikost instalace není velikost načítaná stránkou.
+At the historical measurement, 42 Node tests and 68 tests per distribution (136 total, Chrome 156) passed. Two builds gave the same 185-file manifest `43f96102b8cc65e657c7a981cda8518e04e880bee7474e1d615f3029aee903ea`. Dry-run packing included maps without publishing. Both trees/maps then occupied about 1.26MB unpacked / 344kB tarball; these are historical package sizes, not page transfer sizes or current map-free sizes.

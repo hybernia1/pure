@@ -2,29 +2,43 @@
   "name": "@pure-ui/core",
   "version": "0.6.1",
   "private": true,
+  "license": "MIT",
+  "author": "hybernia1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hybernia1/pure.git"
+  },
+  "homepage": "https://github.com/hybernia1/pure#readme",
+  "bugs": {
+    "url": "https://github.com/hybernia1/pure/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
   "type": "module",
   "files": [
     "dist",
     "docs",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "sideEffects": [
     "**/*.css"
   ],
   "exports": {
-    "./min": "./dist/min/js/index.js",
-    "./min/lazy": "./dist/min/js/lazy.js",
-    "./min/config": "./dist/min/js/config.js",
-    "./min/*": "./dist/min/*",
-    ".": "./dist/js/index.js",
-    "./lazy": "./dist/js/lazy.js",
-    "./config": "./dist/js/config.js",
-    "./js/*": "./dist/js/*",
-    "./css/*": "./dist/css/*",
-    "./pure.css": "./dist/pure.css",
-    "./icons.svg": "./dist/icons.svg"
+    "./min": "./dist/pure.min/js/index.js",
+    "./min/lazy": "./dist/pure.min/js/lazy.js",
+    "./min/config": "./dist/pure.min/js/config.js",
+    "./min/*": "./dist/pure.min/*",
+    ".": "./dist/pure/js/index.js",
+    "./lazy": "./dist/pure/js/lazy.js",
+    "./config": "./dist/pure/js/config.js",
+    "./js/*": "./dist/pure/js/*",
+    "./css/*": "./dist/pure/css/*",
+    "./pure.css": "./dist/pure/pure.css",
+    "./icons.svg": "./dist/pure/icons.svg"
   },
-  "description": "Čistý modulární CSS, JS a SVG základ.",
+  "description": "A compact, modular CSS, JavaScript and SVG framework with no runtime dependencies.",
   "scripts": {
     "build": "node scripts/build.mjs",
     "test": "node --test test/core.test.js test/ajax.test.js test/upload.test.js test/editor-model.test.js test/calendar.test.js test/image-upload.test.js test/lazy.test.js test/config.test.js test/data.test.js",
@@ -32,6 +46,7 @@
     "audit:size": "node scripts/audit.mjs",
     "bench": "node scripts/benchmark.mjs",
     "check:dist": "node scripts/check-dist.mjs",
+    "check:docs": "node scripts/check-docs.mjs",
     "prepack": "npm run build && npm run check:dist"
   },
   "devDependencies": {

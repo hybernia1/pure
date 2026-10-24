@@ -1,74 +1,68 @@
-# JSON editor: volitelné moduly
+# JSON editor and optional modules
 
-[Odrážkové a číslované seznamy](editor-lists.md) používají jeden blok `list` s položkami `items`, sémantické ul/ol a jedno společné záhlaví pro přesun a mazání. Zachovávají formátování i historii. `features.lists` je standardně zapnuté.
+The editor renders compact paragraph, heading, list and image blocks. Each block has one header with a text drag handle and Delete action. UI is excluded from JSON/text offsets. Moves/deletion support undo/redo and use the shared [drag service](drag-drop.md). Lists are true [list blocks](editor-lists.md).
 
-[Načítání JS/CSS podle potřeby a asynchronní UI](distribution.md): createEditor vrací instanci synchronně, doplňky čekají přes editor.ready. Otevření dialogu a první fullscreen mohou načítat síťové prostředky; pro programový přístup použij await editor.openDialog('image'/'link') a await editor.command('fullscreen').
-
-[Patička, statistiky, i18n, upload API, media library a mediaId](editor-media-i18n.md).
-
-Bloky lze přesouvat tažením za text typu v záhlaví, nebo klávesnicí (mezerník, šipky, mezerník). Textové „Smazat“ odstraní konkrétní blok; přesun i mazání podporují undo/redo. Implementaci sdílí samostatná [služba drag & drop](drag-drop.md), použitelná i mimo editor. Záhlaví a jeho tlačítka se do JSON ani textových pozic nepočítají.
-
-UI tvoří samostatné textové, nadpisové a obrázkové bloky s jednotným rámečkem a kompaktními rozestupy. Aktivní blok zvýrazňuje focus. Obrázkový blok sdružuje záhlaví s šířkou, plochu s resize úchytem a spodní lištu se skupinami velikost / zarovnání / správa. Kliknutí na plochu vybere blok; modal otevírá akce Upravit nebo Enter na focusovaném bloku. Rámečky a lišty jsou pouze UI, JSON schéma se nemění.
-
-Obrázek má přímé ikonové akce: zmenšit/zvětšit po 25 %, zarovnat vlevo/na střed/vpravo a upravit. Mazání je textové „Smazat“ v záhlaví. Šířku lze měnit také tažením za úchyt nebo klávesnicí (šipky, Home/End). Escape ruší tažení. Dokončená změna se uloží do JSON a vrátí jedním undo. Používá samostatný [modul resize](resize.md); při modulárním CSS připoj také `resize.css`.
-
-Ukázka: [examples/modules.html](../examples/modules.html#editor-title). Editor nadále ukládá výhradně JSON. Existující dokumenty version: 1 s odstavci zůstávají platné; schéma nově obsahuje i nadpisy a obrázky.
+[Example](../examples/modules.html#editor-title). [Statistics, localization and media adapters](editor-media-i18n.md). [Lazy loading and asynchronous UI](distribution.md).
 
 ```js
-import { createEditor } from '/dist/js/editor.js';
+import { createEditor } from '/dist/pure/js/editor.js';
 const editor = createEditor(document.querySelector('#article'), {
   features: { headings: true, images: true, fullscreen: true },
-  // Volitelné napojení na vlastní server:
-  // async uploadImage(file, { signal }) {
-  //   const result = await request('/api/images', {
-  //     method: 'POST', headers: { 'Content-Type': file.type }, body: file, type: 'json', signal,
-  //   });
-  //   return { id: result.id, src: result.url };
-  // },
+  async uploadImage(file, { signal }) {
+    const response = await fetch('/api/images', {
+      method: 'POST', headers: { 'Content-Type': file.type }, body: file, signal,
+    });
+    if (!response.ok) throw new Error('Upload failed');
+    const result = await response.json();
+    return { id: result.id, src: result.url };
+  },
 });
+await editor.ready;
 ```
 
-Výchozí features: headings=false, images=false, fullscreen=true, lists=true. Vypnutí funkce skryje její ovládání; platná data nadpisů, seznamů i obrázků se při načtení zachovají. Propojení JS: editor-model.js je čistý model, editor.js UI, editor-dialog.js formuláře v Pure modalech. Samostatné CSS potřebuje tokens, base, components, forms, controls, modal, editor, drag-drop, resize a upload; pro knihovnu také media-library a data kvůli paginaci. Komplet pure.css obsahuje vše. Každý inicializátor volej jednou.
+Defaults: headings:false, images:false, fullscreen:true, lists:true. Disabling features hides their controls but preserves valid loaded data. createEditor returns synchronously; await editor.ready for current addons. Programmatic dialog/fullscreen opening is asynchronous: await editor.openDialog('link'/'image') and await editor.command('fullscreen'). JSON commands stay synchronous.
 
-## Nadpisy
+editor-model.js is DOM-free; editor.js supplies UI; editor-dialog.js supplies modal forms. Individual CSS needs tokens/base/components/forms/controls/editor/drag-drop plus modal/upload/resize as used; media-library/data add library pagination. pure.css includes everything. Initialize once per source.
 
-Styl textu nabízí Odstavec a Nadpis 2/3/4. Mění blok pod kurzorem nebo textové bloky ve výběru. Enter v nadpisu pokračuje novým odstavcem. Obrázkové bloky změna stylu přeskočí. API: `editor.command('heading', 2)` nebo 0 pro odstavec. Vyžaduje features.headings=true.
+## Headings
 
-## Odkazy
+The style select offers Paragraph and Heading 2/3/4. It changes the cursor block or selected text blocks and skips images. Enter in a heading continues with a paragraph. `command('heading',2)` selects a heading; 0 selects a paragraph. Requires features.headings:true.
 
-Řetízek nebo Ctrl/Cmd+K otevře Pure modal. Uložený výběr se zachová při přesunu focusu do dialogu. Použít upraví vybraný text či odkaz pod kurzorem; bez výběru mimo odkaz vloží URL jako text. Zrušit, křížek, Escape a pozadí obsah nemění. Povolené jsou HTTP(S), mailto a relativní adresy. Odkaz v editoru neodvádí na jinou stránku. `command('link', url)` a `command('unlink')` fungují i programově.
+## Links
 
-## Obrázky
+The toolbar or Ctrl/Cmd+K opens a modal without losing the saved selection. Apply updates selected text/the link under the cursor, or inserts URL text when outside a link. Cancel, close, Escape and backdrop leave content unchanged. HTTP(S), mailto and relative URLs are allowed. Links do not navigate while editing. `command('link',url)` and `command('unlink')` also work programmatically.
 
-Ikona obrázku otevře Pure modal s klasickým výběrem souboru a drag & drop. Pole pro URL v modalu není. Vybraný soubor má náhled, název a možnost odebrání. Modal dále nabízí alternativní text, popisek, šířku, zarovnání a volitelně připojenou knihovnu médií. Nový obrázek se vloží jako samostatný blok za aktuální blok. Za obrázkem zůstává textový odstavec pro pokračování psaní. Kliknutí na obrázek vybere blok; ikona nastavení nebo Enter na bloku otevře úpravy. Nový soubor nahradí původní obrázek i mediaId; bez nového souboru se upraví pouze vlastnosti. Odebrat lze v modalu nebo textem „Smazat“ v záhlaví bloku. Všechny obsahové změny včetně obrázků patří do undo/redo.
+## Images
 
-Šířky jsou 25/50/75/100 procent dostupného obsahu, zarovnání left/center/right. Popisek je čistý text. `alt` je povinný řetězec v JSON; prázdný použij vědomě pro dekorativní obrázek. Obrázek je v textové ploše needitovatelný blok; jeho vlastnosti mění modal. Nejde o bitmapový editor: ořezávání, filtry a otáčení nejsou součástí tohoto modulu.
+The image modal uses a file picker/drop with preview, name and removal, never a URL input. It also offers alt, caption, width, alignment and an optional library. A new image becomes a separate block after the current block, with a paragraph after it for continued typing. Clicking selects it; Edit or Enter on the focused block opens its properties. A new file replaces both source and mediaId; metadata-only edits retain them. Remove through the modal or header. Content edits participate in history.
+
+Image UI groups width in its header, canvas/resize handle, and size/alignment/edit actions below. Smaller/larger changes by 25%; align left/center/right. The [resize service](resize.md) supports pointer drag, arrows and Home/End; Escape cancels. Completed changes create one undo step. This changes display width, not bitmap pixels; cropping, filters and rotation are not included.
 
 ```json
 {
   "version": 1,
   "blocks": [
-    { "type": "heading", "level": 2, "children": [{ "text": "Nadpis" }] },
-    { "type": "image", "src": "/media/photo.webp", "mediaId": "photo-1", "alt": "Pohled na krajinu", "caption": "Podzim", "width": 75, "align": "center" },
-    { "type": "paragraph", "children": [{ "text": "Další obsah." }] }
+    { "type": "heading", "level": 2, "children": [{ "text": "Heading" }] },
+    { "type": "image", "src": "/media/photo.webp", "mediaId": "photo-1", "alt": "Landscape", "caption": "Autumn", "width": 75, "align": "center" },
+    { "type": "paragraph", "children": [{ "text": "More content." }] }
   ]
 }
 ```
 
-Schema obrázku přijímá jen type, src, mediaId, alt, caption, width a align. Výchozí width je 100, align center; prázdný caption se vynechá. MediaId je neprázdný řetězec, konečné číslo nebo null; starší data se doplní na null. Src přijímá HTTP(S) nebo relativní cestu, odmítá mailto, data, blob a spustitelné protokoly. URL zadej vzhledem k dokumentu, kde se editor zobrazuje. Server znovu validuje schéma a obrázky. `getText()` nahrazuje obrázky alternativním textem. Interní documentText() pro práci s výběrem používá jeden znak U+FFFC za obrázek; odstavce odděluje jedním novým řádkem.
+Image schema allows only type, src, mediaId, alt, caption, width, align. Width is 25/50/75/100 (default 100); align is left/center/right (default center). Empty captions are omitted. alt is required as a string, deliberately empty for decorative images. mediaId is a nonempty string, finite number or null; legacy images normalize to null. src accepts HTTP(S)/relative paths and rejects mailto, data, blob and executable protocols. Resolve URLs against the displaying document. Servers must validate schema, media existence and permissions again. getText uses alt; internal documentText uses one U+FFFC per image and newline row separators.
 
-Vložení a nahrazení souboru vyžaduje uploadImage callback; bez něj se zobrazí srozumitelná chyba. Pole pro soubor je dostupné vždy. Podporované typy jsou PNG, JPEG, WebP, GIF, AVIF, limit 10 MiB (nebo globální `upload.maxSize`). Callback dostane File a AbortSignal a vrátí `{ id, src }` s trvalou URL; starší URL string je podporovaný s mediaId null. JSON dál ukládá src a mediaId, nikoli binární obsah nebo dočasnou blob URL. Selhání zobrazí chybu v modalu a dokument nezmění. Během uploadu jsou vstupní pole zamknutá, zavření zůstává dostupné. Zrušení, zavření nebo destroy přeruší signál a pozdní výsledek se nevloží. Pokud se dokument během uploadu změní, výsledek se odmítne. Náhledové object URL se uvolní při zavření či změně souboru.
+Inserting/replacing files requires uploadImage; without it, UI reports a clear error but the file field remains available. Supported formats: PNG/JPEG/WebP/GIF/AVIF, default 10 MiB or global upload.maxSize. The callback receives File and {signal}, returns {id,src} with a durable URL; legacy URL strings are accepted with mediaId:null. JSON stores no binary data or temporary object URLs. Upload errors leave content unchanged. Inputs lock while uploading but close remains available. Cancel/close/destroy aborts and ignores late results. A changed document invalidates pending insertion. Preview URLs are revoked on close/file changes.
 
-Ukázka má funkční lokální endpoint POST /api/images ve vývojovém serveru npm run dev. Přijímá binární tělo File s odpovídajícím Content-Type, základně ověřuje signaturu formátu a limit 10 MiB a uloží soubor pod náhodným názvem do .pure/uploads. Odpoví `{ "url": "/uploads/…" }`; GET na tuto adresu vrátí uložený obrázek. .pure je v gitignore. Restart serveru soubory nemaže. Endpoint slouží lokální ukázce; pro nasazení aplikace dodá vlastní ukládání, autorizaci a úplné ověření obrázků. Callback může používat i FormData endpoint, pokud to server aplikace očekává.
+The demo server (`npm run dev`) has POST /api/images accepting raw File bytes with Content-Type, checking basic signatures and a 10 MiB limit, then writing a random filename in ignored .pure/uploads. It returns `{ "url": "/uploads/..." }`; GET serves that image. Restart does not delete files. This is a local example, not production storage/authentication/validation. Callbacks may use FormData if your server expects it.
 
-API pro obrázek: `command('image', { src, mediaId, alt, caption, width, align })` vloží blok, nebo upraví obrázek právě otevřený v modalu. `command('removeImage')` odebere aktuálně vybraný obrázek. Tyto příkazy vyžadují features.images=true.
+`command('image',{src,mediaId,alt,caption,width,align})` inserts or edits the currently open image. `command('removeImage')` removes the selected image. Both require images:true.
 
-## Výkon
+## Performance
 
-Běžné řízené psaní a formátování zachovává sousední DOM bloky a obrázky; mění pouze dotčené textové běhy. Změny struktury, historie, setJSON a nativní input mohou obsah překreslit celý. Historie uchovává nejvýše 100 úplných JSON snímků. Naměřená odezva a omezení velkých dokumentů jsou v [auditu před 1.0.0](release-1.0-audit.md).
+Controlled typing/formatting retains neighboring DOM blocks/images and replaces changed inline runs. Structural changes, history, setJSON and native input may redraw the whole content. History holds at most 100 full JSON snapshots with no byte cap. See the [performance audit](release-1.0-audit.md) for measured limits.
 
-## Celá obrazovka
+## Fullscreen
 
-Ikona roztažení nebo `command('fullscreen')` přepne editor přes celý viewport. Používá dialog v top layer, zachovává focus uvnitř a umožňuje otevřít nad ním modal odkazu či obrázku. Escape zavře nejvyšší otevřený dialog; po zavření fullscreen režimu se editor vrátí na původní místo a zachová obsah i výběr. Jde o aplikační režim přes viewport; nepřepíná OS ani prohlížeč do vlastního fullscreen režimu. Destroy zavře dialogy, zruší upload a obnoví textarea.
+The expand icon or command('fullscreen') moves the editor into a top-layer dialog spanning the viewport. Focus stays inside; link/image modals can open above it. Escape closes the highest dialog. Closing restores the editor's original location, content and selection. This is application fullscreen, not browser/OS fullscreen. Destroy closes dialogs, aborts uploads and restores the textarea.
 
-Tokeny: `--p-editor-height`, `--p-editor-style-width`, společné paddingy `--p-panel-padding` a `--p-space-*`. Toolbar zůstává dostupný, obsah ve fullscreen režimu scrolluje.
+Tokens: --p-editor-height, --p-editor-style-width, --p-panel-padding and --p-space-*. Toolbar stays available while fullscreen content scrolls.

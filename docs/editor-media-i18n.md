@@ -1,24 +1,23 @@
-# Editor: počty, jazyky a média
+# Editor statistics, languages and media
 
-Samostatný export `editorStats(documentJSON, locale)` vrací stejné počty jako metoda editoru pro již normalizovaný dokument. `createUpload` a `validateFiles` přijímají volitelný callback `translate(key, values)` pro souborové zprávy; klíče jsou `uploadRemove`, `uploadRemoveFile`, `uploadSelected`, `uploadEmpty`, `uploadError`, `maxFiles`, `maxSize`, `invalidType` ze slovníku `editorLocales`. `createUpload` bez callbacku přebírá [globální jazyk a překlady](configuration.md); čisté `validateFiles` bez callbacku zachovává původní češtinu.
+The footer and editor.getStats() expose blocks, words and images. All blocks count, including empty paragraphs; a list is one block but all item words count. Image alt/caption and controls are excluded from words. Intl.Segmenter is used with a Unicode letter/number fallback. Updates follow typing, setJSON, reset and undo/redo, including fullscreen.
 
-Editor má patičku se statistikami `blocks`, `words`, `images`; stejné hodnoty vrací `editor.getStats()`. Počítají se všechny bloky (včetně prázdného odstavce), slova pouze z odstavců a nadpisů. Alt texty a popisky obrázků ani ovládání nejsou slova dokumentu. Používá se `Intl.Segmenter`, bez něj Unicode rozdělení podle písmen a číslic. Patička se aktualizuje při psaní, změně JSON, resetu i undo/redo; zůstává viditelná i ve fullscreenu.
+Pure `editorStats(documentJSON,locale)` provides the same counts for a normalized document. createUpload/validateFiles accept translate(key,values) for file messages: uploadRemove, uploadRemoveFile, uploadSelected, uploadEmpty, uploadError, maxFiles, maxSize, invalidType from editorLocales. Without a callback, createUpload uses global locale/messages; pure validateFiles retains its original Czech defaults.
 
-## i18n
+## Localization
 
 ```js
 createEditor(textarea, {
-  // Bez locale: jazyk <html lang>, bez lang angličtina.
-  locale: 'en',
+  locale: 'en', // Omit to inherit html lang; missing lang falls back to English.
   messages: { words: 'Word count: {count}', remove: 'Remove' },
 });
 ```
 
-Dodané slovníky jsou `cs` a `en`. Regionální varianty jako `cs-CZ` používají základní jazyk. Nepodporovaný jazyk použije anglické texty; aplikace může dodat vlastní `messages` pro libovolný jazyk. Nastavení je samostatné pro každou instanci a vybírá se při inicializaci. Změna jazyka dokumentu za běhu existující instanci nepřekládá. Obsah JSON se nepřekládá.
+Built-in dictionaries: cs/en. Regional variants such as cs-CZ use the base language. Unsupported languages use English UI, with custom messages for any locale. Locale is selected per instance at initialization; changing document language does not relocalize existing instances. JSON content is never translated.
 
-Export `editorLocales` obsahuje úplné slovníky a klíče. `messages` je plochý objekt řetězců; parametry používají `{count}`, `{index}`, `{title}`, `{level}`, `{page}`, `{name}`, `{size}`, `{errors}`. Chybějící klíče mají fallback. Lokalizují se lišty, bloky, patička, modaly, souborové stavy, resize a drag & drop oznámení. Chyby a texty z vlastního serveru/callbacku překládá aplikace; programátorské chyby nejsou součástí UI slovníku. Statické formátové značky a procenta zůstávají stejné.
+editorLocales exports complete keys/dictionaries. messages is a flat string object. Parameters include count, index, title, level, page, name, size and errors in braces. Missing keys fall back. Toolbars, blocks, footer, dialogs, upload messages, resize and drag announcements are localized. Applications translate their own server/callback messages; programmer errors are not UI dictionary entries. Format markers/percent signs stay unchanged.
 
-## Přímý upload bez knihovny
+## Direct uploads without a library
 
 ```js
 const editor = createEditor(textarea, {
@@ -26,69 +25,67 @@ const editor = createEditor(textarea, {
   async uploadImage(file, { signal }) {
     const data = new FormData(); data.append('file', file);
     const response = await fetch('/my-api/media', { method: 'POST', body: data, signal });
-    if (!response.ok) throw new Error('Upload se nezdařil.');
+    if (!response.ok) throw new Error('Upload failed');
     const item = await response.json();
     return { id: item.id, src: item.url, alt: item.alt || '', name: file.name };
   },
 });
 ```
 
-Upload je klasický file picker s náhledem a drag & drop, bez URL pole. Není závislý na media library. Způsob přenosu, endpoint, hlavičky, autorizaci a strukturu odpovědi řeší callback; výše je jen adaptér. Aplikace může stejně použít `request` s raw tělem File. Signál abort předávej transportu. Zrušený modal ignoruje opožděný výsledek. PNG/JPEG/WebP/GIF/AVIF mají limit 10 MiB (nebo globální `upload.maxSize`); server musí soubor také ověřit. Jde o obrázky, nikoli obecné přílohové bloky.
+A file picker, preview and drop work independently of the library, without a URL field. The callback owns endpoint, headers, authorization, transport and response adaptation. Raw File with request() is also supported. Forward the abort signal; closed dialogs ignore late results. PNG/JPEG/WebP/GIF/AVIF default to a 10 MiB limit (or global upload.maxSize); servers validate again. These are image blocks, not arbitrary attachment blocks.
 
-Nový callback vrací `{ id, src, alt?, name? }`. Pro kompatibilitu lze stále vrátit URL řetězec, potom je `mediaId: null`. Při úpravě alt/popisku/velikosti se znovu nenahrává a ID zůstane. Nový soubor nebo výběr z knihovny nahradí ID původního média.
+Return `{id,src,alt?,name?}`. Legacy URL strings remain accepted with mediaId:null. Editing alt/caption/size does not reupload and retains ID. A new file/library choice replaces the original ID.
 
-## Knihovna médií v editoru
+## Library integration
 
 ```js
 createEditor(textarea, {
-  features: { images: true },
-  uploadImage: myUpload,
+  features: { images: true }, uploadImage: myUpload,
   mediaLibrary: {
     async load({ query, page, pageSize, signal }) {
       const url = new URL('/my-api/media', location.origin);
       url.search = new URLSearchParams({ q: query, page, limit: pageSize });
       const response = await fetch(url, { signal });
       if (!response.ok) throw new Error('Load failed');
-      return response.json(); // { items: [{ id, src, alt?, name? }], total: 42 }
+      return response.json(); // { items: [{id,src,alt?,name?}], total: 42 }
     },
-    upload: myUpload, // volitelné nahrávání přímo v knihovně
-    pageSize: 12,
+    upload: myUpload, pageSize: 12,
   },
 });
 ```
 
-V modalu obrázku se objeví „Knihovna médií“. Její modal umožňuje hledání, stránkování a výběr. Návrat vyplní náhled a alt text v modalu obrázku; do dokumentu se médium vloží až tlačítkem Použít. Otevření knihovny tedy samo dokument nezmění. Změněný dokument během otevření odmítne zastaralý výběr. Upload v knihovně je volitelný a nezávislý na přímém `uploadImage`.
+The image dialog gains a Media library button. Its modal supports search, pagination and selection. Choosing fills the image preview/alt; insertion occurs only on Apply. Opening/loading/uploading does not itself change the document. Document changes invalidate stale selections. Library upload is optional and independent of uploadImage.
 
-`load` přijímá stránku od 1 a doporučeně vrací `{ items, total }`, kde total je celkový počet vyhovujících médií. Knihovna používá společnou číslovanou paginaci Pure, na mobilu kompaktní předchozí / aktuální / další. Po změně filtru se vrací na stránku 1; pokud stránka po změně celkového počtu zanikne, jednou načte nejbližší platnou stránku. Velikost položek odpovědi nesmí překročit pageSize ani total.
+load receives one-based page and should return `{items,total}` where total is all matching media. Shared numbered pagination becomes compact previous/current/next on mobile. Query changes reset to page 1. If total removes the current page, the library reloads the nearest valid page once. Response item count must not exceed pageSize or total.
 
-Prosté pole znamená celý vyfiltrovaný dataset a knihovna jej stránkuje lokálně. Starší `{ items, hasMore }` bez total zůstává podporované s předchozí/další navigací; počet stránek se neodhaduje a nefinguje. Pro číslované stránky přejdi na total. Pole, které dříve vracelo jen jednu serverovou stránku, obal do odpovědi s total nebo hasMore.
+A plain array means the entire filtered dataset and is paginated locally. Legacy `{items,hasMore}` without total retains previous/next navigation without invented totals/page counts. For numbered pages return total. If an old array response contained just one server page, wrap it with total or hasMore.
 
-Položky vyžadují bezpečné trvalé `src` a `id`: neprázdný řetězec nebo konečné číslo, včetně nuly. `blob:`, `data:`, `javascript:` se odmítají. Karty ukazují náhled, název a ID. `name` je text názvu v knihovně, do obrázkového JSON se neukládá. Požadavky se ruší při zavření a staré odpovědi se ignorují. Při načítání nebo chybě zůstává poslední obsah viditelný; při chybě se objeví tlačítko pro opakování. Načítání a upload nemění dokument před potvrzením.
+Items require durable safe src and id: nonempty string or finite number, including zero. blob/data/javascript URLs are rejected. Cards display preview/name/ID. name is a library label, not stored in image JSON. Closing aborts requests; stale responses are ignored. Loading/errors retain previous content; errors offer retry.
 
-Hledání, volitelný upload, karty a patička jsou oddělené části. Šířku knihovny řídí CSS token `--p-media-library-width`, výchozí 52rem s omezením na viewport. Styl knihovny závisí také na `data.css` kvůli sdílené paginaci. Překlady doplňují `mediaCount`, `mediaChoose`, `mediaRetry`; texty samotné paginace používají společné UI klíče z docs/data.md.
+Search/upload/cards/footer are separate areas. --p-media-library-width defaults to 52rem, constrained by viewport. Include data.css for pagination. Media keys include mediaCount, mediaChoose, mediaRetry; pagination uses shared [data UI keys](data.md).
 
-## Samostatný modal
+## Standalone modal
 
 ```js
-import { createMediaLibrary } from './dist/js/index.js';
+import { createMediaLibrary } from './dist/pure/js/media-library.js';
 const library = createMediaLibrary({
-  load: myLoad, upload: myUpload, locale: 'cs', messages: {}, pageSize: 12,
+  load: myLoad, upload: myUpload, locale: 'en', messages: {}, pageSize: 12,
   onSelect(media, { signal }) { console.log(media.id, media.src); },
 });
-await library.open(button); // vrací dokončení načtení, nikoli výběr
+await library.open(button); // Waits for loading, not selection.
 await library.refresh();
 library.close();
 library.destroy();
 ```
 
-`onSelect` může být async; po úspěchu se modal zavře, při chybě ukáže zprávu. `document` lze předat pro konkrétní DOM dokument. Vlastní `load` je povinný; `upload` a `onSelect` jsou volitelné. `normalizeMedia(item)` je veřejný validátor stejného kontraktu. CSS: `tokens`, `base`, `components`, `forms`, `controls`, `modal`, `media-library`; editor potřebuje navíc své běžné moduly. Vše obsahuje i `pure.css`.
+onSelect may be async: success closes the modal; errors show a message. document can target another DOM document. load is required; upload/onSelect are optional. normalizeMedia(item) publicly validates this contract. CSS: tokens/base/components/forms/controls/modal/media-library/data, or full pure.css. Await open for CSS/items. Closing/destroying while loading prevents late opening.
 
-## JSON a kompatibilita
+## JSON compatibility
 
 ```json
-{"type":"image","src":"/media/42.webp","mediaId":42,"alt":"Krajina","width":50,"align":"center"}
+{"type":"image","src":"/media/42.webp","mediaId":42,"alt":"Landscape","width":50,"align":"center"}
 ```
 
-Verze dokumentu zůstává 1; jde o doplňující metadata. Normalizace starších obrázků doplní `mediaId: null`, nevytváří falešná ID. ID přežije textové úpravy, resize, přesun, undo/redo i `getJSON`/`setJSON`. Aplikace musí při ukládání na server znovu ověřit existenci média a oprávnění k ID i src. Framework média automaticky nemaže ze serveru po odstranění bloku.
+Document version stays 1. Old images normalize to mediaId:null without fake IDs. IDs survive text edits, resize, moves, undo/redo and getJSON/setJSON. Servers must revalidate media existence and authorization for both ID and src. Deleting a block does not delete media from the server.
 
-Ukázky: [český editor s knihovnou a uploadem](../examples/modules.html#editor-title), [anglický editor s vlastním překladem](../examples/modules.html#editor-i18n-title).
+[Editor/library example](../examples/modules.html#editor-title) - [English editor with custom text](../examples/modules.html#editor-i18n-title).

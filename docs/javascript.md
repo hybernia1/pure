@@ -1,42 +1,40 @@
 # JavaScript API
 
 ```js
-import { initTheme, setTheme, initDisclosures } from '/dist/js/index.js';
+import { initTheme, setTheme, initDisclosures } from '/dist/pure/js/index.js';
 const destroyTheme = initTheme();
 const destroyDisclosures = initDisclosures();
-// Při odpojení obrazovky:
+// When removing the screen:
 // destroyTheme(); destroyDisclosures();
 ```
 
-## Téma
+For lightweight pages, import the relevant module directly or use [lazy loading](distribution.md). The shared index loads every static dependency in a browser.
 
-Barvy zůstávají v CSS. [Vlastní palety a pojmenovaná schémata](themes.md) doplňují nezávislé `setScheme(name, options)` a konfiguraci `theme.scheme` / `theme.schemeStorageKey`. `initTheme()` obnoví obě volby a vedle přepínače podporuje i tlačítka `[data-theme-set]` a `[data-scheme-set]`.
+## Theme
 
-`initTheme({ root, scope, storage } = {})` načte `pure-theme` z localStorage, použije platné téma nebo systém a připojí delegovaný click listener pro `[data-theme-toggle]`. Vrací cleanup. Výchozí root je `document.documentElement`, scope je `document`. Blokované úložiště nebrání ovládání tématu.
+Colors stay in CSS. [Custom palettes](themes.md) provide independent `setScheme(name, options)` and `theme.scheme` / `theme.schemeStorageKey` defaults. `initTheme()` restores both choices and supports `[data-theme-toggle]`, `[data-theme-set]` and `[data-scheme-set]` buttons.
+
+`initTheme({ root, scope, storage } = {})` restores a valid stored mode from `pure-theme`, otherwise uses the configured default/system mode, and attaches a delegated click listener. It returns cleanup. Defaults are `document.documentElement` and `document`. Blocked storage does not prevent interaction.
 
 ```html
-<button class="button button-outline" data-theme-toggle type="button">
-  Přepnout světlý / tmavý režim
-</button>
+<button class="button button-outline" data-theme-toggle type="button">Toggle light/dark</button>
 ```
 
-`setTheme('light' | 'dark' | 'system', { root, storage } = {})` nastaví téma a uloží volbu. `system` odstraní atribut a vrátí řízení CSS. Neplatná hodnota vyhodí TypeError. Přepínač střídá light a dark podle aktuálního vzhledu; návrat k systému proveď přes `setTheme('system')`.
+`setTheme('light' | 'dark' | 'system', { root, storage } = {})` sets and persists a mode. `system` removes the attribute so CSS controls appearance. Invalid values throw TypeError. The toggle alternates between light and dark based on current appearance; call `setTheme('system')` to return to the system preference.
 
 ## Disclosure
 
-`initDisclosures(scope = document)` připojí tlačítka `[data-disclosure]` k panelům podle `aria-controls`. Výchozí stav určuje `aria-expanded="true"`; jinak se panel zavře. Chybějící panel se přeskočí. Vrací cleanup posluchačů, který zachová aktuální stav panelů.
+`initDisclosures(scope = document)` connects `[data-disclosure]` buttons to panels through `aria-controls`. `aria-expanded="true"` sets the initial open state; otherwise the panel starts closed. Missing panels are skipped. Returned cleanup removes listeners and keeps the current panel state.
 
 ```html
-<button type="button" data-disclosure aria-controls="details" aria-expanded="false">
-  Podrobnosti
-</button>
-<div id="details" hidden>Obsah panelu</div>
+<button type="button" data-disclosure aria-controls="details" aria-expanded="false">Details</button>
+<div id="details" hidden>Panel content</div>
 ```
 
-Používej nativní button: Enter a mezerník fungují automaticky. Escape uvnitř otevřeného panelu jej zavře a vrátí focus na tlačítko. Jde o běžné rozbalení obsahu, nikoli ARIA menu; panel neuzamyká focus. Inicializátory nejsou idempotentní: při novém připojení nejprve proveď cleanup.
+Use a native button for Enter/Space support. Escape inside an open panel closes it and returns focus to the trigger. This is disclosure content, not an ARIA menu; focus is not trapped. Initializers are not idempotent: clean up before reinitializing.
 
-## Další samostatné moduly
+## Other modules
 
-`createFlash`, `createEditor`, `request`, `createLoader`, `HttpError` a `states` lze importovat z index.js i příslušných modulů. Úplné API a příklady: [stavy, editor a AJAX](modules.md).
+`createFlash`, `createEditor`, `request`, `createLoader`, `HttpError` and `states` are exported by index.js and their modules. See [states, editor and AJAX](modules.md).
 
-Formulářové API: `createForm`, `initInputs`, `initPasswords`, `createPicker`, `initPickers`, `createSelect`, `initSelects`, `createModal`, `initModals`, `createUpload`, `validateFiles`. Úplné API, příklady a napojení FormData: [formuláře, modal a upload](forms.md). Vlastní datum, čas a select vyžadují explicitní inicializaci; bez ní zůstávají nativní.
+Form APIs include `createForm`, `initInputs`, `initPasswords`, `createPicker`, `initPickers`, `createSelect`, `initSelects`, `createModal`, `initModals`, `createUpload` and `validateFiles`. Custom date/time/select controls require explicit initialization; without it, source fields remain native. See [forms](forms.md) for FormData and cleanup behavior.

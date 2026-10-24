@@ -1,41 +1,47 @@
-# Drag & drop
+# Drag and drop
 
-V editoru zabírá úchyt celé záhlaví až po samostatné tlačítko „Smazat“, včetně prázdné plochy vedle názvu a údaje o šířce. Text dokumentu zůstává označitelný.
-
-Volitelný callback `translate(key, values)` překládá oznámení služby. Klíče `dragMoved`, `dragMoving`, `dragCanceled`, `dragPicked`, `dragPosition` a parametry `{index}`, `{count}` odpovídají slovníkům `editorLocales`; bez callbacku zůstávají původní české texty.
-
-`createDragDrop` je samostatná služba pro svislé řazení přímých potomků kontejneru. Nepotřebuje editor, ikony ani knihovnu. Podporuje myš, dotyk, pero a klávesnici. Souborový upload a přenos mezi seznamy nejsou součástí tohoto API.
-
-Volby `nested: true, reorder: false` dovolují položky uvnitř společného kontejneru i pod seskupujícími elementy. Služba v tomto režimu nepřesouvá DOM; předá `onMove({ from, to, item, items })` a aplikace aktualizuje model a vykreslení. `items` je původní pořadí. Obě volby použij společně; nested s automatickým DOM reorderem se odmítne. Jde o volitelný režim; editor používá přímé potomky, protože i celý seznam je jeden blok.
+`createDragDrop` is a standalone vertical sorting service for a container's direct children. It supports mouse, touch, pen and keyboard without the editor, icons or another library. File upload and transfer between lists are separate concerns.
 
 ```html
 <ul id="tasks">
-  <li data-drag-item data-id="a"><button type="button" data-drag-handle>První úloha</button></li>
-  <li data-drag-item data-id="b"><button type="button" data-drag-handle>Druhá úloha</button></li>
+  <li data-drag-item data-id="a"><button type="button" data-drag-handle>First task</button></li>
+  <li data-drag-item data-id="b"><button type="button" data-drag-handle>Second task</button></li>
 </ul>
 ```
 
 ```js
-import { createDragDrop } from './dist/js/index.js';
+import { createDragDrop } from './dist/pure/js/drag-drop.js';
 const drag = createDragDrop(document.querySelector('#tasks'), {
-  items: '[data-drag-item]',
-  handle: '[data-drag-handle]',
+  items: '[data-drag-item]', handle: '[data-drag-handle]',
   onMove({ from, to, item, items }) {
-    // DOM už je v novém pořadí. Indexy jsou od nuly, to je výsledný index.
+    // DOM is already reordered; indices are zero-based and to is the final index.
     console.log(from, to, items.map(item => item.dataset.id));
   },
 });
-drag.move(0, 1); // stejná operace programově
-drag.cancel(); // zruší pouze probíhající gesto
-drag.destroy(); // odpojí události a odstraní indikátory; pořadí zachová
+drag.move(0, 1);
+drag.cancel(); // Cancel only the current gesture.
+drag.destroy(); // Remove listeners/indicators, retain order.
 ```
 
-Selektory mají uvedené výchozí hodnoty. Úchyt musí ležet uvnitř řazené položky; použij pojmenované tlačítko. Nové přímé potomky služba rozpozná automaticky. Na jednom kontejneru smí být jedna instance. `onMove` se volá jednou po skutečné změně pořadí; stejné indexy nic nemění. Služba přesune DOM uzel, aplikace synchronizuje data a případné uložení do API. Neúspěšné uložení může aplikace řešit pomocí `move(to, from)` se svou ochranou proti opakovanému ukládání.
+The selectors shown are defaults. A named button handle must be inside its item. New direct children are recognized automatically. One instance per container. onMove runs once for an actual order change; identical indices do nothing. The application synchronizes data and saves to its API. It can reverse a failed save with move(to, from), guarding against recursive saving.
 
-Tažení začíná po drobném pohybu úchytu; text v těle položky zůstává normálně označitelný. Značka ukazuje výslednou pozici, DOM se mění až po uvolnění. Uvolnění mimo kontejner, Escape, pointercancel nebo ztráta focusu okna gesto zruší. Při tažení u okraje se posouvá nejbližší scrollovací kontejner nebo stránka.
+Dragging starts after a small movement on the handle; body text remains selectable. An indicator previews the final position; DOM moves only on release. Release outside, Escape, pointercancel or window blur cancels. Near edges, the closest scroll container or page scrolls automatically.
 
-Klávesnice na úchytu: mezerník/Enter vybere blok, šipky nahoru/dolů mění cílovou pozici, Home/End přejdou na začátek/konec, mezerník/Enter potvrdí, Escape nebo Tab zruší. Stav a výsledná pozice se oznamují přes `role="status"`. Focus zůstává na přesunutém úchytu.
+Keyboard: Space/Enter picks up, Up/Down changes position, Home/End jumps to ends, Space/Enter commits, Escape/Tab cancels. role=status announces progress and position. Focus stays on the moved handle.
 
-CSS `drag-drop.css` využívá atributy `data-dragging`, `data-drop-before`, `data-drop-end`, tokeny a neutrální barvy. Pro vlastní selektory si položky označ i `data-drag-item`, úchyty `data-drag-handle`, nebo doplň ekvivalentní CSS (zejména `touch-action: none` na úchytu). CSS je také součástí `pure.css`. Ukázka: [samostatný seznam](../examples/modules.html#drag-title).
+`nested:true, reorder:false` supports items under grouping elements. In that mode no DOM move occurs: onMove receives `{from,to,item,items}` with original items order so the application can update its model/render. Use both options together; nested with automatic DOM reordering is rejected. The editor uses direct children because an entire list is one block.
 
-Editor používá stejnou službu. Úchytem je text typu bloku v záhlaví, mazání má text „Smazat“. Přesun i odstranění jsou jedna položka undo/redo; řídicí texty se nikdy nezapisují do JSON. Příkazy editoru: `editor.command('moveBlock', { from: 0, to: 2 })`, `editor.command('removeBlock', 1)`. Po odstranění posledního bloku zůstane prázdný odstavec. Při modulárním CSS editoru připoj i `drag-drop.css`.
+`translate(key, values)` customizes announcements. Keys dragMoved, dragMoving, dragCanceled, dragPicked and dragPosition with index/count parameters match editorLocales. Without a callback, the service retains its original Czech defaults.
+
+CSS drag-drop.css uses data-dragging, data-drop-before and data-drop-end with neutral tokens. When using custom selectors, retain data-drag-item/data-drag-handle attributes or supply equivalent CSS, especially touch-action:none on handles. Also included in pure.css. [Standalone example](../examples/modules.html#drag-title).
+
+## Editor integration
+
+The entire block header, including empty space beside its type/width, is draggable up to the separate Delete action. Document text stays selectable. UI labels never enter JSON or text offsets. Moves and deletion each form one undo step.
+
+```js
+editor.command('moveBlock', { from: 0, to: 2 });
+editor.command('removeBlock', 1);
+```
+
+Deleting the last block leaves an empty paragraph. Include drag-drop.css when loading editor styles individually.

@@ -1,25 +1,25 @@
-# Pure — pravidla práce
+# Pure contributor instructions
 
-- Pure je malý CSS, JS a SVG framework bez runtime závislostí. Drž KISS.
-- Zdrojové soubory patří do `src/`; `dist/` vzniká příkazem `npm run build`.
-- Build vytváří čitelný strom i `dist/min/` pomocí esbuild transform API bez bundlování. Zachovej stejné ESM hranice, relativní importy, asset URL, názvy funkcí a externí source mapy; minifikované soubory neupravuj ručně. Browserové testy podporují `?min`.
-- CSS vrstvy: tokens → base → components → utilities. Komponenty a JS jsou volitelné.
-- Pouze dva viewporty: mobile (výchozí) a desktop od 960 px (`dt:`). Breakpoint měň pouze spolu s dokumentací a generátorem.
-- Používej neutrální paletu a sémantické tokeny. Podporuj light i dark bez duplikace komponent.
-- Barvy definuj přes --p-light-* a --p-dark-*; komponenty čtou pouze sémantické --p-* tokeny. data-theme určuje režim light/dark/system (system atribut odstraňuje), nezávislé data-scheme pojmenovanou CSS paletu. Nedrž kopii barev ani registr schémat v JS; výběr režimu a schématu ukládej pod oddělenými klíči.
-- Utility mají jeden účel. Novou abstrakci přidej až pro skutečně opakovaný vzor.
-- Rozestupy čerpají z `--p-space-*` nebo sémantických tokenů; žádné lokální číselné paddingy. Výchozí layout drž kompaktní. Nepoužívej box-shadow.
-- Informační stavy jsou `error`, `success`, `info`, sdílené přes `data-state`. Stav vyjádři i textem, nejen barvou.
-- Editor ukládá výhradně verzovaný JSON s textovými bloky a obrázky; nepřidávej HTML import/export ani HTML string renderování. Nadpisy/obrázky jsou volitelné funkce; odkazy a obrázky používají Pure modaly. Nahrávání vrací trvalou URL, nikdy neukládej blob/data URL. UI používá bezpečné DOM uzly a ikony z icons.svg.
-- Seznam editoru je jeden blok {type:list,style:bullet/ordered,items:[{children}]}, s jedním záhlavím, úchytem a mazáním. Položky mají pouze text, nikoli vlastní blokové UI. Staré sousední list-item migruj při normalizaci do jednoho seznamu. Zachovej UTF-16 offsety uvnitř položek, historii a přesun seznamu jako celku. Knihovna médií preferuje {items,total} a společnou paginaci; legacy hasMore neodhaduj jako skutečný total.
-- Modal obrázku nabízí klasický file upload s náhledem, nikoli zadávání URL. Adresa obrázku zůstává pouze datem modelu a výsledkem upload callbacku.
-- Editor přebírá jazyk z html lang, podporuje locale/messages a slovníky cs/en. Nové UI texty patří do editor-i18n.js. Obrázky zachovávají mediaId (u starých dat null); upload a media library jsou nezávislé callbacky aplikace. Patička počítá jen model, nikdy řídicí texty DOM.
-- AJAX načítá standardně text; jeho explicitní HTML režim prochází allowlistem. Server musí obsah znovu validovat.
-- JS exportuje explicitní inicializaci, bez automatických globálních vedlejších efektů. Inicializace vrací cleanup.
-- Sdílená konfigurace patří do lehkého config.js; nesmí importovat komponenty ani inicializovat DOM. Zachovej prioritu výchozí → globální → instance, atomickou validaci a oddělené kopie nastavení. UI překlady patří do i18n.js, editorové do editor-i18n.js.
-- Pro načítání podle potřeby používej lazy.js / loadComponent a sdílený styles.js; ne statický index.js v lehkých ukázkách. Volitelné doplňky editoru načítej přes import() při použití, včetně CSS. Zachovej synchronní JSON API, připravenost přes editor.ready a async otevírání UI; pending operace nesmějí po destroy obnovit DOM.
-- Ikony přidávej jako `symbol` do `src/icons.svg`, s `viewBox="0 0 24 24"`, `currentColor` a bez pevných barev.
-- Zachovej ovládání klávesnicí, viditelný focus, reduced motion a přístupné názvy ovládacích prvků.
-- Formulářové ikony a akce patří dovnitř jednotného `.control`. Datum, čas a select mají vlastní UI modulů picker/select nad původními poli; hodnoty, validita a FormData zůstávají v původních prvcích. Chybový focus směruj na jejich viditelné ovládání.
-- Každé veřejné API zdokumentuj česky v `docs/` a ukaž v `examples/`.
-- Před dokončením spusť `npm test` a `npm run build`. Nevnášej bundler ani závislost bez konkrétní potřeby.
+- Pure is a small CSS, JavaScript and SVG framework with no runtime dependencies. Keep it simple.
+- Edit sources in `src/`. Generate `dist/` with `npm run build`.
+- Build exactly two trees: readable `dist/pure/` and minified `dist/pure.min/`. Use esbuild transform API without bundling. Preserve ESM boundaries, relative imports, asset URLs and function names. Production output must have no source maps or sourceMappingURL comments. Never edit generated files manually. Browser tests accept `?min`.
+- CSS layers are tokens, base, components, utilities. Components and JavaScript are optional.
+- Use two layout viewports only: mobile by default and desktop from 960px (`dt:`). Update the generator and documentation together if changing the breakpoint.
+- Use a neutral palette and semantic tokens. Support light and dark without duplicating components.
+- Define palettes through --p-light-* and --p-dark-*. Components read semantic --p-* tokens only. data-theme selects light/dark/system (system removes the attribute); data-scheme selects an independent CSS palette. Do not duplicate colors or maintain a scheme registry in JavaScript. Persist mode and scheme under separate keys.
+- Each utility has one purpose. Add abstractions only for genuinely repeated patterns.
+- Use --p-space-* or semantic spacing tokens; no hardcoded component padding. Keep defaults compact. Do not use box-shadow.
+- Shared information states are error, success and info via data-state. Include text rather than relying on color alone.
+- The editor stores versioned JSON only, never HTML. Headings and images are optional. Links and images use Pure modals. Uploads return durable URLs; never store blob/data URLs. Render safe DOM nodes and icons from icons.svg.
+- A list is one block {type:list,style:bullet/ordered,items:[{children}]} with one header, drag handle and delete action. Items contain text only. Normalize adjacent legacy list-item blocks into one list. Preserve UTF-16 offsets, history and whole-list moves. Media libraries prefer {items,total} with shared pagination; do not invent a total from legacy hasMore.
+- Image modals offer file upload and preview, not a URL entry field. Image URLs remain model data supplied by upload callbacks.
+- The editor inherits html lang and supports locale/messages with cs/en dictionaries. Put editor UI strings in editor-i18n.js. Images preserve mediaId (null for legacy data). Upload and library callbacks are independent. Footer statistics count the model, never UI text.
+- AJAX defaults to text. Explicit HTML mode uses an allowlist. Servers must validate submitted content again.
+- JavaScript exports explicit initialization and cleanup, without automatic global DOM effects.
+- Keep shared defaults in lightweight config.js. It must not import components or initialize the DOM. Preserve defaults < global < instance priority, atomic validation and detached configuration copies. Shared UI translations belong in i18n.js; editor translations belong in editor-i18n.js.
+- Use lazy.js/loadComponent and shared styles.js for on-demand loading, not the static index.js entry in lightweight examples. Load optional editor addons with import(), including their CSS. Keep JSON APIs synchronous; expose readiness through editor.ready and asynchronous UI opening. Pending work must not restore the DOM after destroy.
+- Add icons as symbol elements in src/icons.svg, with unique IDs, viewBox="0 0 24 24", currentColor and no fixed colors.
+- Preserve keyboard operation, visible focus, reduced motion and accessible control names.
+- Form icons/actions belong inside the shared .control wrapper. Custom picker/select UI retains original values, validity and FormData in the source fields. Send validation focus to visible controls.
+- Document every public API in English under docs/ and demonstrate it in examples/.
+- Before finishing, run npm test, npm run build and npm run check:dist. Do not introduce a bundler or dependency without a concrete need.

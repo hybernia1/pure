@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../css/resize.css"],
-  "sourcesContent": ["@layer components {\n  .resizable { position: relative; max-width: 100%; min-width: 0; }\n  .resizable > img { display: block; width: 100%; height: auto; }\n  .resize-handle { display: flex; align-items: center; justify-content: center; width: var(--p-control-height); height: var(--p-control-height); margin-inline-start: auto; color: var(--p-text); background: var(--p-surface); border: 1px solid var(--p-border); border-radius: var(--p-radius-sm); cursor: ew-resize; touch-action: none; user-select: none; }\n  .resize-handle:hover, [data-resizing] > .resize-handle { background: var(--p-muted); }\n}\n"],
-  "mappings": "AAAA,kBACE,CAAC,UAAY,SAAU,SAAU,UAAW,KAAM,UAAW,CAAG,CAChE,CADC,SACU,CAAE,IAAM,QAAS,MAAO,MAAO,KAAM,OAAQ,IAAM,CAC9D,CAAC,cAAgB,QAAS,KAAM,YAAa,OAAQ,gBAAiB,OAAQ,MAAO,IAAI,oBAAqB,OAAQ,IAAI,oBAAqB,oBAAqB,KAAM,MAAO,IAAI,UAAW,WAAY,IAAI,aAAc,OAAQ,IAAI,MAAM,IAAI,YAAa,cAAe,IAAI,eAAgB,OAAQ,UAAW,aAAc,KAAM,YAAa,IAAM,CAC9V,CADC,aACa,OAAQ,CAAC,cAAe,CAAE,CADvC,cACwD,WAAY,IAAI,UAAY,CACvF",
-  "names": []
-}

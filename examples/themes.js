@@ -1,4 +1,4 @@
-import { initTheme } from '../dist/js/theme.js';
+import { initTheme } from '../dist/pure/js/theme.js';
 
 initTheme({ storageKey: 'pure-example-theme', schemeStorageKey: 'pure-example-scheme' });
 const root = document.documentElement; const status = document.querySelector('#theme-status');

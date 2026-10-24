@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../css/search.css"],
-  "sourcesContent": ["@layer components {\n  .search-panel { max-height: min(var(--p-search-height), var(--p-search-available, 100dvh)); }\n  .search-panel .control-option { cursor: pointer; }\n  .search input::-webkit-search-cancel-button, .search input::-webkit-search-decoration { -webkit-appearance: none; }\n  .search-status:empty { display: none; }\n  .search-status { display: block; margin-top: var(--p-space-1); }\n}\n"],
-  "mappings": "AAAA,kBACE,CAAC,aAAe,WAAY,IAAI,IAAI,kBAAkB,CAAE,IAAI,oBAAoB,EAAE,QAAU,CAC5F,CADC,aACa,CAAC,eAAiB,OAAQ,OAAS,CACjD,CAAC,OAAO,KAAK,+BAAgC,CAA5C,OAAoD,KAAK,4BAA8B,mBAAoB,IAAM,CAClH,CAAC,aAAa,OAAS,QAAS,IAAM,CACtC,CADC,cACgB,QAAS,MAAO,WAAY,IAAI,YAAc,CACjE",
-  "names": []
-}

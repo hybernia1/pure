@@ -1,4 +1,4 @@
-import { loadComponent } from '../dist/min/js/lazy.js';
+import { loadComponent } from '../dist/pure.min/js/lazy.js';
 
 const button = document.querySelector('#open');
 const status = document.querySelector('#status');

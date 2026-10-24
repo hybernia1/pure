@@ -1,4 +1,4 @@
-import { loadComponent } from '../dist/js/lazy.js';
+import { loadComponent } from '../dist/pure/js/lazy.js';
 const [{ initTheme }, { createForm, initInputs }, { initPickers }, { initSelects }, { initModals }, { createUpload }, { createSearch }, { request }] = await Promise.all([
   loadComponent('theme'), loadComponent('forms'), loadComponent('picker'), loadComponent('select'), loadComponent('modal'), loadComponent('upload'), loadComponent('search'), loadComponent('ajax'),
 ]);
