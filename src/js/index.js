@@ -1,4 +1,9 @@
 export { configurePure, getPureConfig } from './config.js';
+export { createTabs, initTabs } from './tabs.js';
+export { createDataController, paginationPages } from './data.js';
+export { createPagination } from './pagination.js';
+export { createTable } from './table.js';
+export { createList } from './list.js';
 export { initTheme, setTheme } from './theme.js';
 export { initDisclosures } from './disclosure.js';
 export { states } from './states.js';

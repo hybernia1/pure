@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pure — tabulky a seznamy</title>
+  <link rel="stylesheet" href="../dist/css/tokens.css">
+  <link rel="stylesheet" href="../dist/css/base.css">
+  <link rel="stylesheet" href="../dist/css/components.css">
+  <link rel="stylesheet" href="../dist/css/utilities.css">
+</head>
+<body>
+  <main class="container py-6">
+    <a href="index.html">← Pure</a>
+    <h1 class="text-2xl mt-4 mb-2">Tabulky, seznamy a stránkování</h1>
+    <p class="text-subtle mb-3">Oba pohledy sdílejí data, filtr, řazení i stránku. Pod 960 px se první tabulka změní na bloky; druhá zachová sloupce s posunem uvnitř obalu.</p>
+    <form id="data-filter" class="data-filter mb-3">
+      <label>Hledat uživatele<input id="data-query" type="search" class="input" placeholder="Jméno nebo e-mail"></label>
+      <button class="button" type="submit">Hledat</button>
+      <label>Na stránku<select id="data-size" class="input"><option>5</option><option selected>10</option><option>20</option></select></label>
+    </form>
+    <p id="data-init" role="status">Načítání modulů…</p>
+    <h2 class="text-xl mt-4 mb-2">Responzivní tabulka</h2>
+    <div id="data-table"></div>
+    <h2 class="text-xl mt-6 mb-2">Seznam ze stejných dat</h2>
+    <div id="data-list"></div>
+    <h2 class="text-xl mt-6 mb-2">Tabulka s vodorovným posunem</h2>
+    <div id="data-scroll"></div>
+    <h2 class="text-xl mt-6 mb-2">Běžné odkazy na stránky</h2>
+    <p class="text-sm mb-2">Tato paginace má skutečné URL. Propojená ukázka zachová vybranou stránku při obnovení.</p>
+    <div id="data-links"></div>
+  </main>
+  <script type="module" src="data.js"></script>
+</body>
+</html>

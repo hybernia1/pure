@@ -2,6 +2,8 @@ import { getPureConfig } from './config.js';
 const documents = new WeakMap();
 const failedLinks = new WeakSet();
 const dependencies = {
+  tabs: ['components'],
+  data: ['components'],
   tokens: [], base: ['tokens'], components: ['base'], states: ['tokens'], forms: ['components'],
   controls: ['forms'], 'drag-drop': ['tokens'], resize: ['controls'], upload: ['forms', 'states'],
   editor: ['controls', 'drag-drop'], modal: ['controls'], 'media-library': ['modal'],

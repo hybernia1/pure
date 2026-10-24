@@ -1,6 +1,9 @@
 import { getPureConfig, resolveLocale } from './config.js';
 
 const en = {
+  sortRecords: 'Sort records',
+  pagination: 'Pagination', pageSummary: 'Page {page} of {pages} · {total} records', goPage: 'Go to page {page}', previousPage: 'Previous', nextPage: 'Next',
+  dataTable: 'Data table', dataList: 'Records', dataLoading: 'Loading…', dataEmpty: 'No records.', dataError: 'Could not load records.', dataCount: 'Records: {count}', retry: 'Try again',
   clear: 'Clear', hours: 'Hours', minutes: 'Minutes', seconds: 'Seconds',
   selection: 'Selection', openSelection: 'Open selection: {label}', selectPlaceholder: 'Choose an option',
   showPassword: 'Show password', hidePassword: 'Hide password', closeFlash: 'Close notification',
@@ -11,6 +14,9 @@ const en = {
   width: 'Width', resizeHelp: 'Drag to resize; arrow keys change the width, Escape cancels dragging.',
 };
 const cs = {
+  sortRecords: 'Řazení záznamů',
+  pagination: 'Stránkování', pageSummary: 'Strana {page} z {pages} · {total} záznamů', goPage: 'Přejít na stranu {page}', previousPage: 'Předchozí', nextPage: 'Další',
+  dataTable: 'Datová tabulka', dataList: 'Záznamy', dataLoading: 'Načítání…', dataEmpty: 'Žádné záznamy.', dataError: 'Záznamy se nepodařilo načíst.', dataCount: 'Záznamů: {count}', retry: 'Zkusit znovu',
   clear: 'Vymazat', hours: 'Hodiny', minutes: 'Minuty', seconds: 'Sekundy',
   selection: 'Výběr', openSelection: 'Otevřít výběr: {label}', selectPlaceholder: 'Vyber možnost',
   showPassword: 'Zobrazit heslo', hidePassword: 'Skrýt heslo', closeFlash: 'Zavřít oznámení',

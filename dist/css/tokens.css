@@ -46,6 +46,8 @@
     --p-backdrop: rgb(0 0 0 / .5);
     --p-time-list-height: 10rem;
     --p-picker-width: 18rem;
+    --p-table-cell-min: 8rem;
+    --p-list-columns: 3;
     --p-radius: .5rem;
     --p-radius-sm: .375rem;
     --p-container: 72rem;

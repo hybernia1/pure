@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pure — záložky</title>
+  <link rel="stylesheet" href="../dist/css/tokens.css"><link rel="stylesheet" href="../dist/css/base.css"><link rel="stylesheet" href="../dist/css/components.css"><link rel="stylesheet" href="../dist/css/utilities.css">
+</head>
+<body>
+<main class="container py-6">
+  <a href="index.html">← Pure</a>
+  <h1 class="text-2xl mt-4 mb-2">Záložkový obsah</h1>
+  <p class="text-subtle mb-4">Stejný modul na stránce i v modalu. Šipky mění záložku, Home a End přejdou na kraj. Obsah i hodnoty polí zůstávají zachované.</p>
+  <section class="tabs" data-tabs id="page-tabs">
+    <div class="tabs-list" data-tab-list aria-label="Profil uživatele">
+      <button type="button" data-tab="overview">Přehled</button>
+      <button type="button" data-tab="settings">Nastavení</button>
+      <button type="button" data-tab="history">Historie</button>
+      <button type="button" data-tab="billing" disabled>Fakturace</button>
+    </div>
+    <div class="tabs-panel" data-tab-panel="overview"><h2 class="text-xl mb-2">Přehled</h2><p>Panely jsou běžný obsah stránky. Mohou obsahovat formuláře, seznamy, tabulky i další moduly.</p></div>
+    <div class="tabs-panel" data-tab-panel="settings"><h2 class="text-xl mb-2">Nastavení</h2><label>Jméno<input class="input" value="Anna" autocomplete="given-name"></label></div>
+    <div class="tabs-panel" data-tab-panel="history"><h2 class="text-xl mb-2">Historie</h2><p>Pro drahé načítání lze použít ruční aktivaci: šipky pouze přesunou focus a Enter nebo mezerník otevře obsah.</p></div>
+    <div class="tabs-panel" data-tab-panel="billing"><p>Fakturace není dostupná.</p></div>
+  </section>
+  <button type="button" class="button mt-4" id="open-tabs-modal">Otevřít modal se záložkami</button>
+  <p id="tabs-status" class="text-sm mt-2" role="status">Načítání…</p>
+  <dialog class="modal" id="tabs-modal" aria-labelledby="modal-title">
+    <header class="modal-header"><h2 class="text-xl" id="modal-title">Nastavení profilu</h2><button type="button" data-modal-close aria-label="Zavřít dialog"></button></header>
+    <div class="modal-body">
+      <div class="tabs" data-tabs id="modal-tabs">
+        <div class="tabs-list" data-tab-list aria-label="Nastavení v modalu">
+          <button type="button" data-tab="account">Účet</button><button type="button" data-tab="privacy">Soukromí</button>
+        </div>
+        <div class="tabs-panel" data-tab-panel="account"><label>E-mail<input type="email" class="input" value="anna@example.cz" autocomplete="email"></label></div>
+        <div class="tabs-panel" data-tab-panel="privacy"><label><input type="checkbox"> Zobrazit veřejný profil</label></div>
+      </div>
+    </div>
+    <footer class="modal-actions"><button type="button" class="button button-outline" data-modal-close="done">Hotovo</button></footer>
+  </dialog>
+</main>
+<script type="module" src="tabs.js"></script>
+</body>
+</html>

@@ -3,6 +3,11 @@ export { configurePure, getPureConfig } from './config.js';
 import { ensureStyles } from './styles.js';
 
 const modules = {
+  tabs: [() => import('./tabs.js'), ['tabs']],
+  data: [() => import('./data.js'), []],
+  table: [() => import('./table.js'), ['data']],
+  list: [() => import('./list.js'), ['data']],
+  pagination: [() => import('./pagination.js'), ['data']],
   theme: [() => import('./theme.js'), ['tokens']],
   disclosure: [() => import('./disclosure.js'), []],
   ajax: [() => import('./ajax.js'), []],

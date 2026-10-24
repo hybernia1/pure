@@ -15,7 +15,7 @@ button.addEventListener('click', async () => {
 
 `loadComponent(name, { document, styles = true })` vrací Promise s původním ESM modulem. Při výchozím nastavení je CSS před resolve připravené. Současné/opakované požadavky sdílejí nativní ESM cache a CSS linky; neprovádí se nová inicializace komponenty. Jména jsou explicitní, nejde o loader libovolných cest.
 
-Podporované komponenty: `theme`, `disclosure`, `ajax`, `forms`, `select`, `picker`, `modal`, `upload`, `resize`, `editor`, `media-library`, `search`, `flash`, `activity`, `progress`, `drag-drop`.
+Podporované komponenty: `theme`, `disclosure`, `ajax`, `forms`, `select`, `picker`, `modal`, `upload`, `resize`, `editor`, `media-library`, `search`, `flash`, `activity`, `progress`, `drag-drop`, `data`, `table`, `list`, `pagination`, `tabs`. [Datové pohledy](data.md) sdílejí `data.css`; samotný controller `data` nevyžaduje CSS ani DOM.
 
 AJAX načte HTML sanitizer až při `loader.load(url, { format: 'html' })`. Obyčejný request pro JSON/text jej nepotřebuje. Po asynchronním importu znovu kontroluje aktuálnost požadavku; pozdní výsledek nepřepíše novější obsah. Validace souborů je oddělená od upload UI, knihovna médií proto nemusí kvůli validaci načítat createUpload.
 

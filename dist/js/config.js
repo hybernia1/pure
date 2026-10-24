@@ -6,6 +6,8 @@ const defaults = {
   upload: { accept: '', maxFiles: Infinity, maxSize: Infinity },
   editor: { features: { headings: false, images: false, fullscreen: true }, uploadImage: null, mediaLibrary: null },
   mediaLibrary: { pageSize: 12 }, flash: { duration: 0 }, modal: { closeOnBackdrop: true },
+  data: { pageSize: 20 }, pagination: { siblings: 1 },
+  tabs: { activation: 'auto', orientation: 'horizontal' },
 };
 const object = value => value !== null && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype;
 const copy = value => object(value) ? Object.fromEntries(Object.entries(value).map(([key, item]) => [key, copy(item)])) : value;
@@ -36,12 +38,14 @@ function validate(patch, schema = defaults, path = '') {
 export function configurePure(patch) {
   validate(patch);
   const next = merge(configuration, patch);
+  if (!['auto', 'manual'].includes(next.tabs.activation) || !['horizontal', 'vertical'].includes(next.tabs.orientation)) throw new TypeError('Invalid tabs defaults.');
   if (!['system', 'light', 'dark'].includes(next.theme.default)) throw new TypeError('Invalid theme.default');
   if (!next.theme.storageKey || !next.iconsUrl || !next.styles.baseUrl) throw new TypeError('Asset URLs and storageKey must not be empty.');
   if (next.locale !== 'auto') new Intl.DateTimeFormat(next.locale);
-  for (const [value, min, integer] of [[next.search.delay, 0, false], [next.search.minLength, 0, true], [next.search.limit, 1, true], [next.mediaLibrary.pageSize, 1, true], [next.flash.duration, 0, false]]) {
+  for (const [value, min, integer] of [[next.search.delay, 0, false], [next.search.minLength, 0, true], [next.search.limit, 1, true], [next.mediaLibrary.pageSize, 1, true], [next.flash.duration, 0, false], [next.data.pageSize, 1, true], [next.pagination.siblings, 0, true]]) {
     if (!Number.isFinite(value) || value < min || (integer && !Number.isInteger(value))) throw new TypeError('Invalid numeric Pure option.');
   }
+  if (next.pagination.siblings > 10 || !Number.isSafeInteger(next.data.pageSize)) throw new TypeError('Invalid pagination defaults.');
   if (!(next.upload.maxSize > 0) || !(next.upload.maxFiles > 0) || (next.upload.maxFiles !== Infinity && !Number.isInteger(next.upload.maxFiles))) throw new TypeError('Invalid upload limits.');
   // Resolve relative assets once, so lazy operations keep the same base.
   const base = globalThis.document?.baseURI || import.meta.url;

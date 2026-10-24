@@ -1,5 +1,9 @@
 # Pure
 
+[Záložkový obsah](docs/tabs.md) funguje na stránce i v modalu, s klávesnicí, ruční/automatickou aktivací a vnořením. [Ukázka](examples/tabs.html).
+
+[Tabulky, seznamy a stránkování](docs/data.md) sdílejí datový controller, AJAX, řazení a filtr. Responzivní tabulka podporuje mobilní bloky nebo vodorovný posun; [živá ukázka](examples/data.html).
+
 [Globální konfigurace](docs/configuration.md): jazyk a překlady, ikony, načítání CSS, téma a výchozí volby komponent přes lehké `configurePure()`. Lokální nastavení instance má přednost.
 
 [Načítání podle potřeby](docs/distribution.md): lehký `@pure-ui/core/lazy` načte komponentu i CSS. Editor své modaly, upload a knihovnu načítá až při použití. [Ukázka po kliknutí](examples/lazy.html), [síťové testy](test/lazy.html). JSON API zůstává synchronní; pro připravenost UI použij `await editor.ready`, pro dialog `await editor.openDialog('image')` a pro fullscreen `await editor.command('fullscreen')`.
