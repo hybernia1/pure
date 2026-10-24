@@ -1,0 +1,16 @@
+@layer components {
+  .tabs { min-width: 0; }
+  .tabs-list { display: flex; gap: var(--p-space-1); max-width: 100%; overflow-x: auto; border-bottom: 1px solid var(--p-border); }
+  .tabs-list > [data-tab] { flex: 0 0 auto; padding: var(--p-control-py) var(--p-control-px); min-height: var(--p-control-height); border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--p-subtle); font: inherit; white-space: nowrap; }
+  .tabs-list > [data-tab]:hover:not(:disabled) { background: var(--p-muted); color: var(--p-text); }
+  .tabs-list > [data-tab][aria-selected="true"] { border-bottom-color: var(--p-action); color: var(--p-text); }
+  .tabs-list > [data-tab]:focus-visible { outline-offset: -2px; }
+  .tabs-panel { padding-block: var(--p-space-3); min-width: 0; overflow-wrap: anywhere; }
+  .tabs[data-tabs-orientation="vertical"] { display: grid; gap: var(--p-space-2); }
+  .tabs[data-tabs-orientation="vertical"] > .tabs-list { flex-direction: column; border-bottom: 0; border-inline-end: 1px solid var(--p-border); }
+  .tabs[data-tabs-orientation="vertical"] > .tabs-list > [data-tab] { text-align: start; border-bottom: 0; border-inline-end: 2px solid transparent; }
+  .tabs[data-tabs-orientation="vertical"] > .tabs-list > [aria-selected="true"] { border-inline-end-color: var(--p-action); }
+  @media (min-width: 960px) {
+    .tabs[data-tabs-orientation="vertical"] { grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); }
+  }
+}

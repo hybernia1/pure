@@ -1,0 +1,1 @@
+@layer components{.search-panel{max-height:min(var(--p-search-height),var(--p-search-available, 100dvh))}.search-panel .control-option{cursor:pointer}.search input::-webkit-search-cancel-button,.search input::-webkit-search-decoration{-webkit-appearance:none}.search-status:empty{display:none}.search-status{display:block;margin-top:var(--p-space-1)}}

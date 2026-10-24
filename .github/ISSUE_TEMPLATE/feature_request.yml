@@ -1,0 +1,10 @@
+name: Feature request
+description: Propose a focused improvement
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: Use case and proposed behavior
+      description: Explain the task, existing limitations and a small example.
+    validations:
+      required: true

@@ -5,6 +5,25 @@ import { editorStats } from '../src/js/editor-stats.js';
 import { editorI18n, editorLocales } from '../src/js/editor-i18n.js';
 import { normalizeMedia } from '../src/js/media-library.js';
 
+test('selection marks keep UTF-16 offsets and skip row separators and images', () => {
+  const value = normalizeDocument({ version: 1, blocks: [
+    { type: 'paragraph', children: [{ text: 'A😀', bold: true, link: '/a', color: 'blue' }] },
+    { type: 'list', style: 'bullet', items: [{ children: [{ text: 'B', bold: true, link: '/a' }] }, { children: [{ text: 'C', italic: true }] }] },
+    { type: 'image', src: '/image.svg', alt: '' },
+    { type: 'paragraph', children: [{ text: 'D', bold: true }] },
+  ] });
+  assert.equal(documentText(value), 'A😀\nB\nC\n\ufffc\nD');
+  assert.deepEqual(selectionMarks(value, 1, 2), { bold: true, color: 'blue', link: '/a' });
+  assert.deepEqual(selectionMarks(value, 3, 4), {});
+  assert.deepEqual(selectionMarks(value, 0, 5), { bold: true, link: '/a' });
+  assert.deepEqual(selectionMarks(value, 4, 7), {});
+  assert.deepEqual(selectionMarks(value, 8, 9), {});
+  assert.deepEqual(selectionMarks(value, 9), {});
+  assert.deepEqual(selectionMarks(value, 10), {});
+  assert.deepEqual(selectionMarks(value, 11), { bold: true });
+  assert.deepEqual(selectionMarks(value, 8, 11), { bold: true });
+});
+
 test('underline and strike combine with italic, preserve offsets and normalize boolean marks',()=>{
   const input=normalizeDocument({version:1,blocks:[{type:'paragraph',children:[{text:'Hello world',italic:true}]}]});
   let value=formatText(input,0,5,'underline',true);value=formatText(value,0,5,'strike',true);

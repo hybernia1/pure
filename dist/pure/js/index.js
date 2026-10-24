@@ -33,3 +33,4 @@ export { editorLocales } from './editor-i18n.js';
 export { editorStats } from './editor-stats.js';
 export { setList } from './editor-model.js';
 export { loadComponent, ensureStyles } from './lazy.js';
+export { getPreloadUrls, preloadComponents } from './preload.js';

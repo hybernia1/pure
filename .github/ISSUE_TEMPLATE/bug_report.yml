@@ -1,0 +1,17 @@
+name: Bug report
+description: Report a reproducible Pure issue
+body:
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Minimal HTML/JS or a public reproduction, expected behavior and actual result.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Version, profile and browser
+      placeholder: v1.4.0, pure.min/compact, Chrome on Windows
+    validations:
+      required: true

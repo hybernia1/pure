@@ -1,0 +1,95 @@
+{
+  "version": "1.4.0",
+  "scope": "Static JavaScript closure only. Per-file compression sums, not HTTP transfer. Excludes CSS, icons, app, loader, manifest and dynamic addons. Node zlib defaults.",
+  "entries": {
+    "esm:editor": {
+      "files": 10,
+      "bytes": 57288,
+      "gzipBytes": 22979,
+      "brotliBytes": 20453,
+      "paths": [
+        "js/editor.js",
+        "js/config.js",
+        "js/colors.js",
+        "js/url.js",
+        "js/editor-model.js",
+        "js/drag-drop.js",
+        "js/editor-i18n.js",
+        "js/editor-stats.js",
+        "js/media.js",
+        "js/styles.js"
+      ]
+    },
+    "esm:editor+modal+tabs+flash+select": {
+      "files": 17,
+      "bytes": 79529,
+      "gzipBytes": 33262,
+      "brotliBytes": 29426,
+      "paths": [
+        "js/editor.js",
+        "js/config.js",
+        "js/colors.js",
+        "js/url.js",
+        "js/editor-model.js",
+        "js/drag-drop.js",
+        "js/editor-i18n.js",
+        "js/editor-stats.js",
+        "js/media.js",
+        "js/styles.js",
+        "js/modal.js",
+        "js/controls.js",
+        "js/i18n.js",
+        "js/tabs.js",
+        "js/flash.js",
+        "js/states.js",
+        "js/select.js"
+      ]
+    },
+    "compact:editor": {
+      "files": 10,
+      "bytes": 56639,
+      "gzipBytes": 22490,
+      "brotliBytes": 20244,
+      "paths": [
+        "js/editor.js",
+        "js/chunk-BNLQISJQ.js",
+        "js/chunk-TAKZ3HSB.js",
+        "js/chunk-TAXUREHC.js",
+        "js/chunk-EI7MMDWY.js",
+        "js/chunk-HHBK3SXO.js",
+        "js/chunk-P4VPQJ3I.js",
+        "js/chunk-7AEY53OK.js",
+        "js/chunk-KKLSZRM3.js",
+        "js/chunk-M3FBNPEX.js"
+      ]
+    },
+    "compact:editor+modal+tabs+flash+select": {
+      "files": 20,
+      "bytes": 79272,
+      "gzipBytes": 32914,
+      "brotliBytes": 29519,
+      "paths": [
+        "js/editor.js",
+        "js/chunk-BNLQISJQ.js",
+        "js/chunk-TAKZ3HSB.js",
+        "js/chunk-TAXUREHC.js",
+        "js/chunk-EI7MMDWY.js",
+        "js/chunk-HHBK3SXO.js",
+        "js/chunk-P4VPQJ3I.js",
+        "js/chunk-7AEY53OK.js",
+        "js/chunk-KKLSZRM3.js",
+        "js/chunk-M3FBNPEX.js",
+        "js/modal-JVTNLKEU.js",
+        "js/chunk-4643L2DB.js",
+        "js/chunk-NAGV2BYI.js",
+        "js/chunk-CTAGR422.js",
+        "js/tabs-QM2ASHYX.js",
+        "js/chunk-3FSEBHNP.js",
+        "js/flash-E3RIRCNV.js",
+        "js/chunk-PICOWYQ6.js",
+        "js/chunk-G7JWDZEP.js",
+        "js/select-L4SDXLRR.js"
+      ]
+    }
+  }
+}

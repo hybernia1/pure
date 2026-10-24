@@ -2,7 +2,7 @@ import { readdir, readFile, access } from 'node:fs/promises';
 import { resolve, dirname, relative } from 'node:path';
 
 const root = resolve('.');
-const paths = ['README.md', 'AGENTS.md', ...(await readdir('docs')).filter(name => name.endsWith('.md')).map(name => `docs/${name}`)];
+const paths = ['README.md', 'AGENTS.md', 'CONTRIBUTING.md', 'CHANGELOG.md', ...(await readdir('docs', { recursive: true })).filter(name => name.endsWith('.md')).map(name => `docs/${name}`)];
 let links = 0;
 for (const path of paths) {
   const text = (await readFile(path, 'utf8')).replace(/```[^\n]*\n[\s\S]*?```/g, '');

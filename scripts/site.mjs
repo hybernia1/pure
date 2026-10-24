@@ -1,0 +1,4 @@
+import {cp,mkdir,writeFile} from 'node:fs/promises';
+await mkdir('.site',{recursive:true});
+for(const dir of ['dist','examples','test','docs'])await cp(dir,`.site/${dir}`,{recursive:true});
+await writeFile('.site/index.html','<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pure UI</title><link rel="stylesheet" href="dist/pure.min/pure.css"><main class="container py-6"><h1>Pure</h1><p>Modular CSS, JavaScript and SVG. No runtime dependencies.</p><p><a href="examples/index.html">UI examples</a>  |  <a href="examples/compact.html">Compact editor</a>  |  <a href="examples/forms.html">Forms</a>  |  <a href="examples/data.html">Data</a></p><p><a href="test/compact.html?min">Compact integration checks</a>  |  <a href="https://github.com/hybernia1/pure#readme">Documentation and measurements</a>  |  <a href="https://github.com/hybernia1/pure/releases/latest">Download</a></p></main></html>');

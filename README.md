@@ -1,10 +1,14 @@
 # Pure
 
+[![CI](https://github.com/hybernia1/pure/actions/workflows/ci.yml/badge.svg)](https://github.com/hybernia1/pure/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/hybernia1/pure)](https://github.com/hybernia1/pure/releases/latest) [![MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
+[Live examples](https://hybernia1.github.io/pure/) - [Releases](https://github.com/hybernia1/pure/releases) - [Contributing](CONTRIBUTING.md) - [Issues](https://github.com/hybernia1/pure/issues)
+
 A compact, modular CSS, JavaScript and SVG framework. Tailwind-style utilities, neutral colors, explicit initialization and no runtime dependencies.
 
 ## Use in your project - no Node.js required
 
-Download the [v1.3.1 source archive](https://github.com/hybernia1/pure/archive/refs/tags/v1.3.1.zip) and copy `dist/pure.min/` (minified) or `dist/pure/` (readable) into your project. The files are already built: **no Node.js, npm, bundler or build step is required to use Pure**.
+Download the [v1.4.0 minified files](https://github.com/hybernia1/pure/releases/download/v1.4.0/pure-1.4.0.min.zip), [readable files](https://github.com/hybernia1/pure/releases/download/v1.4.0/pure-1.4.0.zip) or [source archive](https://github.com/hybernia1/pure/archive/refs/tags/v1.4.0.zip) and copy `dist/pure.min/` (minified) or `dist/pure/` (readable) into your project. The files are already built: **no Node.js, npm, bundler or build step is required to use Pure**.
 
 Serve the files through your existing HTTP server (for example Apache, Nginx or your application's server). Pure's CSS and JavaScript run in the browser; ES modules and the external SVG sprite should be served over HTTP rather than opened through `file://`. The example paths below assume you copied the selected tree to `/assets/pure/`.
 
@@ -25,7 +29,7 @@ dist/
   pure.min/   minified CSS, ES modules and icons.svg
 ```
 
-Both directories are self-contained. Production output has no source maps. Keep the selected directory structure when deploying; lazy imports, styles and icons resolve relative to it.
+Both directories are self-contained. Each also includes an optional self-contained `compact/` profile with bundled, split ES modules. The original ESM profile remains the default; compact is an alternative, not a guaranteed reduction in request count. Choose one JavaScript profile per page. Production output has no source maps. Keep the selected directory structure when deploying; lazy imports, styles and icons resolve relative to it.
 
 ```js
 import { loadComponent } from '/assets/pure/js/lazy.js';
@@ -38,9 +42,34 @@ Use a textarea as the editor source and put JavaScript imports inside a `<script
 
 Package exports such as `@pure-ui/core/lazy`, `@pure-ui/core/min/lazy` and `@pure-ui/core/css/tokens.css` work when the package is installed locally or from Git. The package is currently private to prevent accidental npm publication; this GitHub repository is the distribution source.
 
+## Performance and verification
+
+Version 1.4.0 includes incremental editor work, generated preload manifests and an optional compact delivery profile. The selected local formatting task improved from **18.2 ms to 12.7 ms** for 1,000 paragraphs, about 30%. Quill remained faster in that task.
+
+| Desktop formatting task | 100 paragraphs | 1,000 paragraphs |
+| --- | ---: | ---: |
+| Pure 1.3.1 | 2.7 ms | 18.2 ms |
+| Pure optimized, included in 1.4.0 | 2.3 ms | 12.7 ms |
+| Bootstrap 5.3.8 + Quill 2.0.3 | 2.1 ms | 9.4 ms |
+| Tailwind 4.3.3 + Quill 2.0.3 | 2.1 ms | 9.6 ms |
+
+Medians of five run medians, 800 measured bold toggles overall, foreground Chrome with CPU 1x. This times synchronous editor API work after initialization, not page loading, native typing or INP. Bootstrap and Tailwind supply styling; Quill supplies their editor. These development lab results do not establish a universal framework winner.
+
+The minified editor static JavaScript graph is **22,979 B gzip** in original ESM and **22,490 B gzip** in compact, excluding CSS, icons, loaders and optional addons. Compact does not always reduce request count or Brotli size. See the [methodology, raw samples, graph sizes and limitations](docs/benchmarks/README.md). Reproduce build sizes with `node scripts/distribution-metrics.mjs` after building.
+
+**63 Node tests**, generated-output verification and documentation-link checks run in CI on Node 22/24. Browser UI checks run manually in Chrome, including both compact variants; they are not cross-browser CI results. The [release checklist](docs/releasing.md) describes coverage.
+
+Preload hints are opt-in and do not initialize components. Generate HTML hints from the exact built graph:
+
+```sh
+npm run --silent preload -- --compact --base=/assets/pure/ editor modal tabs flash select
+```
+
+This assumes the contents of `dist/pure.min/compact/` are deployed at `/assets/pure/`. Keep hints and files from the same release. [Distribution guide](docs/distribution.md) - [compact example](examples/compact.html).
+
 ## Features
 
-Next development additions: [WordPress-style post tags](docs/tag-picker.md), [optional browser image preparation](docs/image-preparation.md) and token-based `sticky top-*` / `dt:sticky` utilities. [Runnable example](examples/enhancements.html).
+Included optional modules: [WordPress-style post tags](docs/tag-picker.md), [optional browser image preparation](docs/image-preparation.md) and token-based `sticky top-*` / `dt:sticky` utilities. [Runnable example](examples/enhancements.html).
 
 - Two layout viewports: mobile by default, desktop at 960px with `dt:` utilities.
 - CSS tokens for compact spacing, dimensions, colors and custom light/dark schemes; no box shadows.
@@ -53,7 +82,7 @@ Next development additions: [WordPress-style post tags](docs/tag-picker.md), [op
 
 ## Documentation
 
-New optional modules: [SVG charts](docs/chart.md) and the [JSON content renderer](docs/renderer.md). Try the [combined example](examples/content-chart.html) or [browser checks](test/content-chart.html); both support `?min`.
+Optional modules: [SVG charts](docs/chart.md) and the [JSON content renderer](docs/renderer.md). Try the [combined example](examples/content-chart.html) or [browser checks](test/content-chart.html); both support `?min`.
 
 [Segmented controls](docs/segmented.md) provide compact native radio groups without JavaScript.
 
@@ -93,6 +122,7 @@ Open http://localhost:3000 for local examples. To rebuild and verify changes:
 npm test
 npm run build
 npm run check:dist
+npm run check:docs
 npm run audit:size
 npm run bench
 ```

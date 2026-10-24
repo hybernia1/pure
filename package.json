@@ -1,6 +1,6 @@
 {
   "name": "@pure-ui/core",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "private": true,
   "license": "MIT",
   "author": "hybernia1",
@@ -8,7 +8,7 @@
     "type": "git",
     "url": "git+https://github.com/hybernia1/pure.git"
   },
-  "homepage": "https://github.com/hybernia1/pure#readme",
+  "homepage": "https://hybernia1.github.io/pure/",
   "bugs": {
     "url": "https://github.com/hybernia1/pure/issues"
   },
@@ -36,18 +36,33 @@
     "./js/*": "./dist/pure/js/*",
     "./css/*": "./dist/pure/css/*",
     "./pure.css": "./dist/pure/pure.css",
-    "./icons.svg": "./dist/pure/icons.svg"
+    "./icons.svg": "./dist/pure/icons.svg",
+    "./compact/editor": "./dist/pure/compact/js/editor.js",
+    "./compact/ui": "./dist/pure/compact/js/ui.js",
+    "./compact/lazy": "./dist/pure/compact/js/lazy.js",
+    "./compact/preload": "./dist/pure/compact/js/preload.js",
+    "./compact/preload-manifest": "./dist/pure/compact/js/preload-manifest.js",
+    "./preload": "./dist/pure/js/preload.js",
+    "./preload-manifest": "./dist/pure/js/preload-manifest.js",
+    "./min/compact/editor": "./dist/pure.min/compact/js/editor.js",
+    "./min/compact/ui": "./dist/pure.min/compact/js/ui.js",
+    "./min/compact/lazy": "./dist/pure.min/compact/js/lazy.js",
+    "./min/compact/preload": "./dist/pure.min/compact/js/preload.js",
+    "./min/compact/preload-manifest": "./dist/pure.min/compact/js/preload-manifest.js",
+    "./min/preload": "./dist/pure.min/js/preload.js",
+    "./min/preload-manifest": "./dist/pure.min/js/preload-manifest.js"
   },
   "description": "A compact, modular CSS, JavaScript and SVG framework with no runtime dependencies.",
   "scripts": {
     "build": "node scripts/build.mjs",
-    "test": "node --test test/core.test.js test/ajax.test.js test/upload.test.js test/editor-model.test.js test/calendar.test.js test/image-upload.test.js test/lazy.test.js test/config.test.js test/data.test.js test/image.test.js test/chart-renderer.test.js test/flash.test.js test/modal.test.js",
+    "test": "node --test test/core.test.js test/ajax.test.js test/upload.test.js test/editor-model.test.js test/calendar.test.js test/image-upload.test.js test/lazy.test.js test/config.test.js test/data.test.js test/image.test.js test/chart-renderer.test.js test/flash.test.js test/modal.test.js test/preload.test.js",
     "dev": "node scripts/serve.mjs",
     "audit:size": "node scripts/audit.mjs",
     "bench": "node scripts/benchmark.mjs",
     "check:dist": "node scripts/check-dist.mjs",
     "check:docs": "node scripts/check-docs.mjs",
-    "prepack": "npm run build && npm run check:dist"
+    "prepack": "npm run build && npm run check:dist",
+    "preload": "node scripts/preload.mjs"
   },
   "devDependencies": {
     "esbuild": "0.28.2"

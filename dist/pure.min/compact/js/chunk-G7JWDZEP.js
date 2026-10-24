@@ -1,0 +1,1 @@
+import{a as r}from"./chunk-EI7MMDWY.js";var t=Object.freeze(["error","success","info"]);function n(e){if(!t.includes(e))throw new TypeError(`Nezn\xE1m\xFD stav: ${e}`);return e}r(n,"assertState");export{n as a};

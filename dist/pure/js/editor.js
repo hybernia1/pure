@@ -9,6 +9,15 @@ import { normalizeMedia } from './media.js';
 import { ensureStyles } from './styles.js';
 let editorId = 0;
 
+// Compare canonical model fields without allocating JSON strings while rendering.
+const sameRuns = (left, right) => left === right || left.length === right.length && left.every((run, index) => {
+  const other = right[index];
+  return run.text === other.text && run.bold === other.bold && run.italic === other.italic &&
+    run.underline === other.underline && run.strike === other.strike && run.link === other.link && run.color === other.color;
+});
+const sameImage = (left, right) => left.src === right.src && left.mediaId === right.mediaId &&
+  left.alt === right.alt && left.caption === right.caption && left.width === right.width && left.align === right.align;
+
 export function createEditor(source, options = {}) {
   let {
     label,
@@ -41,8 +50,14 @@ export function createEditor(source, options = {}) {
   if (source.getAttribute('aria-describedby')) content.setAttribute('aria-describedby', source.getAttribute('aria-describedby'));
   const hint = node('span', 'sr-only'); hint.setAttribute('role', 'status');
   const footer = node('div', 'editor-footer'); footer.setAttribute('role', 'group'); footer.setAttribute('aria-label', t('statistics'));
+  let statistics;
   const updateStats = () => {
-    const stats = editorStats(value, language); footer.replaceChildren();
+    const text = documentText(value);
+    const blocks = value.blocks.length;
+    const images = value.blocks.reduce((count, block) => count + Number(block.type === 'image'), 0);
+    if (statistics && statistics.text === text && statistics.blocks === blocks && statistics.images === images) return;
+    const words = statistics?.text === text ? statistics.words : editorStats(value, language).words;
+    const stats = { text, blocks, images, words }; statistics = stats; footer.replaceChildren();
     for (const key of ['blocks', 'words', 'images']) { const count = node('span'); count.dataset.editorCount = key; count.textContent = t(key, { count: stats[key] }); footer.append(count); }
   };
   const instance = ++editorId;
@@ -51,6 +66,7 @@ export function createEditor(source, options = {}) {
   let history = []; let position = -1; let resetTimer; let dragDrop; let library; let pickedMedia = null;
   let openSequence = 0; const dialogTasks = new Map();
   let selectTask; let resizeTask; let resizeFactory; let fullscreenTask;
+  let activeBlockElement;
   const buttons = new Map(); const listeners = [];
   let colorPicker; let colorSummary;
   const imageResizers = new Map();
@@ -66,14 +82,18 @@ export function createEditor(source, options = {}) {
   const active = () => selectionMarks(value, selected.from, selected.to);
   const updateToolbar = () => {
     const activeBlock = blockAt(value, selected.from).index;
-    [...content.querySelectorAll('[data-editor-block]')].forEach((block, index) => block.toggleAttribute('data-active', index === activeBlock));
+    const activeElement = content.children[activeBlock];
+    if (activeBlockElement !== activeElement) {
+      activeBlockElement?.removeAttribute('data-active');
+      activeElement?.setAttribute('data-active', ''); activeBlockElement = activeElement;
+    }
     const marks = selected.from === selected.to ? pending : active();
     if (colorSummary) {
       colorSummary.style.color = marks.color ? `var(--p-${marks.color}, var(--p-text))` : '';
       for (const button of colorPicker.querySelectorAll('[data-editor-color]')) button.setAttribute('aria-pressed', String((marks.color || '') === button.dataset.editorColor));
     }
     for (const name of ['bold', 'italic', 'underline', 'strike', 'link']) buttons.get(name)?.setAttribute('aria-pressed', String(Boolean(marks[name])));
-    const first = blockAt(value, selected.from).index; const last = blockAt(value, Math.max(selected.from, selected.to - 1)).index;
+    const first = activeBlock; const last = blockAt(value, Math.max(selected.from, selected.to - 1)).index;
     const selectedBlocks = value.blocks.slice(first, last + 1).filter(block => block.type !== 'image');
     for (const style of ['bullet', 'ordered']) buttons.get(`${style}List`)?.setAttribute('aria-pressed', String(Boolean(selectedBlocks.length) && selectedBlocks.every(block => block.type === 'list' && block.style === style)));
     let offset = 0; let anyLink = false;
@@ -126,17 +146,17 @@ export function createEditor(source, options = {}) {
     if (previous && previous.blocks.length === value.blocks.length && value.blocks.every((block, index) => {
       const old = previous.blocks[index];
       return block.type === old.type && block.level === old.level && block.style === old.style &&
-        (block.type === 'image' ? JSON.stringify(block) === JSON.stringify(old) : block.type !== 'list' || block.items.length === old.items.length);
+        (block.type === 'image' ? sameImage(block, old) : block.type !== 'list' || block.items.length === old.items.length);
     })) {
       value.blocks.forEach((block, index) => {
         if (block.type === 'image') return;
         const old = previous.blocks[index];
-        if (JSON.stringify(block) === JSON.stringify(old)) return;
         const rows = block.type === 'list' ? block.items : [block];
         const oldRows = block.type === 'list' ? old.items : [old];
-        const elements = content.children[index].querySelectorAll('[data-editor-text]');
+        let elements;
         rows.forEach((row, item) => {
-          if (JSON.stringify(row.children) === JSON.stringify(oldRows[item].children)) return;
+          if (sameRuns(row.children, oldRows[item].children)) return;
+          elements ??= content.children[index].querySelectorAll('[data-editor-text]');
           elements[item].replaceChildren(); appendText(elements[item], row.children);
         });
       });
@@ -296,13 +316,15 @@ export function createEditor(source, options = {}) {
     }
     updateToolbar();
   };
-  const commit = (next, nextSelection = selected) => {
-    const previous = value; value = normalizeDocument(next); selected = nextSelection; render(previous); restore(); record();
+  // Model operations already return a validated, detached canonical document.
+  const commitModel = (next, nextSelection = selected) => {
+    const previous = value; value = next; selected = nextSelection; render(previous); restore(); record();
   };
+  const commit = (next, nextSelection) => commitModel(normalizeDocument(next), nextSelection);
   const insert = text => {
     const from = selected.from;
     const normalized = text.replace(/\r\n?/g, '\n');
-    commit(replaceText(value, from, selected.to, normalized, pending), { from: from + normalized.length, to: from + normalized.length });
+    commitModel(replaceText(value, from, selected.to, normalized, pending), { from: from + normalized.length, to: from + normalized.length });
   };
   const travel = delta => {
     if (position + delta < 0 || position + delta >= history.length) return false;
@@ -352,13 +374,13 @@ export function createEditor(source, options = {}) {
     }
     if (name === 'heading') {
       if (!enabled.headings) throw new Error('Nadpisy nejsou zapnuté.');
-      commit(setHeading(value, selected.from, selected.to, Number(setting))); return true;
+      commitModel(setHeading(value, selected.from, selected.to, Number(setting))); return true;
     }
     if (['list', 'bulletList', 'orderedList'].includes(name)) {
       if (!enabled.lists) return false;
       let style = name === 'list' ? setting : name === 'bulletList' ? 'bullet' : 'ordered';
       if (name !== 'list' && buttons.get(name)?.getAttribute('aria-pressed') === 'true') style = null;
-      commit(setList(value, selected.from, selected.to, style)); return true;
+      commitModel(setList(value, selected.from, selected.to, style)); return true;
     }
     if (name === 'fullscreen') {
       if (!enabled.fullscreen) return false;
@@ -392,13 +414,13 @@ export function createEditor(source, options = {}) {
       const linkRange = mark === 'link' ? currentLinkRange() : null;
       if (linkRange) {
         if (next) pending.link = next; else delete pending.link;
-        commit(formatText(value, linkRange.from, linkRange.to, 'link', next));
+        commitModel(formatText(value, linkRange.from, linkRange.to, 'link', next));
       }
       else if (mark === 'link' && next) { pending = { ...pending, link: next }; insert(next); delete pending.link; }
       else { if (next) pending[mark] = next; else delete pending[mark]; updateToolbar(); }
     } else {
       pending = { ...active() }; if (next) pending[mark] = next; else delete pending[mark];
-      commit(formatText(value, selected.from, selected.to, mark, next));
+      commitModel(formatText(value, selected.from, selected.to, mark, next));
     }
     hint.textContent = t('formatted'); return true;
   };
@@ -644,10 +666,10 @@ export function createEditor(source, options = {}) {
     if (event.inputType === 'insertText' && event.data !== null) { event.preventDefault(); insert(event.data); }
     else if (['insertParagraph', 'insertLineBreak'].includes(event.inputType)) {
       event.preventDefault(); const at = rowAt(value, selected.from);
-      if (selected.from === selected.to && at.row.type === 'list-item' && at.size === 0) commit(exitListItem(value, selected.from));
+      if (selected.from === selected.to && at.row.type === 'list-item' && at.size === 0) commitModel(exitListItem(value, selected.from));
       else insert('\n');
     }
-    else if (event.inputType === 'deleteContentBackward' && selected.from === selected.to && rowAt(value, selected.from).row.type === 'list-item' && rowAt(value, selected.from).start === selected.from) { event.preventDefault(); commit(exitListItem(value, selected.from)); }
+    else if (event.inputType === 'deleteContentBackward' && selected.from === selected.to && rowAt(value, selected.from).row.type === 'list-item' && rowAt(value, selected.from).start === selected.from) { event.preventDefault(); commitModel(exitListItem(value, selected.from)); }
     else if (['historyUndo', 'historyRedo', 'formatBold', 'formatItalic', 'formatUnderline', 'formatStrikeThrough'].includes(event.inputType)) {
       event.preventDefault(); command({ historyUndo: 'undo', historyRedo: 'redo', formatBold: 'bold', formatItalic: 'italic', formatUnderline: 'underline', formatStrikeThrough: 'strike' }[event.inputType]);
     }

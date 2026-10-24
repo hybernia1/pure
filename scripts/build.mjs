@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile, cp, rm, readdir } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { utilities } from './utilities.mjs';
 import { writeMinified } from './minify.mjs';
+import { buildProfiles } from './compact.mjs';
 
 const names = ['tokens', 'base', 'components', 'states', 'flash', 'editor', 'forms', 'controls', 'modal', 'upload', 'resize', 'activity', 'progress', 'search', 'tag-picker', 'drag-drop', 'media-library', 'data', 'tabs', 'navigation', 'chart', 'renderer', 'segmented', 'scrollbar', 'placeholder'];
 const parts = await Promise.all(names.map((name) => readFile(`src/css/${name}.css`, 'utf8')));
@@ -18,4 +19,5 @@ await cp('src/js', 'dist/pure/js', { recursive: true });
 await cp('src/icons.svg', 'dist/pure/icons.svg');
 const moduleFiles = await Promise.all(['js', 'css'].map(async directory => (await readdir(`dist/pure/${directory}`)).map(name => `${directory}/${name}`)));
 await writeMinified(['pure.css', 'icons.svg', ...moduleFiles.flat()]);
+await buildProfiles();
 console.log('Pure built -> dist/pure/ and dist/pure.min/');

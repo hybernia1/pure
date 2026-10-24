@@ -1,5 +1,37 @@
 # Distribution and on-demand loading
 
+## Optional compact profile
+
+Each tree includes `compact/` with its own `js/`, `css/`, `icons.svg` and `pure.css`. Copy that directory's contents to your asset root to use the alternative bundled ESM profile. `js/editor.js`, `js/ui.js` (modal, tabs, flash), `js/lazy.js` and `js/preload.js` are stable entry names. Other components are available through `loadComponent`; hashed files are implementation details. Deploy the entire profile atomically and never rename chunks. Optional editor dialogs, media and upload modules remain dynamic.
+
+Do not mix original and compact JavaScript graphs on one page: their configuration and registries are separate instances. Keep the original ESM profile for application bundlers or granular imports. Compact preserves shared module identity within its profile, but splitting can produce more files for some selections. [Measured graph sizes](benchmarks/README.md) show its modest compression savings and limitations. [Runnable example](../examples/compact.html).
+
+## Generated preload hints
+
+Both profiles include `js/preload-manifest.js`, exporting `{version: 1, components: {editor: ['js/editor.js', ...]}}` as `preloadManifest`. Paths cover static JavaScript dependencies, excluding CSS and dynamic addons. Manifests are generated from the build graph and must stay with their matching files.
+
+For hints early in the HTML head, insert this development command's output into your template:
+
+```sh
+npm run --silent preload -- --compact --base=/assets/pure/ editor modal tabs flash select
+```
+
+It defaults to minified output. Omit `--compact` for original ESM, add `--readable` for readable files. The base must end in `/` and point to the deployed contents of the selected profile. Node is needed to generate hints, never to serve them. Hints for application modules and the lazy entry itself remain the frontend's responsibility.
+
+For programmatic planning or opt-in runtime hints:
+
+```js
+import { preloadManifest } from '/assets/pure/js/preload-manifest.js';
+import { getPreloadUrls, preloadComponents } from '/assets/pure/js/preload.js';
+const options = { manifest: preloadManifest, baseUrl: '/assets/pure/' };
+const urls = getPreloadUrls(['editor', 'modal'], options);
+const links = preloadComponents(['editor', 'modal'], options);
+```
+
+`getPreloadUrls(names, options)` returns deduplicated absolute URLs without DOM effects. `preloadComponents` returns reused or newly inserted `link[rel=modulepreload]` nodes in the supplied `document` (default: global document). Names accept a string or array; invalid names/paths fail before insertion. The default base resolves beside the helper's profile root. An explicit relative base resolves against `document.baseURI`.
+
+Hints do not initialize UI, load CSS or promise readiness; continue to await `loadComponent` and `editor.ready`. Runtime hints start after the helper and manifest load; generated HTML hints are discovered earlier. Their benefit depends on the application's network/cache and needs measurement. Preloading every component defeats on-demand loading.
+
 ## Partial application CSS bundles
 
 Applications may concatenate the styles required by their initial layout and declare their exact contents:
@@ -15,7 +47,7 @@ Applications may concatenate the styles required by their initial layout and dec
 
 Using either prebuilt tree requires no Node.js, npm or build tool. Copy it into your application and serve it over HTTP using your existing web server. The Node commands below apply only when developing Pure or rebuilding its files.
 
-`npm ci` installs build tooling. `npm run build` generates two self-contained variants using esbuild transform API without bundling. There are no runtime dependencies. Minification preserves ESM exports, function names, object properties, dynamic imports and import.meta.url. JavaScript syntax targets ES2022 without polyfills; the SVG sprite is copied with symbol IDs intact.
+`npm ci` installs build tooling. `npm run build` generates two self-contained variants using esbuild transform for the original ESM profile and esbuild bundling/splitting for the optional compact profile. There are no runtime dependencies. Minification preserves ESM exports, function names, object properties, dynamic imports and import.meta.url. JavaScript syntax targets ES2022 without polyfills; the SVG sprite is copied with symbol IDs intact.
 
 ```text
 dist/

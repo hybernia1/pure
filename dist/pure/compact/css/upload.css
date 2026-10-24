@@ -1,0 +1,8 @@
+@layer components {
+  .upload { padding: var(--p-panel-padding); border: 1px dashed var(--p-border); border-radius: var(--p-radius); background: var(--p-surface); }
+  .upload[data-drag-active] { border-color: var(--p-focus); background: var(--p-muted); }
+  .upload-list { display: grid; gap: var(--p-space-2); padding: 0; margin: var(--p-space-2) 0 0; list-style: none; }
+  .upload-item { display: flex; align-items: center; gap: var(--p-space-2); min-width: 0; }
+  .upload-name { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: .875rem; }
+  .upload-preview { width: var(--p-upload-preview); height: var(--p-upload-preview); object-fit: cover; border: 1px solid var(--p-border); border-radius: var(--p-radius-sm); }
+}

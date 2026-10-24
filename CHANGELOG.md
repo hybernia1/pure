@@ -1,6 +1,17 @@
 # Changelog
 
-## Unreleased
+## 1.4.0 - 2026-10-24
+
+- Reduce repeated editor normalization, serialization, DOM queries and unchanged footer/active-block updates; preserve UTF-16 selection and JSON behavior.
+- Add optional self-contained compact ESM profiles without changing original module imports. Shared configuration and lazy editor addons are retained.
+- Generate per-component preload manifests, an opt-in browser helper and HTML hint CLI for both distribution profiles.
+- Verify generated compact files/manifests and add preload and editor rendering regressions.
+- Publish performance methodology, raw formatting samples and reproducible distribution graph sizes. Compact savings are workload dependent.
+- Add GitHub Pages examples, pinned CI actions, contribution instructions, issue/PR templates and release archives.
+
+## Earlier additions
+
+The following modules shipped before 1.4.0; historical version details are recorded in GitHub Releases.
 
 - Sticky positioning/inset utilities with desktop variants and shared tokens.
 - WordPress-style post tag picker with comma/Enter entry, removable tags, optional AJAX suggestions and native multiple-select FormData.

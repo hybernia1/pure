@@ -120,8 +120,22 @@ const bounds = (value, from, to) => {
 
 export function selectionMarks(value, from, to = from) {
   bounds(value, from, to);
-  const runs = stream(value);
-  const selected = slice(runs, from === to ? Math.max(0, from - 1) : from, from === to ? Math.max(1, from) : to).filter(run => run.text !== '\n' && !run.image);
+  const start = from === to ? Math.max(0, from - 1) : from;
+  const end = from === to ? Math.max(1, from) : to;
+  const selected = []; let offset = 0;
+  scan: for (const block of value.blocks) {
+    if (offset >= end) break;
+    if (block.type === 'image') { offset += 2; continue; }
+    for (const row of block.type === 'list' ? block.items : [block]) {
+      for (const run of row.children) {
+        if (offset >= end) break scan;
+        const next = offset + run.text.length;
+        if (run.text && next > start) selected.push(run);
+        offset = next;
+      }
+      offset++;
+    }
+  }
   if (!selected.length) return {};
   const marks = {};
   for (const mark of booleanMarks) if (selected.every(run => run[mark])) marks[mark] = true;

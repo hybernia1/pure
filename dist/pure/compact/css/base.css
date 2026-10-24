@@ -1,0 +1,18 @@
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: var(--p-bg); color: var(--p-text); font-family: var(--p-font); line-height: 1.6; }
+  h1, h2, h3, p { margin: 0; }
+  h1, h2, h3 { line-height: 1.15; font-weight: 600; letter-spacing: -.035em; }
+  a { color: inherit; text-underline-offset: .2em; }
+  button, input, select, textarea { font: inherit; }
+  button { cursor: pointer; }
+  button:disabled { cursor: not-allowed; opacity: .5; }
+  img, svg { vertical-align: middle; }
+  img { max-width: 100%; height: auto; }
+  :focus-visible { outline: 2px solid var(--p-focus); outline-offset: 4px; }
+  [hidden] { display: none !important; }
+  [aria-busy="true"] { cursor: progress; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  }
+}

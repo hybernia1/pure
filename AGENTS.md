@@ -2,7 +2,7 @@
 
 - Pure is a small CSS, JavaScript and SVG framework with no runtime dependencies. Keep it simple.
 - Edit sources in `src/`. Generate `dist/` with `npm run build`.
-- Build exactly two trees: readable `dist/pure/` and minified `dist/pure.min/`. Use esbuild transform API without bundling. Preserve ESM boundaries, relative imports, asset URLs and function names. Production output must have no source maps or sourceMappingURL comments. Never edit generated files manually. Browser tests accept `?min`.
+- Build exactly two trees: readable `dist/pure/` and minified `dist/pure.min/`. Preserve the original unbundled ESM files with esbuild transform. Each tree also has an optional self-contained `compact/` profile built with ESM splitting. Keep its chunks flat in `compact/js/` so asset URLs remain valid. Generate and verify preload manifests from the static dependency graph; optional dialogs/media remain dynamic. Preserve function names and public APIs. Production output must have no source maps or sourceMappingURL comments. Never edit generated files manually. Browser tests accept `?min`.
 - CSS layers are tokens, base, components, utilities. Components and JavaScript are optional.
 - Use two layout viewports only: mobile by default and desktop from 960px (`dt:`). Update the generator and documentation together if changing the breakpoint.
 - Use a neutral palette and semantic tokens. Support light and dark without duplicating components.

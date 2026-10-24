@@ -1,0 +1,9 @@
+<!doctype html><html lang="en" data-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pure compact editor</title><link rel="stylesheet" href="../dist/pure.min/compact/pure.css"></head><body><main class="container py-6"><h1>Pure compact profile</h1><p>Same editor APIs, compiled ESM entries and on-demand addons.</p><div class="field py-4"><label for="article">Article</label><textarea id="article"></textarea></div><button class="button" id="preview" type="button">Preview JSON</button><pre id="json"></pre><p><a href="https://github.com/hybernia1/pure/blob/main/docs/distribution.md">Distribution guide</a> · <a href="index.html">All examples</a></p></main><script type="module">
+import {preloadManifest} from '../dist/pure.min/compact/js/preload-manifest.js';
+import {preloadComponents} from '../dist/pure.min/compact/js/preload.js';
+import {loadComponent} from '../dist/pure.min/compact/js/lazy.js';
+preloadComponents(['editor','select','modal'],{manifest:preloadManifest});
+const {createEditor}=await loadComponent('editor');const editor=createEditor(document.querySelector('#article'),{features:{headings:true,fullscreen:true}});await editor.ready;
+editor.setJSON({version:1,blocks:[{type:'heading',level:2,children:[{text:'A small, modular editor'}]},{type:'paragraph',children:[{text:'Source modules stay independent. Choose a delivery profile for your project.'}]}]});
+document.querySelector('#preview').onclick=()=>{document.querySelector('#json').textContent=JSON.stringify(editor.getJSON(),null,2)};
+</script></body></html>

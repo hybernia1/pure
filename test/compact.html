@@ -1,0 +1,21 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pure compact profile checks</title></head><body><h1>Compact profile integration</h1><pre id="result">Running…</pre><main id="fixture"></main><script type="module">
+const root=new URL(`../dist/${new URLSearchParams(location.search).has('min')?'pure.min':'pure'}/compact/`,import.meta.url).href;
+const output=document.querySelector('#result'),assert=(ok,message)=>{if(!ok)throw Error(message)};
+let editor,flash;
+try{
+ const [{preloadManifest},{getPreloadUrls,preloadComponents},{loadComponent,configurePure,getPureConfig},ui]=await Promise.all(['preload-manifest','preload','lazy','ui'].map(name=>import(`${root}js/${name}.js`)));
+ const names=['editor','modal','tabs','flash','select'];const urls=getPreloadUrls(names,{manifest:preloadManifest,baseUrl:root});assert(urls.length>0&&urls.every(url=>url.startsWith(root+'js/')),'Manifest paths');
+ preloadComponents(names,{manifest:preloadManifest,baseUrl:root});preloadComponents(names,{manifest:preloadManifest,baseUrl:root});assert(document.querySelectorAll('link[rel="modulepreload"]').length===urls.length,'Dedupe');
+ configurePure({locale:'en'});assert(getPureConfig().iconsUrl===root+'icons.svg','Sprite base');assert(getPureConfig().styles.baseUrl===root+'css/','CSS base');
+ const [{createEditor},{createModal}]=await Promise.all(['editor','modal'].map(name=>loadComponent(name)));assert(createModal===ui.createModal,'Shared module identity');
+ const fixture=document.querySelector('#fixture'),source=document.createElement('textarea');fixture.append(source);editor=createEditor(source,{features:{headings:true,images:true,fullscreen:true}});await editor.ready;
+ assert(fixture.querySelector('[aria-haspopup="listbox"]'),'Heading addon');editor.setJSON({version:1,blocks:[{type:'paragraph',children:[{text:'A compact editor',bold:true}]}]});assert(editor.getText()==='A compact editor','JSON editor');
+ await editor.openDialog('link');assert(document.querySelector('dialog[open]'),'Lazy link dialog');document.querySelector('dialog[open]').close();await new Promise(requestAnimationFrame);
+ editor.command('image',{src:root+'icons.svg',alt:'Sprite demo',mediaId:42});await editor.ready;assert(fixture.querySelector('[data-resize-handle]'),'Lazy image resize');
+ await editor.openDialog('image');assert(document.querySelector('dialog[open] [type="file"]'),'Lazy image upload UI');document.querySelector('dialog[open]').close();await new Promise(requestAnimationFrame);
+ await editor.command('fullscreen');assert(document.querySelector('.editor-fullscreen[open]'),'Fullscreen');await editor.command('fullscreen');
+ const region=document.createElement('div');fixture.append(region);flash=ui.createFlash(region);const dismiss=flash.show('Saved',{duration:0});assert(region.textContent.includes('Saved'),'Shared UI');dismiss();
+ editor.destroy();editor=null;flash.destroy();flash=null;assert(!fixture.querySelector('.editor'),'Cleanup');
+ output.textContent='PASS: generated preload graph, dedupe, shared configuration/UI identity, asset URLs, heading select, JSON, lazy link/image/upload/resize, fullscreen, flash, cleanup.';document.documentElement.dataset.testResult='pass';
+}catch(error){output.textContent='FAIL: '+error.stack;document.documentElement.dataset.testResult='fail'}finally{editor?.destroy();flash?.destroy()}
+</script></body></html>

@@ -1,0 +1,1 @@
+import{a as r}from"./chunk-EI7MMDWY.js";function n(e){let t=String(e??"").trim();return!t||/[\u0000-\u0020\u007f]/.test(t)||t.startsWith("//")||t.includes("\\")?null:/^(https?:|mailto:)/i.test(t)?t:/^[^:/?#]*:/.test(t)?null:t}r(n,"safeHref");export{n as a};

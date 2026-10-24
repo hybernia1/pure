@@ -1,0 +1,9 @@
+@layer components {
+  .progress { color: var(--p-state, var(--p-text)); }
+  .progress-description { display: flex; justify-content: space-between; gap: var(--p-space-2); margin-bottom: var(--p-space-1); font-size: .875rem; }
+  .progress-track { height: var(--p-progress-height); overflow: hidden; border-radius: var(--p-radius-sm); background: var(--p-muted); }
+  .progress-fill { display: block; height: 100%; background: currentColor; }
+  .progress[data-indeterminate="true"] .progress-fill { width: 35%; animation: pure-progress 1.2s ease-in-out infinite alternate; }
+  @keyframes pure-progress { from { transform: translateX(0); } to { transform: translateX(185%); } }
+  @media (prefers-reduced-motion: reduce) { .progress[data-indeterminate="true"] .progress-fill { animation: none; width: 100%; opacity: .5; } }
+}
