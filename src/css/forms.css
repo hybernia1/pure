@@ -9,7 +9,7 @@
   .input:disabled { opacity: .6; cursor: not-allowed; }
   .input[readonly] { background: var(--p-muted); }
   .input-group { display: flex; align-items: start; gap: var(--p-space-2); }
-  .input-group > .input { flex: 1; min-width: 0; }
+  .input-group > .input { flex: 1; }
   select.input { padding-inline-end: var(--p-space-6); }
   select[multiple].input { min-height: var(--p-select-height); }
   textarea.input { resize: vertical; }

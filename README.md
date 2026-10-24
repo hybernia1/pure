@@ -4,7 +4,7 @@ A compact, modular CSS, JavaScript and SVG framework. Tailwind-style utilities, 
 
 ## Use in your project - no Node.js required
 
-Download the [v1.3.0 source archive](https://github.com/hybernia1/pure/archive/refs/tags/v1.3.0.zip) and copy `dist/pure.min/` (minified) or `dist/pure/` (readable) into your project. The files are already built: **no Node.js, npm, bundler or build step is required to use Pure**.
+Download the [v1.3.1 source archive](https://github.com/hybernia1/pure/archive/refs/tags/v1.3.1.zip) and copy `dist/pure.min/` (minified) or `dist/pure/` (readable) into your project. The files are already built: **no Node.js, npm, bundler or build step is required to use Pure**.
 
 Serve the files through your existing HTTP server (for example Apache, Nginx or your application's server). Pure's CSS and JavaScript run in the browser; ES modules and the external SVG sprite should be served over HTTP rather than opened through `file://`. The example paths below assume you copied the selected tree to `/assets/pure/`.
 

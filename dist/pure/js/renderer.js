@@ -1,8 +1,7 @@
 import { normalizeDocument } from './editor-model.js';
 
-/** Validate the complete JSON document before creating any DOM. Never parses HTML. */
-export function renderDocument(value, { document: doc = globalThis.document } = {}) {
-  const model = normalizeDocument(value);
+/** Internal rendering accepts only an already validated, detached model. */
+function renderModel(model, doc) {
   const fragment = doc.createDocumentFragment();
   const element = (tag, text) => { const node = doc.createElement(tag); if (text !== undefined) node.textContent = text; return node; };
   const runs = (parent, children) => {
@@ -31,12 +30,17 @@ export function renderDocument(value, { document: doc = globalThis.document } = 
   return fragment;
 }
 
+/** Validate the complete JSON document before creating any DOM. Never parses HTML. */
+export function renderDocument(value, { document: doc = globalThis.document } = {}) {
+  return renderModel(normalizeDocument(value), doc);
+}
+
 /** Owns only its wrapper; pre-existing target content is preserved. */
 export function createRenderer(target, value) {
   const root = target.ownerDocument.createElement('div'); root.className = 'content'; let model; let destroyed = false;
   function update(next) {
     if (destroyed) throw new Error('Renderer is destroyed.');
-    const normalized = normalizeDocument(next); const fragment = renderDocument(normalized, { document: target.ownerDocument });
+    const normalized = normalizeDocument(next); const fragment = renderModel(normalized, target.ownerDocument);
     root.replaceChildren(fragment); model = normalized;
   }
   update(value); target.append(root);

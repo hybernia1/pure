@@ -18,13 +18,15 @@ export function createForm(form) {
     for (const [key, attribute] of [['invalid', 'aria-invalid'], ['describedby', 'aria-describedby']]) {
       if (original[key] === null) field.removeAttribute(attribute); else field.setAttribute(attribute, original[key]);
     }
+    const error = field.closest('[data-field]')?.querySelector('[data-field-error]');
+    if (error) { error.textContent = ''; error.hidden = true; }
   };
   const render = (field) => {
     save(field);
-    const error = field.closest('[data-field]')?.querySelector('[data-field-error]');
     const invalid = !field.validity.valid;
     if (invalid) {
       field.setAttribute('aria-invalid', 'true');
+      const error = field.closest('[data-field]')?.querySelector('[data-field-error]');
       if (error) {
         if (!error.id) error.id = `pure-error-${++errorId}`;
         error.textContent = field.dataset.errorMessage || field.validationMessage;
@@ -32,10 +34,7 @@ export function createForm(form) {
         const ids = new Set((originals.get(field).describedby || '').split(/\s+/).filter(Boolean)); ids.add(error.id);
         field.setAttribute('aria-describedby', [...ids].join(' '));
       }
-    } else {
-      restore(field);
-      if (error) { error.textContent = ''; error.hidden = true; }
-    }
+    } else restore(field);
     return !invalid;
   };
   const validate = ({ focus = true } = {}) => {
@@ -48,10 +47,8 @@ export function createForm(form) {
   const input = (event) => { if (touched.has(event.target)) render(event.target); };
   const blur = (event) => { if (fields().includes(event.target)) { touched.add(event.target); render(event.target); } };
   const clear = () => {
-    originals.forEach((_, field) => {
-      restore(field); const error = field.closest('[data-field]')?.querySelector('[data-field-error]');
-      if (error) { error.textContent = ''; error.hidden = true; }
-    }); touched.clear();
+    for (const field of originals.keys()) restore(field);
+    touched.clear();
   };
   let destroyed = false; let resetTimer;
   const reset = event => { clearTimeout(resetTimer); resetTimer = setTimeout(() => { if (!destroyed && !event.defaultPrevented) clear(); }, 0); };

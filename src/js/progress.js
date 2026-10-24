@@ -38,8 +38,7 @@ export function createProgress(target, { max = 100, value = 0, label = uiI18n(ta
     setState(state, message) {
       check(); if (state !== null) assertState(state);
       if (state === null) element.removeAttribute('data-state'); else element.dataset.state = state;
-      const defaults = { error: t('error'), success: t('success'), info: t('info') };
-      text.textContent = message ?? (state === null ? label : defaults[state]); status.textContent = state === null ? '' : text.textContent; render();
+      text.textContent = message ?? (state === null ? label : t(state)); status.textContent = state === null ? '' : text.textContent; render();
     },
     destroy() { if (destroyed) return; destroyed = true; element.remove(); instances.delete(target); },
   };

@@ -13,8 +13,7 @@
   .table thead { background: var(--p-muted); }
   .table tbody th { font-weight: 600; }
   .table-value { overflow-wrap: anywhere; }
-  .table-label { display: none; }
-  .table-head-label { display: none; }
+  .table-label, .table-head-label { display: none; }
   .table-mobile-sort { display: flex; flex-wrap: wrap; gap: var(--p-space-1); }
   .table-stack .table-head-label { display: inline; }
   .table-stack thead .table-sort { display: none; }
@@ -22,8 +21,7 @@
   .table-sort::after { content: '↕'; color: var(--p-subtle); }
   .table [aria-sort="ascending"] .table-sort::after { content: '↑'; }
   .table [aria-sort="descending"] .table-sort::after { content: '↓'; }
-  .table-stack, .table-stack tbody { display: block; }
-  .table-stack caption { display: block; }
+  .table-stack, .table-stack tbody, .table-stack caption { display: block; }
   .table-stack thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   .table-stack tbody tr { display: grid; border-top: 1px solid var(--p-border); padding-block: var(--p-space-1); }
   .table-stack tbody th, .table-stack tbody td { display: grid; min-width: 0; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--p-space-2); border: 0; }
