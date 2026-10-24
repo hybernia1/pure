@@ -119,3 +119,5 @@ Standalone libraries accept styles, and `await library.open()` waits for CSS and
 [Lazy example](../examples/lazy.html), [UI tests](../test/browser.html), [network tests](../test/lazy.html). Add ?min to browser suite URLs to test the minified graph. Resource Timing checks actual loaded assets and ready stylesheets. Node tests cover CSS deduplication, document isolation, failure/retry, existing bundles and DOM-free imports with styles:false.
 
 Historical loading measurements are in the release audits. Run npm run audit:size for current static-graph sizes; these are sums of individually compressed files, not all addons or HTTP overhead. check:dist verifies both trees, exports and the absence of source maps.
+
+See [delivery experiments](performance-experiments.md) for the recorded equal-preload application comparison and its limitations. Experimental preload hints are not an automatic feature of the current release.
