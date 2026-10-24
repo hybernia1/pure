@@ -10,6 +10,8 @@ const destroyDisclosures = initDisclosures();
 
 ## Téma
 
+Barvy zůstávají v CSS. [Vlastní palety a pojmenovaná schémata](themes.md) doplňují nezávislé `setScheme(name, options)` a konfiguraci `theme.scheme` / `theme.schemeStorageKey`. `initTheme()` obnoví obě volby a vedle přepínače podporuje i tlačítka `[data-theme-set]` a `[data-scheme-set]`.
+
 `initTheme({ root, scope, storage } = {})` načte `pure-theme` z localStorage, použije platné téma nebo systém a připojí delegovaný click listener pro `[data-theme-toggle]`. Vrací cleanup. Výchozí root je `document.documentElement`, scope je `document`. Blokované úložiště nebrání ovládání tématu.
 
 ```html

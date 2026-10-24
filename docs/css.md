@@ -60,7 +60,7 @@ Nekombinuj protichůdné utility stejné úrovně (`p-4 p-8`); pořadí tříd v
 
 ## Témata a tokeny
 
-`<html data-theme="light">` / `<html data-theme="dark">`. Bez atributu rozhoduje systém. Témata jsou určena pro kořen dokumentu.
+`<html data-theme="light">` / `<html data-theme="dark">`. Bez atributu rozhoduje systém. Vlastní hodnoty definuj přes palety `--p-light-*` / `--p-dark-*`; pojmenovaná schémata vybírá nezávislé `data-scheme`. [Definice, tokeny a příklady](themes.md). Témata jsou určena pro kořen dokumentu.
 
 Barvy: `--p-bg`, `--p-surface`, `--p-muted`, `--p-text`, `--p-subtle`, `--p-border`, `--p-action`, `--p-on-action`, `--p-focus`. Ostatní: `--p-font`, `--p-radius`, `--p-container`, `--p-space-*`, `--p-gutter`, `--p-panel-padding`, `--p-control-px`, `--p-control-py`, `--p-control-height`, `--p-radius-sm`. Přepisuj sémantické tokeny místo přidávání barevných odstínů do komponent.
 

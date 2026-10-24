@@ -36,8 +36,10 @@ Konfigurace je sdílená v rámci jedné ESM instance. Na serveru ji neměň pro
 | `styles.auto` | `true` | Automatické CSS v lazy loaderu, editoru a knihovně médií. Lokální `styles` má přednost. |
 | `styles.baseUrl` | Distribuční `css/` | Adresář jednotlivých stylů; relativní URL se vyhodnotí při konfiguraci proti dokumentu. |
 | `theme.default` | `'system'` | Výchozí téma při `initTheme()`, pokud není uložená platná volba. |
+| `theme.scheme` | `'default'` | Výchozí pojmenované barevné schéma definované v CSS. |
 | `theme.persist` | `true` | Čtení a zápis uloženého tématu. |
-| `theme.storageKey` | `'pure-theme'` | Klíč úložiště. Tyto tři volby lze přepsat i lokálně v theme API. |
+| `theme.storageKey` | `'pure-theme'` | Klíč úložiště režimu. Theme volby lze přepsat i lokálně v theme API. |
+| `theme.schemeStorageKey` | `'pure-scheme'` | Samostatný klíč úložiště schématu; musí se lišit od storageKey. |
 | `search.delay` / `minLength` / `limit` | `250` / `2` / `8` | Prodleva v ms, minimální délka dotazu a maximální počet návrhů. |
 | `upload.accept` | `''` | Výchozí typy souborů; neprázdný atribut `accept` pole má přednost. |
 | `upload.maxFiles` / `maxSize` | `Infinity` / `Infinity` | Počet a velikost v bajtech pro `createUpload()`. Jednoduchý input dovolí vždy nejvýše jeden soubor. |

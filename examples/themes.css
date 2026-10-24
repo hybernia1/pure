@@ -1,0 +1,41 @@
+/* Palety aplikace: částečné definice dědí zbytek výchozích tokenů Pure. */
+:root[data-scheme="stone"] {
+  --p-light-bg: #f4f1eb;
+  --p-light-surface: #fffdf8;
+  --p-light-muted: #e9e4da;
+  --p-light-text: #302b25;
+  --p-light-subtle: #6a6054;
+  --p-light-border: #cfc6b8;
+  --p-light-action: #504537;
+  --p-light-on-action: #fffdf8;
+  --p-light-focus: #7a644a;
+  --p-dark-bg: #201d18;
+  --p-dark-surface: #29251f;
+  --p-dark-muted: #363027;
+  --p-dark-text: #f1e9dd;
+  --p-dark-subtle: #bdb09d;
+  --p-dark-border: #554a3c;
+  --p-dark-action: #e7d7bf;
+  --p-dark-on-action: #29251f;
+  --p-dark-focus: #c5a97e;
+}
+:root[data-scheme="slate"] {
+  --p-light-bg: #f0f3f5;
+  --p-light-surface: #fbfcfd;
+  --p-light-muted: #e3e9ed;
+  --p-light-text: #27343e;
+  --p-light-subtle: #596c7b;
+  --p-light-border: #c5d0d8;
+  --p-light-action: #364c5d;
+  --p-light-on-action: #ffffff;
+  --p-light-focus: #57768e;
+  --p-dark-bg: #192128;
+  --p-dark-surface: #222c34;
+  --p-dark-muted: #2e3a44;
+  --p-dark-text: #e6edf2;
+  --p-dark-subtle: #a9bbc9;
+  --p-dark-border: #465866;
+  --p-dark-action: #cbdce9;
+  --p-dark-on-action: #222c34;
+  --p-dark-focus: #94b3ca;
+}

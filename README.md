@@ -1,5 +1,7 @@
 # Pure
 
+[Vlastní light/dark barvy a schémata](docs/themes.md): palety zůstávají v CSS, režim a pojmenované schéma se přepínají nezávisle. [Živá ukázka](examples/themes.html).
+
 Editor má [odrážkové a číslované seznamy](docs/editor-lists.md). [Knihovna médií](docs/editor-media-i18n.md) používá číslovanou paginaci přes `{ items, total }`, přehledné karty a opakování při chybě.
 
 [Navigace](docs/navigation.md) používá stejné odkazy na mobilu i desktopu, nativní podnabídky a označení aktivní URL. [Ukázka](examples/navigation.html).

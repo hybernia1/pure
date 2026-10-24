@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { utilities, breakpoint } from '../scripts/utilities.mjs';
-import { setTheme, initTheme } from '../src/js/theme.js';
+import { setTheme, setScheme, initTheme } from '../src/js/theme.js';
 import { initDisclosures } from '../src/js/disclosure.js';
 
 function element() {
@@ -53,6 +53,27 @@ test('inicializace tématu obnoví volbu, přepíná a odpojí listener', () => 
   assert.equal(root.getAttribute('data-theme'), 'light');
   cleanup();
   assert.equal(scope.listeners.size, 0);
+});
+
+test('schéma a režim jsou nezávislé, ukládají se zvlášť a default obnoví CSS paletu', () => {
+  const root = element(); const values = new Map(); const storage = { setItem: (key, value) => values.set(key, value) };
+  setTheme('dark', { root, storage }); setScheme('stone', { root, storage });
+  assert.equal(root.getAttribute('data-theme'), 'dark'); assert.equal(root.getAttribute('data-scheme'), 'stone');
+  assert.equal(values.get('pure-scheme'), 'stone'); assert.equal(values.get('pure-theme'), 'dark');
+  setTheme('system', { root, storage }); assert.equal(root.getAttribute('data-scheme'), 'stone');
+  setScheme('default', { root, storage }); assert.equal(root.hasAttribute('data-scheme'), false);
+  for (const value of ['', 'bad name', 'Bad', 'x";}', null, 1]) assert.throws(() => setScheme(value, { root, storage }));
+  assert.doesNotThrow(() => setScheme('stone', { root, storage: { setItem() { throw Error(); } } }));
+});
+
+test('inicializace obnoví režim i schéma a persistence false nečte ani nezapisuje', () => {
+  const root = element(); const scope = element();
+  const storage = { getItem: key => key === 'pure-theme' ? 'light' : 'stone', setItem() {} };
+  const cleanup = initTheme({ root, scope, storage });
+  assert.equal(root.getAttribute('data-theme'), 'light'); assert.equal(root.getAttribute('data-scheme'), 'stone'); cleanup();
+  const blocked = { getItem() { assert.fail('Storage read'); }, setItem() { assert.fail('Storage write'); } };
+  const stop = initTheme({ root, scope, storage: blocked, persist: false, default: 'dark', scheme: 'slate' });
+  assert.equal(root.getAttribute('data-theme'), 'dark'); assert.equal(root.getAttribute('data-scheme'), 'slate'); stop();
 });
 
 test('disclosure synchronizuje ARIA, Escape vrací focus a cleanup odpojí události', () => {

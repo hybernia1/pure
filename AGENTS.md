@@ -5,6 +5,7 @@
 - CSS vrstvy: tokens → base → components → utilities. Komponenty a JS jsou volitelné.
 - Pouze dva viewporty: mobile (výchozí) a desktop od 960 px (`dt:`). Breakpoint měň pouze spolu s dokumentací a generátorem.
 - Používej neutrální paletu a sémantické tokeny. Podporuj light i dark bez duplikace komponent.
+- Barvy definuj přes --p-light-* a --p-dark-*; komponenty čtou pouze sémantické --p-* tokeny. data-theme určuje režim light/dark/system (system atribut odstraňuje), nezávislé data-scheme pojmenovanou CSS paletu. Nedrž kopii barev ani registr schémat v JS; výběr režimu a schématu ukládej pod oddělenými klíči.
 - Utility mají jeden účel. Novou abstrakci přidej až pro skutečně opakovaný vzor.
 - Rozestupy čerpají z `--p-space-*` nebo sémantických tokenů; žádné lokální číselné paddingy. Výchozí layout drž kompaktní. Nepoužívej box-shadow.
 - Informační stavy jsou `error`, `success`, `info`, sdílené přes `data-state`. Stav vyjádři i textem, nejen barvou.

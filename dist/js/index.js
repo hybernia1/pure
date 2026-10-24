@@ -5,7 +5,7 @@ export { createDataController, paginationPages } from './data.js';
 export { createPagination } from './pagination.js';
 export { createTable } from './table.js';
 export { createList } from './list.js';
-export { initTheme, setTheme } from './theme.js';
+export { initTheme, setTheme, setScheme } from './theme.js';
 export { initDisclosures } from './disclosure.js';
 export { states } from './states.js';
 export { createFlash } from './flash.js';

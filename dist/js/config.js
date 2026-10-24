@@ -1,7 +1,7 @@
 const defaults = {
   locale: 'auto', messages: {}, iconsUrl: new URL('../icons.svg', import.meta.url).href,
   styles: { auto: true, baseUrl: new URL('../css/', import.meta.url).href },
-  theme: { default: 'system', persist: true, storageKey: 'pure-theme' },
+  theme: { default: 'system', scheme: 'default', persist: true, storageKey: 'pure-theme', schemeStorageKey: 'pure-scheme' },
   search: { delay: 250, minLength: 2, limit: 8 },
   upload: { accept: '', maxFiles: Infinity, maxSize: Infinity },
   editor: { features: { headings: false, images: false, fullscreen: true, lists: true }, uploadImage: null, mediaLibrary: null },
@@ -42,6 +42,7 @@ export function configurePure(patch) {
   if (!['path', 'exact'].includes(next.navigation.match)) throw new TypeError('Invalid navigation match.');
   if (!['auto', 'manual'].includes(next.tabs.activation) || !['horizontal', 'vertical'].includes(next.tabs.orientation)) throw new TypeError('Invalid tabs defaults.');
   if (!['system', 'light', 'dark'].includes(next.theme.default)) throw new TypeError('Invalid theme.default');
+  if (!/^[a-z][a-z0-9-]{0,63}$/.test(next.theme.scheme) || !next.theme.schemeStorageKey || next.theme.storageKey === next.theme.schemeStorageKey) throw new TypeError('Invalid theme scheme or storage keys.');
   if (!next.theme.storageKey || !next.iconsUrl || !next.styles.baseUrl) throw new TypeError('Asset URLs and storageKey must not be empty.');
   if (next.locale !== 'auto') new Intl.DateTimeFormat(next.locale);
   for (const [value, min, integer] of [[next.search.delay, 0, false], [next.search.minLength, 0, true], [next.search.limit, 1, true], [next.mediaLibrary.pageSize, 1, true], [next.flash.duration, 0, false], [next.data.pageSize, 1, true], [next.pagination.siblings, 0, true]]) {
