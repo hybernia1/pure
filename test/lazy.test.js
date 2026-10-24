@@ -53,5 +53,5 @@ test('Lazy JS lze načíst bez DOM se styles:false; neplatná jména se odmítaj
   const theme = await loadComponent('theme', { styles: false }); assert.equal(typeof theme.initTheme, 'function');
   await assert.rejects(loadComponent('constructor', { styles: false }), TypeError);
   await assert.rejects(ensureStyles('constructor', { document: documentFixture().doc }), TypeError);
-  for (const name of ['disclosure', 'ajax', 'forms', 'select', 'picker', 'modal', 'upload', 'resize', 'editor', 'media-library', 'search', 'flash', 'activity', 'progress', 'drag-drop', 'data', 'table', 'list', 'pagination', 'tabs']) assert.ok(Object.keys(await loadComponent(name, { styles: false })).length, name);
+  for (const name of ['disclosure', 'ajax', 'forms', 'select', 'picker', 'modal', 'upload', 'resize', 'editor', 'media-library', 'search', 'flash', 'activity', 'progress', 'drag-drop', 'data', 'table', 'list', 'pagination', 'tabs', 'navigation']) assert.ok(Object.keys(await loadComponent(name, { styles: false })).length, name);
 });

@@ -1,5 +1,7 @@
 # Pure
 
+[Navigace](docs/navigation.md) používá stejné odkazy na mobilu i desktopu, nativní podnabídky a označení aktivní URL. [Ukázka](examples/navigation.html).
+
 [Záložkový obsah](docs/tabs.md) funguje na stránce i v modalu, s klávesnicí, ruční/automatickou aktivací a vnořením. [Ukázka](examples/tabs.html).
 
 [Tabulky, seznamy a stránkování](docs/data.md) sdílejí datový controller, AJAX, řazení a filtr. Responzivní tabulka podporuje mobilní bloky nebo vodorovný posun; [živá ukázka](examples/data.html).

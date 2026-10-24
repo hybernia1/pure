@@ -21,7 +21,7 @@ test('konfigurace slučuje vnořené volby a izoluje vstup, výstup i existujíc
   assert.equal(componentOptions('search', { delay: 0 }).delay, 0);
 });
 test('chybná konfigurace se odmítne atomicky včetně neznámých a nebezpečných klíčů', () => {
-  for (const patch of [{ tabs: { activation: 'invalid' } }, { tabs: { orientation: 'diagonal' } }, { foo: 1 }, { styles: false }, { search: { delay: -1 } }, { search: { limit: 0 } }, { upload: { maxFiles: 1.5 } }, { theme: { default: 'blue' } }, { locale: 'bad_locale' }, { messages: { close: 1 } }, JSON.parse('{"__proto__":{"polluted":true}}')]) {
+  for (const patch of [{ navigation: { match: 'invalid' } }, { tabs: { activation: 'invalid' } }, { tabs: { orientation: 'diagonal' } }, { foo: 1 }, { styles: false }, { search: { delay: -1 } }, { search: { limit: 0 } }, { upload: { maxFiles: 1.5 } }, { theme: { default: 'blue' } }, { locale: 'bad_locale' }, { messages: { close: 1 } }, JSON.parse('{"__proto__":{"polluted":true}}')]) {
     assert.throws(() => configurePure(patch));
     assert.deepEqual(getPureConfig(), initial);
   }

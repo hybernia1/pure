@@ -1,6 +1,7 @@
 import { getPureConfig, resolveLocale } from './config.js';
 
 const en = {
+  openNavigation: 'Open navigation', closeNavigation: 'Close navigation',
   sortRecords: 'Sort records',
   pagination: 'Pagination', pageSummary: 'Page {page} of {pages} · {total} records', goPage: 'Go to page {page}', previousPage: 'Previous', nextPage: 'Next',
   dataTable: 'Data table', dataList: 'Records', dataLoading: 'Loading…', dataEmpty: 'No records.', dataError: 'Could not load records.', dataCount: 'Records: {count}', retry: 'Try again',
@@ -14,6 +15,7 @@ const en = {
   width: 'Width', resizeHelp: 'Drag to resize; arrow keys change the width, Escape cancels dragging.',
 };
 const cs = {
+  openNavigation: 'Otevřít navigaci', closeNavigation: 'Zavřít navigaci',
   sortRecords: 'Řazení záznamů',
   pagination: 'Stránkování', pageSummary: 'Strana {page} z {pages} · {total} záznamů', goPage: 'Přejít na stranu {page}', previousPage: 'Předchozí', nextPage: 'Další',
   dataTable: 'Datová tabulka', dataList: 'Záznamy', dataLoading: 'Načítání…', dataEmpty: 'Žádné záznamy.', dataError: 'Záznamy se nepodařilo načíst.', dataCount: 'Záznamů: {count}', retry: 'Zkusit znovu',

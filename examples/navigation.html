@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="cs">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Pure — navigace</title>
+  <link rel="stylesheet" href="../dist/css/tokens.css"><link rel="stylesheet" href="../dist/css/base.css"><link rel="stylesheet" href="../dist/css/components.css"><link rel="stylesheet" href="../dist/css/utilities.css">
+</head>
+<body>
+<header class="border-b"><div class="container py-2">
+  <nav class="navigation" data-navigation aria-label="Hlavní navigace">
+    <a class="navigation-brand" href="index.html">pure.</a>
+    <button class="button button-outline navigation-toggle" type="button" data-nav-toggle aria-controls="example-nav-panel" hidden><svg class="icon" aria-hidden="true"><use href="../dist/icons.svg#menu"></use></svg></button>
+    <div class="navigation-panel" id="example-nav-panel" data-nav-panel>
+      <ul class="navigation-list">
+        <li><a href="navigation.html">Přehled</a></li>
+        <li><details data-nav-dropdown><summary>Komponenty<svg class="icon" aria-hidden="true"><use href="../dist/icons.svg#chevron-down"></use></svg></summary>
+          <ul class="navigation-submenu"><li><a href="forms.html">Formuláře</a></li><li><a href="data.html">Tabulky a seznamy</a></li><li><a href="tabs.html">Záložky</a></li><li><a href="modules.html">Editor a moduly</a></li></ul>
+        </details></li>
+        <li><details data-nav-dropdown><summary>Dokumentace<svg class="icon" aria-hidden="true"><use href="../dist/icons.svg#chevron-down"></use></svg></summary>
+          <ul class="navigation-submenu"><li><a href="../docs/navigation.md">Navigace</a></li><li><a href="../docs/configuration.md">Konfigurace</a></li><li><a href="../docs/distribution.md">Distribuce</a></li></ul>
+        </details></li>
+        <li><a href="#usage">Použití</a></li>
+        <li><a href="#accessibility">Klávesnice</a></li>
+      </ul>
+    </div>
+  </nav>
+</div></header>
+<main class="container py-6">
+  <h1 class="text-2xl mb-2">Jedna navigace pro mobile i desktop</h1>
+  <p class="text-subtle mb-4">Stejné odkazy, žádné duplikované mobilní menu. Pod 960 px se navigace sbalí pod tlačítko. Bez JavaScriptu odkazy zůstávají viditelné a podnabídky fungují nativně.</p>
+  <section id="usage" class="mb-6" tabindex="-1"><h2 class="text-xl mb-2">Použití</h2><p>Aktivní odkaz se označí podle URL. Podnabídky se otevírají kliknutím nebo Enterem, nikoli pouhým přejetím myši. Klik mimo navigaci je zavře.</p></section>
+  <section id="accessibility" tabindex="-1"><h2 class="text-xl mb-2">Klávesnice</h2><p>Tab prochází skutečné odkazy a tlačítka. Escape zavře nejbližší podnabídku a vrátí focus na její název; další Escape zavře mobilní panel.</p></section>
+  <p id="navigation-status" class="text-sm text-subtle mt-4" role="status">Načítání navigace…</p>
+</main>
+<script type="module" src="navigation.js"></script>
+</body></html>

@@ -11,31 +11,29 @@
   <link rel="stylesheet" href="../dist/css/tokens.css">
   <link rel="stylesheet" href="../dist/css/base.css">
   <link rel="stylesheet" href="../dist/css/components.css">
+  <link rel="stylesheet" href="../dist/css/navigation.css">
   <link rel="stylesheet" href="../dist/css/utilities.css">
 </head>
 <body>
   <a class="sr-only" href="#main" id="skip">Přejít na obsah</a>
   <style>#skip:focus { position: fixed; top: var(--p-space-4); left: var(--p-space-4); width: auto; height: auto; clip-path: none; padding: var(--p-space-4); margin: 0; background: var(--p-surface); z-index: 10; }</style>
   <header class="border-b">
-    <div class="container flex items-center justify-between py-3 gap-4">
-      <a href="#" class="text-xl font-semibold no-underline">pure<span class="text-subtle">.</span></a>
-      <nav aria-label="Hlavní navigace" class="hidden dt:flex gap-8 text-sm">
-        <a href="#principles" class="no-underline">Principy</a>
-        <a href="#components" class="no-underline">Komponenty</a>
-        <a href="modules.html" class="no-underline">Editor & moduly</a>
-        <a href="forms.html" class="no-underline">Formuláře</a>
-        <a href="../docs/css.md" class="no-underline">Dokumentace ↗</a>
+    <div class="container py-2">
+      <nav class="navigation" data-navigation aria-label="Hlavní navigace">
+        <a href="index.html" class="navigation-brand text-xl">pure<span class="text-subtle">.</span></a>
+        <button class="button button-outline navigation-toggle" type="button" data-nav-toggle aria-controls="main-navigation" hidden><svg class="icon" aria-hidden="true"><use href="../dist/icons.svg#menu"></use></svg></button>
+        <div class="navigation-panel" data-nav-panel id="main-navigation">
+          <ul class="navigation-list">
+            <li><a href="#principles">Principy</a></li>
+            <li><details data-nav-dropdown><summary>Komponenty<svg class="icon" aria-hidden="true"><use href="../dist/icons.svg#chevron-down"></use></svg></summary>
+              <ul class="navigation-submenu"><li><a href="#components">Přehled komponent</a></li><li><a href="forms.html">Formuláře</a></li><li><a href="modules.html">Editor a moduly</a></li><li><a href="data.html">Tabulky a seznamy</a></li><li><a href="tabs.html">Záložky</a></li><li><a href="navigation.html">Navigace</a></li></ul>
+            </details></li>
+            <li><a href="../docs/css.md">Dokumentace ↗</a></li>
+            <li><button class="button button-outline" data-theme-toggle type="button" aria-label="Přepnout světlý nebo tmavý režim"><svg class="icon" aria-hidden="true"><use href="../dist/icons.svg#sun"></use></svg></button></li>
+          </ul>
+        </div>
       </nav>
-      <div class="flex gap-2">
-        <button class="button button-outline" data-theme-toggle type="button" aria-label="Přepnout světlý nebo tmavý režim"><svg class="icon" aria-hidden="true"><use href="../dist/icons.svg#sun"></use></svg></button>
-        <button class="button button-outline dt:hidden" type="button" data-disclosure aria-controls="mobile-nav" aria-expanded="false" aria-label="Navigace"><svg class="icon" aria-hidden="true"><use href="../dist/icons.svg#menu"></use></svg></button>
-      </div>
     </div>
-    <nav id="mobile-nav" aria-label="Mobilní navigace" hidden>
-      <div class="container flex flex-col gap-4 pb-6 dt:hidden">
-        <a href="#principles">Principy</a><a href="#components">Komponenty</a><a href="../docs/css.md">Dokumentace</a>
-      </div>
-    </nav>
   </header>
   <main id="main">
     <section class="container py-8 dt:py-12">
@@ -83,8 +81,10 @@
   <footer class="border-b"><div class="container py-8 flex flex-col dt:flex-row justify-between gap-3 text-sm text-subtle"><p>pure. / Základ, který nechá vyniknout obsah.</p><a href="../README.md">Dokumentace a zdrojové soubory ↗</a></div></footer>
   <script type="module">
     import { initTheme } from '../dist/js/theme.js';
+    import { initNavigations } from '../dist/js/navigation.js';
     import { initDisclosures } from '../dist/js/disclosure.js';
     initTheme();
+    initNavigations();
     initDisclosures();
     const names = ['home', 'user', 'menu', 'close', 'sun', 'moon', 'arrow-right', 'check', 'search', 'settings', 'bold', 'italic', 'link', 'unlink', 'undo', 'redo', 'mail', 'lock', 'eye', 'eye-off', 'calendar', 'clock', 'chevron-down', 'chevron-left', 'chevron-right', 'list', 'image', 'expand', 'shrink'];
     document.querySelector('#icon-gallery').innerHTML = names.map(name => `<span class="flex flex-col items-center gap-2"><svg class="icon text-xl" aria-hidden="true"><use href="../dist/icons.svg#${name}"></use></svg><span class="text-xs text-subtle">${name}</span></span>`).join('');

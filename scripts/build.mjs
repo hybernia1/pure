@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile, cp, rm } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { utilities } from './utilities.mjs';
 
-const names = ['tokens', 'base', 'components', 'states', 'flash', 'editor', 'forms', 'controls', 'modal', 'upload', 'resize', 'activity', 'progress', 'search', 'drag-drop', 'media-library', 'data', 'tabs'];
+const names = ['tokens', 'base', 'components', 'states', 'flash', 'editor', 'forms', 'controls', 'modal', 'upload', 'resize', 'activity', 'progress', 'search', 'drag-drop', 'media-library', 'data', 'tabs', 'navigation'];
 const parts = await Promise.all(names.map((name) => readFile(`src/css/${name}.css`, 'utf8')));
 const output = resolve('dist');
 if (dirname(output) !== resolve('.') || output === resolve('.')) throw new Error('Invalid build output path');

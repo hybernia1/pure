@@ -1,4 +1,5 @@
 export { configurePure, getPureConfig } from './config.js';
+export { createNavigation, initNavigations } from './navigation.js';
 export { createTabs, initTabs } from './tabs.js';
 export { createDataController, paginationPages } from './data.js';
 export { createPagination } from './pagination.js';

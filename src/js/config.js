@@ -8,6 +8,7 @@ const defaults = {
   mediaLibrary: { pageSize: 12 }, flash: { duration: 0 }, modal: { closeOnBackdrop: true },
   data: { pageSize: 20 }, pagination: { siblings: 1 },
   tabs: { activation: 'auto', orientation: 'horizontal' },
+  navigation: { match: 'path', closeOnSelect: true },
 };
 const object = value => value !== null && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype;
 const copy = value => object(value) ? Object.fromEntries(Object.entries(value).map(([key, item]) => [key, copy(item)])) : value;
@@ -38,6 +39,7 @@ function validate(patch, schema = defaults, path = '') {
 export function configurePure(patch) {
   validate(patch);
   const next = merge(configuration, patch);
+  if (!['path', 'exact'].includes(next.navigation.match)) throw new TypeError('Invalid navigation match.');
   if (!['auto', 'manual'].includes(next.tabs.activation) || !['horizontal', 'vertical'].includes(next.tabs.orientation)) throw new TypeError('Invalid tabs defaults.');
   if (!['system', 'light', 'dark'].includes(next.theme.default)) throw new TypeError('Invalid theme.default');
   if (!next.theme.storageKey || !next.iconsUrl || !next.styles.baseUrl) throw new TypeError('Asset URLs and storageKey must not be empty.');

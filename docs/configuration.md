@@ -50,6 +50,7 @@ Konfigurace je sdílená v rámci jedné ESM instance. Na serveru ji neměň pro
 | `data.pageSize` | `20` | Výchozí počet záznamů na stránku pro datový controller, tabulky a seznamy. |
 | `pagination.siblings` | `1` | Počet sousedních čísel stránek na každé straně, 0–10. |
 | `tabs.activation` / `orientation` | `'auto'` / `'horizontal'` | Aktivace záložek (`auto`/`manual`) a směr (`horizontal`/`vertical`). |
+| `navigation.match` / `closeOnSelect` | `'path'` / `true` | Shoda aktivní URL (`path`/`exact`) a zavření po výběru odkazu. |
 
 Obrázkové uploady editoru a media library zachovávají podporované obrazové typy a jeden soubor. Používají globální `upload.maxSize`; při výchozím `Infinity` ponechávají původní limit 10 MiB. Samostatné `validateFiles()` zůstává čistou funkcí s explicitními limity.
 
