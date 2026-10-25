@@ -153,6 +153,82 @@ export function replaceText(value, from, to, text, marks = {}) {
   return fromStream([...slice(runs, 0, from), { ...marks, ...(block.type === 'list-item' ? { nextBlock: meta(block) } : {}), text: String(text).replace(/\r\n?/g, '\n') }, ...slice(runs, to, Infinity)], textRows(value)[0]);
 }
 
+let graphemeSegmenter;
+const removeImages = (value, indices, offset) => {
+  const blocks = value.blocks.filter((_, index) => !indices.includes(index));
+  const next = blocks.length ? normalizeDocument({ version: 1, blocks }) : emptyDocument();
+  return { value: next, offset: Math.min(offset, documentText(next).length) };
+};
+/** Model deletion keeps block UI outside the operation and never splits a grapheme. */
+export function deleteContent(value, from, to, direction = 'backward') {
+  bounds(value, from, to);
+  if (!['backward', 'forward'].includes(direction)) throw new TypeError('Invalid deletion direction.');
+  const text = documentText(value);
+  if (from === 0 && to === text.length && from !== to) return { value: emptyDocument(), offset: 0 };
+  if (from !== to) {
+    const first = rowAt(value, from), last = rowAt(value, to), rows = textRows(value).slice(first.index, last.index + 1);
+    if (from === first.start && to === last.start + 1 && rows.every(row => row.type === 'image')) {
+      return removeImages(value, rows.map(row => row.blockIndex), from);
+    }
+  }
+  if (from === to) {
+    const rows = textRows(value), at = rowAt(value, from);
+    let image;
+    if (at.row.type === 'image' && (direction === 'forward' ? from === at.start : from > at.start)) image = at.row;
+    else if (direction === 'backward' && from === at.start && rows[at.index - 1]?.type === 'image') image = rows[at.index - 1];
+    else if (direction === 'forward' && from === at.start + at.size && rows[at.index + 1]?.type === 'image') image = rows[at.index + 1];
+    if (image) {
+      const imageStart = value.blocks.slice(0, image.blockIndex).reduce((sum, block) => sum + blockText(block).length + 1, 0);
+      return removeImages(value, [image.blockIndex], direction === 'forward' ? from : imageStart);
+    }
+    if (direction === 'backward' && from === 0 || direction === 'forward' && to === text.length) return { value, offset: from };
+    graphemeSegmenter ??= typeof Intl.Segmenter === 'function' ? new Intl.Segmenter(undefined, { granularity: 'grapheme' }) : null;
+    let index = 0;
+    const segments = graphemeSegmenter ? graphemeSegmenter.segment(text) : Array.from(text, segment => {
+      const result = { segment, index }; index += segment.length; return result;
+    });
+    for (const segment of segments) {
+      const end = segment.index + segment.segment.length;
+      if (direction === 'backward' ? segment.index < from && end >= from : segment.index <= from && end > from) {
+        from = segment.index; to = end; break;
+      }
+    }
+  }
+  return { value: replaceText(value, from, to, ''), offset: from };
+}
+
+/** Detached fragment for Pure-to-Pure clipboard transfer, preserving list groups. */
+export function selectionDocument(value, from, to) {
+  bounds(value, from, to);
+  return fromStream(slice(stream(value), from, to), rowAt(value, from).row);
+}
+
+/** Insert structured blocks, merging paragraph edges into the destination row. */
+export function replaceDocument(value, from, to, fragment) {
+  bounds(value, from, to);
+  const incoming = textRows(normalizeDocument(fragment)).map(row => ({ ...row, group: `paste:${row.group}` }));
+  const rows = textRows(value), first = rowAt(value, from), last = rowAt(value, to);
+  const left = first.row.type === 'image' ? from > first.start ? first.row : null
+    : { ...first.row, children: slice(first.row.children, 0, from - first.start) };
+  const right = last.row.type === 'image' ? to <= last.start ? last.row : null
+    : { ...last.row, children: slice(last.row.children, to - last.start, Infinity) };
+  const result = rows.slice(0, first.index);
+  const hasLeft = left && (left.type === 'image' || left.children.length);
+  if (incoming[0].type === 'paragraph' && left?.type !== 'image') {
+    incoming[0] = { ...meta(first.row), children: [...(left?.children || []), ...incoming[0].children] };
+  } else if (hasLeft) result.push(left);
+  result.push(...incoming);
+  const offset = documentText({ blocks: result }).length;
+  if (right && (right.type === 'image' || right.children.length)) {
+    if (fragment.blocks.at(-1).type === 'paragraph') {
+      if (right.type !== 'image') result.at(-1).children.push(...right.children);
+      else result.push(right);
+    } else result.push(right);
+  }
+  result.push(...rows.slice(last.index + 1));
+  return { value: pack(result), offset };
+}
+
 export function formatText(value, from, to, mark, setting) {
   bounds(value, from, to);
   if (!textMarks.includes(mark)) throw new TypeError('Neznámé formátování.');

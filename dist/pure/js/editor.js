@@ -1,7 +1,8 @@
 import { getPureConfig, componentOptions } from './config.js';
 import { safeHref } from './url.js';
 import { colorNames } from './colors.js';
-import { emptyDocument, normalizeDocument, documentText, plainText, selectionMarks, replaceText, formatText, setHeading, setList, blockAt, blockText, textRows, rowAt, exitListItem } from './editor-model.js';
+import { emptyDocument, normalizeDocument, documentText, plainText, selectionMarks, replaceText, replaceDocument, selectionDocument, deleteContent, formatText, setHeading, setList, blockAt, blockText, textRows, rowAt, exitListItem } from './editor-model.js';
+import { clipboardDocument, clipboardHTML, clipboardType } from './editor-clipboard.js';
 import { createDragDrop } from './drag-drop.js';
 import { editorI18n } from './editor-i18n.js';
 import { editorStats } from './editor-stats.js';
@@ -30,7 +31,9 @@ export function createEditor(source, options = {}) {
     locale,
     messages,
     styles = getPureConfig().styles.auto,
+    pasteMode = 'formatted',
   } = componentOptions('editor', options);
+  if (!['formatted', 'plain'].includes(pasteMode)) throw new TypeError('pasteMode must be formatted or plain.');
   const imageMaxSize = getPureConfig().upload.maxSize === Infinity ? 10 * 1024 * 1024 : getPureConfig().upload.maxSize;
   if (prepareFile !== null && typeof prepareFile !== 'function') throw new TypeError('prepareFile must be a function or null.');
   const { t, locale: language } = editorI18n(source.ownerDocument, { locale, messages });
@@ -61,7 +64,8 @@ export function createEditor(source, options = {}) {
     for (const key of ['blocks', 'words', 'images']) { const count = node('span'); count.dataset.editorCount = key; count.textContent = t(key, { count: stats[key] }); footer.append(count); }
   };
   const instance = ++editorId;
-  let linkDialog; let imageDialog; let fullscreenModal; let fullscreenHost; let headingSource; let headingControl; let imageIndex = null;
+  let linkDialog; let imageDialog; let importDialog; let importTask; let importSnapshot; let importSelection;
+  let fullscreenModal; let fullscreenHost; let headingSource; let headingControl; let imageIndex = null;
   let selected = { from: 0, to: 0 }; let pending = {}; let destroyed = false; let composing = false; let restoring = false;
   let history = []; let position = -1; let resetTimer; let dragDrop; let library; let pickedMedia = null;
   let openSequence = 0; const dialogTasks = new Map();
@@ -326,6 +330,26 @@ export function createEditor(source, options = {}) {
     const normalized = text.replace(/\r\n?/g, '\n');
     commitModel(replaceText(value, from, selected.to, normalized, pending), { from: from + normalized.length, to: from + normalized.length });
   };
+  const erase = direction => {
+    const next = deleteContent(value, selected.from, selected.to, direction);
+    if (next.value === value) return;
+    pending = selectionMarks(next.value, next.offset); imageIndex = null;
+    commitModel(next.value, { from: next.offset, to: next.offset });
+  };
+  const filterFragment = fragment => {
+    const blocks = fragment.blocks.flatMap(block => {
+      if (block.type === 'heading' && !enabled.headings) return { type: 'paragraph', children: block.children };
+      if (block.type === 'list' && !enabled.lists) return block.items.map(item => ({ type: 'paragraph', children: item.children }));
+      if (block.type === 'image' && !enabled.images) return block.alt ? [{ type: 'paragraph', children: [{ text: block.alt }] }] : [];
+      return block;
+    });
+    return blocks.length ? { version: 1, blocks } : null;
+  };
+  const insertFragment = fragment => {
+    const next = replaceDocument(value, selected.from, selected.to, fragment);
+    pending = selectionMarks(next.value, next.offset);
+    commitModel(next.value, { from: next.offset, to: next.offset });
+  };
   const travel = delta => {
     if (position + delta < 0 || position + delta >= history.length) return false;
     const previous = value;
@@ -518,7 +542,7 @@ export function createEditor(source, options = {}) {
     })().catch(error => { dialogTasks.delete(kind); throw error; });
     dialogTasks.set(kind, task); return task;
   };
-  const openImage = async () => {
+  const openImage = async (file) => {
     if (!enabled.images || destroyed) return false;
     const sequence = ++openSequence; const snapshot = JSON.stringify(value); const index = imageIndex; const selection = { ...selected };
     hint.textContent = t('loading');
@@ -531,7 +555,29 @@ export function createEditor(source, options = {}) {
     imageDialog.open({ alt: '', caption: '', width: 100, align: 'center', ...block }, doc.activeElement, { removable: imageIndex !== null });
     const preview = imageDialog.dialog.querySelector('[data-current-image]');
     if (block.src) { preview.src = block.src; preview.hidden = false; } else { preview.removeAttribute('src'); preview.hidden = true; }
+    if (file) await imageDialog.setFiles([file]);
     return true;
+  };
+  const openImport = async (format = 'markdown') => {
+    if (!['markdown', 'html'].includes(format)) throw new TypeError('Unknown import format.');
+    if (enabled.import === false || destroyed) return false;
+    remember();
+    const sequence = ++openSequence, snapshot = value, selection = { ...selected };
+    importTask ??= Promise.all([
+      import('./editor-import.js'),
+      styles ? ensureStyles(['modal', 'controls', 'renderer', 'utilities'], { document: doc }) : undefined,
+    ]).catch(error => { importTask = null; throw error; });
+    const [module] = await importTask;
+    if (destroyed || sequence !== openSequence || snapshot !== value) return false;
+    if (!importDialog) {
+      importDialog = module.createImportDialog(doc, { t, filter: filterFragment, insert(fragment) {
+        if (value !== importSnapshot) throw new Error(t('importChanged'));
+        selected = { ...importSelection }; insertFragment(fragment);
+      } });
+      listen(importDialog.dialog, 'close', () => { if (!destroyed) restore(); });
+    }
+    importSnapshot = snapshot; importSelection = selection;
+    importDialog.open(format, buttons.get('import') || doc.activeElement); return true;
   };
   const openLink = async () => {
     if (destroyed) return false;
@@ -587,6 +633,7 @@ export function createEditor(source, options = {}) {
     ['underline', t('underline'), 'underline'], ['strike', t('strike'), 'strikethrough'],
     ...(enabled.lists ? [['bulletList', t('bulletList'), 'list-bullet'], ['orderedList', t('orderedList'), 'list-ordered']] : []),
     ['link', t('link'), 'link'], ['unlink', t('unlink'), 'unlink'],
+    ...(enabled.import !== false ? [['import', t('importTitle'), 'code']] : []),
     ['undo', t('undo'), 'undo'], ['redo', t('redo'), 'redo'],
     ...(enabled.images ? [['image', t('insertImage'), 'image']] : []),
     ...(enabled.fullscreen ? [['fullscreen', t('fullscreen'), 'expand']] : []),
@@ -598,6 +645,7 @@ export function createEditor(source, options = {}) {
     listen(button, 'click', () => {
       if (name === 'link') openLink().catch(loadFailed);
       else if (name === 'image') { imageIndex = null; openImage().catch(loadFailed); }
+      else if (name === 'import') openImport().catch(loadFailed);
       else if (name === 'fullscreen') toggleFullscreen().catch(loadFailed);
       else { command(name); if (name !== 'undo' && name !== 'redo') restore(); }
     });
@@ -652,6 +700,20 @@ export function createEditor(source, options = {}) {
   listen(doc, 'selectionchange', remember);
   for (const sourceLabel of source.labels || []) listen(sourceLabel, 'click', event => { event.preventDefault(); content.focus(); });
   listen(content, 'keydown', event => {
+    if (composing || event.isComposing) return;
+    const modifier = event.ctrlKey || event.metaKey;
+    if (modifier && !event.altKey && event.key.toLowerCase() === 'a') {
+      event.preventDefault(); selected = { from: 0, to: documentText(value).length }; restore(); updateToolbar(); return;
+    }
+    if (['Backspace', 'Delete'].includes(event.key) && !modifier && !event.altKey && !(event.shiftKey && event.key === 'Delete')) {
+      remember();
+      if (selected.from !== selected.to) {
+        event.preventDefault(); erase(event.key === 'Backspace' ? 'backward' : 'forward'); return;
+      }
+      if (event.target.matches('[data-drag-handle], [data-editor-image]')) {
+        event.preventDefault(); command('removeBlock', Number(event.target.closest('[data-editor-block]').dataset.blockIndex)); return;
+      }
+    }
     if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
     const key = event.key.toLowerCase();
     if (['b', 'i', 'u', 'k', 'z', 'y'].includes(key)) {
@@ -663,6 +725,13 @@ export function createEditor(source, options = {}) {
   listen(content, 'beforeinput', event => {
     if (composing || event.isComposing) return;
     remember();
+    if (event.inputType.startsWith('delete') && selected.from === selected.to) {
+      const target = event.getTargetRanges?.()[0];
+      if (target && content.contains(target.startContainer) && content.contains(target.endContainer)) {
+        const from = domOffset(target.startContainer, target.startOffset), to = domOffset(target.endContainer, target.endOffset);
+        if (from < to && !['deleteContentBackward', 'deleteContentForward'].includes(event.inputType)) selected = { from, to };
+      }
+    }
     if (event.inputType === 'insertText' && event.data !== null) { event.preventDefault(); insert(event.data); }
     else if (['insertParagraph', 'insertLineBreak'].includes(event.inputType)) {
       event.preventDefault(); const at = rowAt(value, selected.from);
@@ -670,6 +739,9 @@ export function createEditor(source, options = {}) {
       else insert('\n');
     }
     else if (event.inputType === 'deleteContentBackward' && selected.from === selected.to && rowAt(value, selected.from).row.type === 'list-item' && rowAt(value, selected.from).start === selected.from) { event.preventDefault(); commitModel(exitListItem(value, selected.from)); }
+    else if ((event.inputType.startsWith('delete') && selected.from !== selected.to) || ['deleteContentBackward', 'deleteContentForward'].includes(event.inputType)) {
+      event.preventDefault(); erase(event.inputType === 'deleteContentForward' ? 'forward' : 'backward');
+    }
     else if (['historyUndo', 'historyRedo', 'formatBold', 'formatItalic', 'formatUnderline', 'formatStrikeThrough'].includes(event.inputType)) {
       event.preventDefault(); command({ historyUndo: 'undo', historyRedo: 'redo', formatBold: 'bold', formatItalic: 'italic', formatUnderline: 'underline', formatStrikeThrough: 'strike' }[event.inputType]);
     }
@@ -677,7 +749,32 @@ export function createEditor(source, options = {}) {
   listen(content, 'input', nativeInput);
   listen(content, 'compositionstart', () => { composing = true; });
   listen(content, 'compositionend', () => { composing = false; nativeInput(); });
-  listen(content, 'paste', event => { event.preventDefault(); remember(); insert(event.clipboardData?.getData('text/plain') || ''); });
+  listen(content, 'paste', event => {
+    event.preventDefault();
+    const data = event.clipboardData;
+    if (!data) return;
+    remember();
+    const image = [...data.files].find(file => file.type.startsWith('image/'));
+    if (image && enabled.images && !data.getData('text/plain')) {
+      imageIndex = null; openImage(image).catch(loadFailed); return;
+    }
+    let fragment;
+    if (pasteMode === 'formatted') {
+      const json = data.getData(clipboardType);
+      if (json && json.length <= 1_000_000) { try { fragment = normalizeDocument(JSON.parse(json)); } catch { /* Fall back to supported HTML/text. */ } }
+      if (!fragment) {
+        const html = data.getData('text/html');
+        if (html) fragment = clipboardDocument(html, { document: doc, headings: enabled.headings });
+      }
+    }
+    if (fragment) {
+      fragment = filterFragment(fragment);
+      if (fragment) insertFragment(fragment);
+    } else {
+      const text = data.getData('text/plain');
+      if (text) insert(text);
+    }
+  });
   const copy = event => {
     const range = readSelection(); if (!range || range.from === range.to || !event.clipboardData) return;
     let offset = 0; let text = '';
@@ -690,7 +787,10 @@ export function createEditor(source, options = {}) {
       offset++;
     });
     event.preventDefault(); event.clipboardData.setData('text/plain', text);
-    if (event.type === 'cut') { selected = range; insert(''); }
+    const fragment = selectionDocument(value, range.from, range.to);
+    event.clipboardData.setData('text/html', clipboardHTML(fragment, { document: doc }));
+    event.clipboardData.setData(clipboardType, JSON.stringify(fragment));
+    if (event.type === 'cut') { selected = range; erase('backward'); }
   };
   listen(content, 'copy', copy); listen(content, 'cut', copy);
   listen(content, 'drop', event => event.preventDefault());
@@ -722,7 +822,7 @@ export function createEditor(source, options = {}) {
     // U uživatelského kliknutí probíhá reset výchozích hodnot až po microtasks.
     resetTimer = setTimeout(() => {
       if (destroyed || event.defaultPrevented) return;
-      openSequence++; library?.close(); linkDialog?.close(); imageDialog?.close(); imageIndex = null; value = parse(source.value); selected = { from: 0, to: 0 }; pending = {}; history = []; position = -1; render(); record();
+      openSequence++; library?.close(); linkDialog?.close(); imageDialog?.close(); importDialog?.close(); imageIndex = null; value = parse(source.value); selected = { from: 0, to: 0 }; pending = {}; history = []; position = -1; render(); record();
     }, 0);
   });
   return {
@@ -731,14 +831,14 @@ export function createEditor(source, options = {}) {
     getJSON: () => normalizeDocument(value),
     getText: () => plainText(value),
     getStats: () => editorStats(value, language),
-    openDialog(kind) { if (kind === 'link') return openLink(); if (kind === 'image') { imageIndex = null; return openImage(); } throw new TypeError('Unknown editor dialog'); },
+    openDialog(kind, options = {}) { if (kind === 'import') return openImport(options.format); if (kind === 'link') return openLink(); if (kind === 'image') { imageIndex = null; return openImage(); } throw new TypeError('Unknown editor dialog'); },
     setJSON(json) {
       if (destroyed) throw new Error('Editor byl odpojen.');
-      const next = normalizeDocument(json); openSequence++; library?.close(); linkDialog?.close(); imageDialog?.close(); imageIndex = null; selected = { from: 0, to: 0 }; pending = {}; value = next; render(); record();
+      const next = normalizeDocument(json); openSequence++; library?.close(); linkDialog?.close(); imageDialog?.close(); importDialog?.close(); imageIndex = null; selected = { from: 0, to: 0 }; pending = {}; value = next; render(); record();
     },
     destroy() {
       if (destroyed) return;
-      destroyed = true; openSequence++; clearTimeout(resetTimer); library?.destroy(); dragDrop?.destroy(); clearResizers(); sync(); linkDialog?.destroy(); imageDialog?.destroy(); headingControl?.destroy(); fullscreenModal?.destroy(); fullscreenHost?.remove(); listeners.forEach(cleanup => cleanup()); shell.remove(); source.hidden = wasHidden;
+      destroyed = true; openSequence++; clearTimeout(resetTimer); library?.destroy(); dragDrop?.destroy(); clearResizers(); sync(); linkDialog?.destroy(); imageDialog?.destroy(); importDialog?.destroy(); headingControl?.destroy(); fullscreenModal?.destroy(); fullscreenHost?.remove(); listeners.forEach(cleanup => cleanup()); shell.remove(); source.hidden = wasHidden;
     },
   };
 }

@@ -1,0 +1,1 @@
+import{a}from"./chunk-6NIHWRF2.js";import"./chunk-PHK52RXZ.js";import"./chunk-2TA7VOXL.js";import"./chunk-U32LJHH4.js";import"./chunk-HHBK3SXO.js";import"./chunk-EI7MMDWY.js";export{a as createPagination};

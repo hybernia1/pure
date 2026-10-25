@@ -1,5 +1,11 @@
 # JSON editor and optional modules
 
+Keyboard deletion uses the JSON model: Ctrl/Cmd+A inside editable content selects this editor, and Backspace/Delete removes the selected range across headings, lists and images. Clearing everything leaves one editable paragraph and is one undo step. Backspace/Delete also removes adjacent image blocks, joins adjacent text paragraphs, or removes the whole block when its header handle/image has keyboard focus. Backspace at a list-item start retains the existing exit-list behavior. Character deletion preserves grapheme clusters (emoji/combining marks) where `Intl.Segmenter` is available, with a code-point fallback. Selection offsets remain UTF-16. [Keyboard deletion checks](../test/editor-deletion.html) also accept `?min`.
+
+Clipboard input supports safe HTML-to-JSON conversion, Pure-to-Pure JSON fragments and plain text. Set `pasteMode: 'plain'` for text-only import. See [conversion rules and limitations](editor-clipboard.md) and the [example](../examples/clipboard.html).
+
+The optional [Markdown / HTML import modal](editor-import.md) provides a source field and safe conversion preview. Open it from the toolbar or `await editor.openDialog('import', { format: 'html' })`.
+
 ## Inline formatting
 
 The toolbar includes bold, italic, underline and strikethrough. JSON runs store optional boolean `bold`, `italic`, `underline`, `strike` fields; false values normalize away. Combine marks with colors and links. `editor.command('underline')` and `editor.command('strike')` toggle the current selection or subsequent typing at a caret. Formatting supports list items, undo/redo, reset and safe renderer output (`strong`, `em`, `u`, `s`).

@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.5.0 - 2026-10-25
+
+- Handle Ctrl/Cmd+A and range deletion through the editor model, including multi-block selection, image deletion, paragraph joining, cut, one-step undo and grapheme-safe character deletion.
+- Add a lazy Markdown/HTML import modal with safe JSON preview, saved selection, one-step undo, feature filtering and Czech/English messages.
+- Convert supported pasted HTML into JSON paragraphs, headings, whole lists, marks and safe links; add plain-text paste mode.
+- Preserve structured Pure fragments, semantic HTML and clean text on copy/cut, including Pure media IDs.
+- Keep selections unchanged for empty/unsupported clipboard data. Route image files through the shared upload modal and optional browser preparation.
+- Add clipboard model/browser regressions and document conversion limits.
+
 ## 1.4.0 - 2026-10-24
 
 - Reduce repeated editor normalization, serialization, DOM queries and unchanged footer/active-block updates; preserve UTF-16 selection and JSON behavior.

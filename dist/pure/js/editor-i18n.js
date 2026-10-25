@@ -1,6 +1,9 @@
 import { getPureConfig, resolveLocale } from './config.js';
 export const editorLocales = {
   cs: {
+    importTitle: 'Vložit Markdown / HTML', importFormat: 'Formát', importSource: 'Zdrojový obsah', importPreview: 'Náhled převodu',
+    importHelp: 'Převede podporované formátování do JSON. Cizí styly se zahodí; obrázky zůstávají jako alternativní text.',
+    importEmpty: 'Obsah neobsahuje podporovaný text.', importInvalid: 'Obsah nelze převést nebo překračuje limity importu.', importChanged: 'Obsah editoru se změnil. Otevři import znovu.',
     underline: 'Podtržení (Ctrl/Cmd+U)', strike: 'Přeškrtnutí',
     textColor: 'Barva textu', defaultColor: 'Výchozí barva',
     uploadPreparing: 'Připravuji soubory…',
@@ -21,6 +24,9 @@ export const editorLocales = {
     dragMoved: 'Blok přesunut na pozici {index} z {count}.', dragMoving: 'Přesouvání. Uvolni pro vložení, Escape pro zrušení.', dragCanceled: 'Přesun zrušen.', dragPicked: 'Blok vybrán. Šipkami nahoru a dolů vyber pozici, mezerníkem potvrď, Escape zruš.', dragPosition: 'Cílová pozice {index} z {count}.',
   },
   en: {
+    importTitle: 'Insert Markdown / HTML', importFormat: 'Format', importSource: 'Source content', importPreview: 'Conversion preview',
+    importHelp: 'Converts supported formatting into JSON. External styles are discarded; images become alt text.',
+    importEmpty: 'The source contains no supported text.', importInvalid: 'The source cannot be converted or exceeds import limits.', importChanged: 'The editor content changed. Open import again.',
     underline: 'Underline (Ctrl/Cmd+U)', strike: 'Strikethrough',
     textColor: 'Text color', defaultColor: 'Default color',
     uploadPreparing: 'Preparing files…',

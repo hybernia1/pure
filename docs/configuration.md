@@ -1,5 +1,7 @@
 # Global configuration
 
+The editor's `features.import` flag (default `true`) controls the lazy Markdown/HTML import modal. [Import guide](editor-import.md).
+
 `configurePure(patch)` sets defaults for future components. The lightweight entry has no DOM effects and does not load component implementations:
 
 ```js

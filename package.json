@@ -1,6 +1,6 @@
 {
   "name": "@pure-ui/core",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "private": true,
   "license": "MIT",
   "author": "hybernia1",
@@ -55,7 +55,7 @@
   "description": "A compact, modular CSS, JavaScript and SVG framework with no runtime dependencies.",
   "scripts": {
     "build": "node scripts/build.mjs",
-    "test": "node --test test/core.test.js test/ajax.test.js test/upload.test.js test/editor-model.test.js test/calendar.test.js test/image-upload.test.js test/lazy.test.js test/config.test.js test/data.test.js test/image.test.js test/chart-renderer.test.js test/flash.test.js test/modal.test.js test/preload.test.js",
+    "test": "node --test test/core.test.js test/ajax.test.js test/upload.test.js test/editor-model.test.js test/calendar.test.js test/image-upload.test.js test/lazy.test.js test/config.test.js test/data.test.js test/image.test.js test/chart-renderer.test.js test/flash.test.js test/modal.test.js test/preload.test.js test/editor-clipboard-model.test.js test/editor-markdown.test.js test/editor-deletion.test.js",
     "dev": "node scripts/serve.mjs",
     "audit:size": "node scripts/audit.mjs",
     "bench": "node scripts/benchmark.mjs",

@@ -1,38 +1,46 @@
 import {
   normalizeMedia
-} from "./chunk-3KKUGZB3.js";
+} from "./chunk-I6POBVM6.js";
+import {
+  clipboardDocument,
+  clipboardHTML,
+  clipboardType
+} from "./chunk-JQUWWSRB.js";
 import {
   blockAt,
   blockText,
+  deleteContent,
   documentText,
   emptyDocument,
   exitListItem,
   formatText,
   normalizeDocument,
   plainText,
+  replaceDocument,
   replaceText,
   rowAt,
+  selectionDocument,
   selectionMarks,
   setHeading,
   setList,
   textRows
-} from "./chunk-FUYBYDI2.js";
+} from "./chunk-KL7ILSU2.js";
 import {
   safeHref
 } from "./chunk-3SIP5CGE.js";
 import {
   ensureStyles
-} from "./chunk-ZDWH7MVN.js";
+} from "./chunk-MDDIKQ53.js";
 import {
   createDragDrop
-} from "./chunk-UD4AGPQJ.js";
+} from "./chunk-OQOSD4HB.js";
 import {
   editorI18n
-} from "./chunk-VXHBCFC3.js";
+} from "./chunk-SDVY4RQI.js";
 import {
   componentOptions,
   getPureConfig
-} from "./chunk-JK5BIUAQ.js";
+} from "./chunk-VKBN75Z7.js";
 import {
   colorNames
 } from "./chunk-I2KQSOTD.js";
@@ -87,8 +95,10 @@ function createEditor(source, options = {}) {
     mediaLibrary,
     locale,
     messages,
-    styles = getPureConfig().styles.auto
+    styles = getPureConfig().styles.auto,
+    pasteMode = "formatted"
   } = componentOptions("editor", options);
+  if (!["formatted", "plain"].includes(pasteMode)) throw new TypeError("pasteMode must be formatted or plain.");
   const imageMaxSize = getPureConfig().upload.maxSize === Infinity ? 10 * 1024 * 1024 : getPureConfig().upload.maxSize;
   if (prepareFile !== null && typeof prepareFile !== "function") throw new TypeError("prepareFile must be a function or null.");
   const { t, locale: language } = editorI18n(source.ownerDocument, { locale, messages });
@@ -141,6 +151,10 @@ function createEditor(source, options = {}) {
   const instance = ++editorId;
   let linkDialog;
   let imageDialog;
+  let importDialog;
+  let importTask;
+  let importSnapshot;
+  let importSelection;
   let fullscreenModal;
   let fullscreenHost;
   let headingSource;
@@ -404,7 +418,7 @@ function createEditor(source, options = {}) {
   const attachResizers = /* @__PURE__ */ __name(() => {
     if (destroyed || !enabled.images || !content.querySelector("[data-editor-image]")) return;
     if (!resizeFactory) {
-      resizeTask ??= Promise.all([import("./resize-2SB6TVL3.js"), styles ? ensureStyles("resize", { document: doc }) : void 0]).then(([module]) => {
+      resizeTask ??= Promise.all([import("./resize-2SOG3MT4.js"), styles ? ensureStyles("resize", { document: doc }) : void 0]).then(([module]) => {
         if (!destroyed) {
           resizeFactory = module.createResize;
           attachResizers();
@@ -558,6 +572,27 @@ function createEditor(source, options = {}) {
     const normalized = text.replace(/\r\n?/g, "\n");
     commitModel(replaceText(value, from, selected.to, normalized, pending), { from: from + normalized.length, to: from + normalized.length });
   }, "insert");
+  const erase = /* @__PURE__ */ __name((direction) => {
+    const next = deleteContent(value, selected.from, selected.to, direction);
+    if (next.value === value) return;
+    pending = selectionMarks(next.value, next.offset);
+    imageIndex = null;
+    commitModel(next.value, { from: next.offset, to: next.offset });
+  }, "erase");
+  const filterFragment = /* @__PURE__ */ __name((fragment) => {
+    const blocks = fragment.blocks.flatMap((block) => {
+      if (block.type === "heading" && !enabled.headings) return { type: "paragraph", children: block.children };
+      if (block.type === "list" && !enabled.lists) return block.items.map((item) => ({ type: "paragraph", children: item.children }));
+      if (block.type === "image" && !enabled.images) return block.alt ? [{ type: "paragraph", children: [{ text: block.alt }] }] : [];
+      return block;
+    });
+    return blocks.length ? { version: 1, blocks } : null;
+  }, "filterFragment");
+  const insertFragment = /* @__PURE__ */ __name((fragment) => {
+    const next = replaceDocument(value, selected.from, selected.to, fragment);
+    pending = selectionMarks(next.value, next.offset);
+    commitModel(next.value, { from: next.offset, to: next.offset });
+  }, "insertFragment");
   const travel = /* @__PURE__ */ __name((delta) => {
     if (position + delta < 0 || position + delta >= history.length) return false;
     const previous = value;
@@ -811,7 +846,7 @@ function createEditor(source, options = {}) {
         const snapshot = imageSnapshot;
         const request = openSequence;
         try {
-          libraryTask ??= import("./media-library-AHWBCAWX.js").catch((error) => {
+          libraryTask ??= import("./media-library-QBUPP3BD.js").catch((error) => {
             libraryTask = null;
             throw error;
           });
@@ -837,8 +872,8 @@ function createEditor(source, options = {}) {
     if (dialogTasks.has(kind)) return dialogTasks.get(kind);
     const task = (async () => {
       const [dialogModule, extras] = await Promise.all([
-        import("./editor-dialog-IYXGTY6X.js"),
-        kind === "image" ? Promise.all([import("./select-MME35WXP.js"), import("./upload-BUGUPZ2P.js")]) : void 0,
+        import("./editor-dialog-BORLNE4B.js"),
+        kind === "image" ? Promise.all([import("./select-W527ZQBK.js"), import("./upload-5GORHKMR.js")]) : void 0,
         styles ? ensureStyles(kind === "image" ? ["modal", "upload", "utilities"] : ["modal", "utilities"], { document: doc }) : void 0
       ]);
       if (destroyed) return null;
@@ -852,7 +887,7 @@ function createEditor(source, options = {}) {
     dialogTasks.set(kind, task);
     return task;
   }, "ensureDialog");
-  const openImage = /* @__PURE__ */ __name(async () => {
+  const openImage = /* @__PURE__ */ __name(async (file) => {
     if (!enabled.images || destroyed) return false;
     const sequence = ++openSequence;
     const snapshot = JSON.stringify(value);
@@ -879,8 +914,38 @@ function createEditor(source, options = {}) {
       preview.removeAttribute("src");
       preview.hidden = true;
     }
+    if (file) await imageDialog.setFiles([file]);
     return true;
   }, "openImage");
+  const openImport = /* @__PURE__ */ __name(async (format = "markdown") => {
+    if (!["markdown", "html"].includes(format)) throw new TypeError("Unknown import format.");
+    if (enabled.import === false || destroyed) return false;
+    remember();
+    const sequence = ++openSequence, snapshot = value, selection = { ...selected };
+    importTask ??= Promise.all([
+      import("./editor-import-YOXRCUE4.js"),
+      styles ? ensureStyles(["modal", "controls", "renderer", "utilities"], { document: doc }) : void 0
+    ]).catch((error) => {
+      importTask = null;
+      throw error;
+    });
+    const [module] = await importTask;
+    if (destroyed || sequence !== openSequence || snapshot !== value) return false;
+    if (!importDialog) {
+      importDialog = module.createImportDialog(doc, { t, filter: filterFragment, insert(fragment) {
+        if (value !== importSnapshot) throw new Error(t("importChanged"));
+        selected = { ...importSelection };
+        insertFragment(fragment);
+      } });
+      listen(importDialog.dialog, "close", () => {
+        if (!destroyed) restore();
+      });
+    }
+    importSnapshot = snapshot;
+    importSelection = selection;
+    importDialog.open(format, buttons.get("import") || doc.activeElement);
+    return true;
+  }, "openImport");
   const openLink = /* @__PURE__ */ __name(async () => {
     if (destroyed) return false;
     const sequence = ++openSequence;
@@ -914,7 +979,7 @@ function createEditor(source, options = {}) {
     headingSource.hidden = true;
     headingSlot.append(placeholder, headingSource);
     toolbar.append(headingSlot);
-    selectTask = Promise.all([import("./select-MME35WXP.js"), styles ? ensureStyles("controls", { document: doc }) : void 0]).then(([module]) => {
+    selectTask = Promise.all([import("./select-W527ZQBK.js"), styles ? ensureStyles("controls", { document: doc }) : void 0]).then(([module]) => {
       if (!destroyed) {
         headingControl = module.createSelect(headingSource);
         placeholder.remove();
@@ -927,7 +992,7 @@ function createEditor(source, options = {}) {
   }
   const toggleFullscreen = /* @__PURE__ */ __name(async () => {
     const sequence = ++openSequence;
-    fullscreenTask ??= import("./modal-PLGCE7YP.js").catch((error) => {
+    fullscreenTask ??= import("./modal-CMJRFYG7.js").catch((error) => {
       fullscreenTask = null;
       throw error;
     });
@@ -1007,6 +1072,7 @@ function createEditor(source, options = {}) {
     ...enabled.lists ? [["bulletList", t("bulletList"), "list-bullet"], ["orderedList", t("orderedList"), "list-ordered"]] : [],
     ["link", t("link"), "link"],
     ["unlink", t("unlink"), "unlink"],
+    ...enabled.import !== false ? [["import", t("importTitle"), "code"]] : [],
     ["undo", t("undo"), "undo"],
     ["redo", t("redo"), "redo"],
     ...enabled.images ? [["image", t("insertImage"), "image"]] : [],
@@ -1030,7 +1096,8 @@ function createEditor(source, options = {}) {
       else if (name === "image") {
         imageIndex = null;
         openImage().catch(loadFailed);
-      } else if (name === "fullscreen") toggleFullscreen().catch(loadFailed);
+      } else if (name === "import") openImport().catch(loadFailed);
+      else if (name === "fullscreen") toggleFullscreen().catch(loadFailed);
       else {
         command(name);
         if (name !== "undo" && name !== "redo") restore();
@@ -1105,6 +1172,28 @@ function createEditor(source, options = {}) {
     content.focus();
   });
   listen(content, "keydown", (event) => {
+    if (composing || event.isComposing) return;
+    const modifier = event.ctrlKey || event.metaKey;
+    if (modifier && !event.altKey && event.key.toLowerCase() === "a") {
+      event.preventDefault();
+      selected = { from: 0, to: documentText(value).length };
+      restore();
+      updateToolbar();
+      return;
+    }
+    if (["Backspace", "Delete"].includes(event.key) && !modifier && !event.altKey && !(event.shiftKey && event.key === "Delete")) {
+      remember();
+      if (selected.from !== selected.to) {
+        event.preventDefault();
+        erase(event.key === "Backspace" ? "backward" : "forward");
+        return;
+      }
+      if (event.target.matches("[data-drag-handle], [data-editor-image]")) {
+        event.preventDefault();
+        command("removeBlock", Number(event.target.closest("[data-editor-block]").dataset.blockIndex));
+        return;
+      }
+    }
     if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
     const key = event.key.toLowerCase();
     if (["b", "i", "u", "k", "z", "y"].includes(key)) {
@@ -1117,6 +1206,13 @@ function createEditor(source, options = {}) {
   listen(content, "beforeinput", (event) => {
     if (composing || event.isComposing) return;
     remember();
+    if (event.inputType.startsWith("delete") && selected.from === selected.to) {
+      const target = event.getTargetRanges?.()[0];
+      if (target && content.contains(target.startContainer) && content.contains(target.endContainer)) {
+        const from = domOffset(target.startContainer, target.startOffset), to = domOffset(target.endContainer, target.endOffset);
+        if (from < to && !["deleteContentBackward", "deleteContentForward"].includes(event.inputType)) selected = { from, to };
+      }
+    }
     if (event.inputType === "insertText" && event.data !== null) {
       event.preventDefault();
       insert(event.data);
@@ -1128,6 +1224,9 @@ function createEditor(source, options = {}) {
     } else if (event.inputType === "deleteContentBackward" && selected.from === selected.to && rowAt(value, selected.from).row.type === "list-item" && rowAt(value, selected.from).start === selected.from) {
       event.preventDefault();
       commitModel(exitListItem(value, selected.from));
+    } else if (event.inputType.startsWith("delete") && selected.from !== selected.to || ["deleteContentBackward", "deleteContentForward"].includes(event.inputType)) {
+      event.preventDefault();
+      erase(event.inputType === "deleteContentForward" ? "forward" : "backward");
     } else if (["historyUndo", "historyRedo", "formatBold", "formatItalic", "formatUnderline", "formatStrikeThrough"].includes(event.inputType)) {
       event.preventDefault();
       command({ historyUndo: "undo", historyRedo: "redo", formatBold: "bold", formatItalic: "italic", formatUnderline: "underline", formatStrikeThrough: "strike" }[event.inputType]);
@@ -1143,8 +1242,36 @@ function createEditor(source, options = {}) {
   });
   listen(content, "paste", (event) => {
     event.preventDefault();
+    const data = event.clipboardData;
+    if (!data) return;
     remember();
-    insert(event.clipboardData?.getData("text/plain") || "");
+    const image = [...data.files].find((file) => file.type.startsWith("image/"));
+    if (image && enabled.images && !data.getData("text/plain")) {
+      imageIndex = null;
+      openImage(image).catch(loadFailed);
+      return;
+    }
+    let fragment;
+    if (pasteMode === "formatted") {
+      const json = data.getData(clipboardType);
+      if (json && json.length <= 1e6) {
+        try {
+          fragment = normalizeDocument(JSON.parse(json));
+        } catch {
+        }
+      }
+      if (!fragment) {
+        const html = data.getData("text/html");
+        if (html) fragment = clipboardDocument(html, { document: doc, headings: enabled.headings });
+      }
+    }
+    if (fragment) {
+      fragment = filterFragment(fragment);
+      if (fragment) insertFragment(fragment);
+    } else {
+      const text = data.getData("text/plain");
+      if (text) insert(text);
+    }
   });
   const copy = /* @__PURE__ */ __name((event) => {
     const range = readSelection();
@@ -1162,9 +1289,12 @@ function createEditor(source, options = {}) {
     });
     event.preventDefault();
     event.clipboardData.setData("text/plain", text);
+    const fragment = selectionDocument(value, range.from, range.to);
+    event.clipboardData.setData("text/html", clipboardHTML(fragment, { document: doc }));
+    event.clipboardData.setData(clipboardType, JSON.stringify(fragment));
     if (event.type === "cut") {
       selected = range;
-      insert("");
+      erase("backward");
     }
   }, "copy");
   listen(content, "copy", copy);
@@ -1214,6 +1344,7 @@ function createEditor(source, options = {}) {
       library?.close();
       linkDialog?.close();
       imageDialog?.close();
+      importDialog?.close();
       imageIndex = null;
       value = parse(source.value);
       selected = { from: 0, to: 0 };
@@ -1232,7 +1363,8 @@ function createEditor(source, options = {}) {
     getJSON: /* @__PURE__ */ __name(() => normalizeDocument(value), "getJSON"),
     getText: /* @__PURE__ */ __name(() => plainText(value), "getText"),
     getStats: /* @__PURE__ */ __name(() => editorStats(value, language), "getStats"),
-    openDialog(kind) {
+    openDialog(kind, options2 = {}) {
+      if (kind === "import") return openImport(options2.format);
       if (kind === "link") return openLink();
       if (kind === "image") {
         imageIndex = null;
@@ -1247,6 +1379,7 @@ function createEditor(source, options = {}) {
       library?.close();
       linkDialog?.close();
       imageDialog?.close();
+      importDialog?.close();
       imageIndex = null;
       selected = { from: 0, to: 0 };
       pending = {};
@@ -1265,6 +1398,7 @@ function createEditor(source, options = {}) {
       sync();
       linkDialog?.destroy();
       imageDialog?.destroy();
+      importDialog?.destroy();
       headingControl?.destroy();
       fullscreenModal?.destroy();
       fullscreenHost?.remove();

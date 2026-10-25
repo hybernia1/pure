@@ -131,6 +131,7 @@ export const preloadManifest = {
       "js/colors.js",
       "js/url.js",
       "js/editor-model.js",
+      "js/editor-clipboard.js",
       "js/drag-drop.js",
       "js/editor-i18n.js",
       "js/editor-stats.js",

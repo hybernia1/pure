@@ -8,7 +8,7 @@ A compact, modular CSS, JavaScript and SVG framework. Tailwind-style utilities, 
 
 ## Use in your project - no Node.js required
 
-Download the [v1.4.0 minified files](https://github.com/hybernia1/pure/releases/download/v1.4.0/pure-1.4.0.min.zip), [readable files](https://github.com/hybernia1/pure/releases/download/v1.4.0/pure-1.4.0.zip) or [source archive](https://github.com/hybernia1/pure/archive/refs/tags/v1.4.0.zip) and copy `dist/pure.min/` (minified) or `dist/pure/` (readable) into your project. The files are already built: **no Node.js, npm, bundler or build step is required to use Pure**.
+Download the [v1.5.0 minified files](https://github.com/hybernia1/pure/releases/download/v1.5.0/pure-1.5.0.min.zip), [readable files](https://github.com/hybernia1/pure/releases/download/v1.5.0/pure-1.5.0.zip) or [source archive](https://github.com/hybernia1/pure/archive/refs/tags/v1.5.0.zip) and copy `dist/pure.min/` (minified) or `dist/pure/` (readable) into your project. The files are already built: **no Node.js, npm, bundler or build step is required to use Pure**.
 
 Serve the files through your existing HTTP server (for example Apache, Nginx or your application's server). Pure's CSS and JavaScript run in the browser; ES modules and the external SVG sprite should be served over HTTP rather than opened through `file://`. The example paths below assume you copied the selected tree to `/assets/pure/`.
 
@@ -55,9 +55,9 @@ Version 1.4.0 includes incremental editor work, generated preload manifests and 
 
 Medians of five run medians, 800 measured bold toggles overall, foreground Chrome with CPU 1x. This times synchronous editor API work after initialization, not page loading, native typing or INP. Bootstrap and Tailwind supply styling; Quill supplies their editor. These development lab results do not establish a universal framework winner.
 
-The minified editor static JavaScript graph is **22,979 B gzip** in original ESM and **22,490 B gzip** in compact, excluding CSS, icons, loaders and optional addons. Compact does not always reduce request count or Brotli size. See the [methodology, raw samples, graph sizes and limitations](docs/benchmarks/README.md). Reproduce build sizes with `node scripts/distribution-metrics.mjs` after building.
+The recorded **v1.4.0** minified editor static JavaScript graph was **22,979 B gzip** in original ESM and **22,490 B gzip** in compact, excluding CSS, icons, loaders and optional addons. Compact does not always reduce request count or Brotli size. See the [methodology, raw samples, graph sizes and limitations](docs/benchmarks/README.md). Reproduce build sizes with `node scripts/distribution-metrics.mjs` after building.
 
-**63 Node tests**, generated-output verification and documentation-link checks run in CI on Node 22/24. Browser UI checks run manually in Chrome, including both compact variants; they are not cross-browser CI results. The [release checklist](docs/releasing.md) describes coverage.
+**75 Node tests**, generated-output verification and documentation-link checks run in CI on Node 22/24. Browser UI checks run manually in Chrome, including both compact variants; they are not cross-browser CI results. The [release checklist](docs/releasing.md) describes coverage.
 
 Preload hints are opt-in and do not initialize components. Generate HTML hints from the exact built graph:
 
@@ -68,6 +68,8 @@ npm run --silent preload -- --compact --base=/assets/pure/ editor modal tabs fla
 This assumes the contents of `dist/pure.min/compact/` are deployed at `/assets/pure/`. Keep hints and files from the same release. [Distribution guide](docs/distribution.md) - [compact example](examples/compact.html).
 
 ## Features
+
+Version 1.5.0 adds [formatted clipboard conversion](docs/editor-clipboard.md), a lazy [Markdown/HTML import modal](docs/editor-import.md) and model-based multi-block keyboard deletion. [Try the example](examples/clipboard.html).
 
 Included optional modules: [WordPress-style post tags](docs/tag-picker.md), [optional browser image preparation](docs/image-preparation.md) and token-based `sticky top-*` / `dt:sticky` utilities. [Runnable example](examples/enhancements.html).
 

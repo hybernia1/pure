@@ -25,5 +25,5 @@ const report = {
   entries
 };
 const json = JSON.stringify(report, null, 2) + '\n';
-if (process.argv.includes('--write')) await writeFile('docs/benchmarks/distribution-1.4.0.json', json);
+if (process.argv.includes('--write')) await writeFile(`docs/benchmarks/distribution-${version}.json`, json);
 console.log(json);

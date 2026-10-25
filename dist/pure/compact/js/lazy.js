@@ -1,10 +1,10 @@
 import {
   ensureStyles
-} from "./chunk-ZDWH7MVN.js";
+} from "./chunk-MDDIKQ53.js";
 import {
   configurePure,
   getPureConfig
-} from "./chunk-JK5BIUAQ.js";
+} from "./chunk-VKBN75Z7.js";
 import "./chunk-I2KQSOTD.js";
 import {
   __name
@@ -13,32 +13,32 @@ import {
 // src/js/lazy.js
 var modules = {
   colors: [() => import("./colors-QJK7IWSC.js"), []],
-  chart: [() => import("./chart-DJ5J5OXW.js"), ["chart"]],
-  renderer: [() => import("./renderer-EOIBLPSY.js"), ["renderer"]],
+  chart: [() => import("./chart-LLDN7CXJ.js"), ["chart"]],
+  renderer: [() => import("./renderer-GTC22PBU.js"), ["renderer"]],
   image: [() => import("./image-7QNBUZBB.js"), []],
-  "tag-picker": [() => import("./tag-picker-6SPUKE2H.js"), ["tag-picker"]],
-  navigation: [() => import("./navigation-3ZZVOTN7.js"), ["navigation"]],
-  tabs: [() => import("./tabs-3IHG7JDY.js"), ["tabs"]],
-  data: [() => import("./data-QXEKSIRD.js"), []],
-  table: [() => import("./table-MYO5POAM.js"), ["data"]],
-  list: [() => import("./list-ZCCWJK3Z.js"), ["data"]],
-  pagination: [() => import("./pagination-6TBOBFCH.js"), ["data"]],
-  theme: [() => import("./theme-LS6KVII6.js"), ["tokens"]],
+  "tag-picker": [() => import("./tag-picker-VSWMW6V5.js"), ["tag-picker"]],
+  navigation: [() => import("./navigation-UUAJX4J6.js"), ["navigation"]],
+  tabs: [() => import("./tabs-77UMX56T.js"), ["tabs"]],
+  data: [() => import("./data-AAOEJX6V.js"), []],
+  table: [() => import("./table-7U5SOUL6.js"), ["data"]],
+  list: [() => import("./list-4L4EUL6Q.js"), ["data"]],
+  pagination: [() => import("./pagination-HA6ZNWOR.js"), ["data"]],
+  theme: [() => import("./theme-32HT27K2.js"), ["tokens"]],
   disclosure: [() => import("./disclosure-JECATDJJ.js"), []],
   ajax: [() => import("./ajax-WMXIX7FG.js"), []],
-  forms: [() => import("./forms-BSQAHSVS.js"), ["controls"]],
-  select: [() => import("./select-MME35WXP.js"), ["controls"]],
-  picker: [() => import("./picker-3BMLUEQ6.js"), ["controls"]],
-  modal: [() => import("./modal-PLGCE7YP.js"), ["modal"]],
-  upload: [() => import("./upload-BUGUPZ2P.js"), ["upload"]],
-  resize: [() => import("./resize-2SB6TVL3.js"), ["resize"]],
+  forms: [() => import("./forms-RY2SJKHL.js"), ["controls"]],
+  select: [() => import("./select-W527ZQBK.js"), ["controls"]],
+  picker: [() => import("./picker-IYKJ7SV7.js"), ["controls"]],
+  modal: [() => import("./modal-CMJRFYG7.js"), ["modal"]],
+  upload: [() => import("./upload-5GORHKMR.js"), ["upload"]],
+  resize: [() => import("./resize-2SOG3MT4.js"), ["resize"]],
   editor: [() => import("./editor.js"), ["editor"]],
-  "media-library": [() => import("./media-library-AHWBCAWX.js"), ["media-library"]],
-  search: [() => import("./search-CLUFTQZZ.js"), ["search"]],
-  flash: [() => import("./flash-WMSXDG3U.js"), ["flash"]],
-  activity: [() => import("./activity-EFUKDGOO.js"), ["activity"]],
-  progress: [() => import("./progress-ERDC5IGF.js"), ["progress"]],
-  "drag-drop": [() => import("./drag-drop-LYS2TUWJ.js"), ["drag-drop"]]
+  "media-library": [() => import("./media-library-QBUPP3BD.js"), ["media-library"]],
+  search: [() => import("./search-W3L26UQN.js"), ["search"]],
+  flash: [() => import("./flash-AFLNXTHL.js"), ["flash"]],
+  activity: [() => import("./activity-7P4MXY5N.js"), ["activity"]],
+  progress: [() => import("./progress-EKELJVEH.js"), ["progress"]],
+  "drag-drop": [() => import("./drag-drop-SEOPIZTL.js"), ["drag-drop"]]
 };
 async function loadComponent(name, { document: doc = globalThis.document, styles = getPureConfig().styles.auto } = {}) {
   if (!Object.hasOwn(modules, name)) throw new TypeError(`Unknown Pure component: ${name}`);

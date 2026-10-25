@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en" data-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pure clipboard</title><link rel="stylesheet" href="../dist/pure.min/pure.css"></head>
+<body><main class="container py-4">
+<h1>Paste into Pure</h1><p>Copy content from a website or document, then paste below. You can also copy between editors.</p>
+<div class="grid grid-cols-1 dt:grid-cols-2 gap-4">
+<div class="field"><label for="formatted">Supported formatting</label><textarea id="formatted"></textarea></div>
+<div class="field"><label for="plain">Plain text only</label><textarea id="plain"></textarea></div></div>
+<p>Headings, lists, links and basic marks become JSON. External styles are discarded. Image files open the upload modal; connect uploadImage to save them.</p>
+<p><button type="button" class="button button-outline" id="import-md">Insert Markdown</button> <button type="button" class="button button-outline" id="import-html">Insert HTML</button></p>
+<button type="button" class="button" id="inspect">Inspect JSON</button><pre id="result"></pre>
+<p><a href="../docs/editor-clipboard.md">Conversion rules</a> · <a href="index.html">All examples</a></p>
+</main><script type="module">
+import { loadComponent } from '../dist/pure.min/js/lazy.js';
+const { createEditor } = await loadComponent('editor');
+const formatted = createEditor(document.querySelector('#formatted'), { locale: 'en', features: { headings: true, images: true } });
+const plain = createEditor(document.querySelector('#plain'), { locale: 'en', pasteMode: 'plain' });
+await Promise.all([formatted.ready, plain.ready]);
+formatted.setJSON({ version: 1, blocks: [{ type: 'paragraph', children: [{ text: 'Copy this ' }, { text: 'formatted text', bold: true, italic: true }, { text: ' or paste your own content.' }] }] });
+document.querySelector('#import-md').addEventListener('click', () => formatted.openDialog('import'));
+document.querySelector('#import-html').addEventListener('click', () => formatted.openDialog('import', { format: 'html' }));
+document.querySelector('#inspect').addEventListener('click', () => {
+  document.querySelector('#result').textContent = JSON.stringify({ formatted: formatted.getJSON(), plain: plain.getJSON() }, null, 2);
+});
+</script></body></html>

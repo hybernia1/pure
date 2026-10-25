@@ -14,9 +14,10 @@ export function createEditorDialog(doc, { title, fields, submit, remove, selectF
   for (const [name, config] of Object.entries(fields)) {
     const label = doc.createElement('div'); label.className = 'field';
     const text = doc.createElement('label'); text.className = 'field-label'; text.textContent = config.label; text.htmlFor = `pure-editor-dialog-${id}-${name}`;
-    const input = doc.createElement(config.options ? 'select' : 'input'); input.className = 'input'; input.name = name;
+    const input = doc.createElement(config.options ? 'select' : config.type === 'textarea' ? 'textarea' : 'input'); input.className = 'input'; input.name = name;
     input.id = text.htmlFor;
-    if (!config.options) input.type = config.type || 'text';
+    if (input.tagName === 'INPUT') input.type = config.type || 'text';
+    if (config.rows) input.rows = config.rows;
     if (config.accept) input.accept = config.accept;
     if (config.placeholder) input.placeholder = config.placeholder;
     if (config.options) for (const [value, title] of config.options) { const option = doc.createElement('option'); option.value = value; option.textContent = title; input.append(option); }
@@ -58,6 +59,7 @@ export function createEditorDialog(doc, { title, fields, submit, remove, selectF
   form.addEventListener('submit', onSubmit); dialog.addEventListener('close', onClose); dialog.addEventListener('cancel', onCancel); dialog.addEventListener('click', onClick); removeButton.addEventListener('click', onRemove);
   return {
     dialog, controls,
+    setFiles(files) { return uploads[0]?.prepareAndSetFiles(files); },
     open(values = {}, opener = doc.activeElement, { removable = false } = {}) {
       form.reset(); error.textContent = ''; removeButton.hidden = !removable; setBusy(false);
       for (const [name, value] of Object.entries(values)) if (controls[name] && controls[name].type !== 'file') controls[name].value = String(value ?? '');

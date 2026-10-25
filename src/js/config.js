@@ -5,7 +5,7 @@ const defaults = {
   theme: { default: 'system', scheme: 'default', persist: true, storageKey: 'pure-theme', schemeStorageKey: 'pure-scheme' },
   search: { delay: 250, minLength: 2, limit: 8 },
   upload: { accept: '', maxFiles: Infinity, maxSize: Infinity, prepareFile: null },
-  editor: { features: { headings: false, images: false, fullscreen: true, lists: true, colors: false }, colors: null, uploadImage: null, mediaLibrary: null },
+  editor: { features: { headings: false, images: false, fullscreen: true, lists: true, colors: false, import: true }, colors: null, uploadImage: null, mediaLibrary: null },
   mediaLibrary: { pageSize: 12 }, flash: { duration: 0 }, modal: { closeOnBackdrop: true },
   data: { pageSize: 20 }, pagination: { siblings: 1 },
   tabs: { activation: 'auto', orientation: 'horizontal' },
